@@ -6,6 +6,7 @@ import morgan from 'morgan'
 import helmet from 'helmet'
 import connectDB from './config/connectdb.js'
 import userRouter from './route/user.route.js'
+import categoryRouter from './route/category.route.js'
 
 dotenv.config()
 const app = express()
@@ -29,6 +30,7 @@ app.get('/',(req,res)=>{
 })
 
 app.use('/api/user',userRouter)
+app.use('/api/category',categoryRouter);
 
 
 connectDB().then(

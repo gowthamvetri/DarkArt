@@ -1,3 +1,4 @@
+
 export const baseURL = 'http://localhost:8080';
 
 const SummaryApi = {
@@ -40,6 +41,10 @@ const SummaryApi = {
     UpdateUser:{
         url:"api/user/update-user",
         method:"put"
+    },
+    addCategory:{
+        url:"api/category/add-category",
+        method:"post"
     }
 }
 
