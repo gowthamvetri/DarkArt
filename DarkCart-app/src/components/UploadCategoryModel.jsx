@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { IoClose } from 'react-icons/io5'
+import uploadImage from '../utils/UploadImage'
 
 function UploadCategoryModel   ({close})  {
     const[data,setData] = useState({
@@ -19,22 +20,15 @@ function UploadCategoryModel   ({close})  {
         e.preventDefault()
         console.log(data)
     }
-    const handleUploadCategoryImage = (e) =>{
+    const handleUploadCategoryImage = async (e) =>{
         const file = e.target.files[0]
         if(!file)
         {
             return;
         }
-        // const reader = new FileReader()
-        // reader.readAsDataURL(file)
-        // reader.onloadend = () =>{
-        //     setData((prevData)=>{
-        //         return{
-        //             ...prevData,
-        //             image:reader.result
-        //         }
-        //     })
-        // }
+       
+        const Image = await uploadImage(file)     
+        console.log(Image)
     }
   
   return (
@@ -69,12 +63,13 @@ function UploadCategoryModel   ({close})  {
 <p className='text-sm text-neutral-500'>No Image</p>
             </div>
             <label htmlFor='uploadCategoryImage' className='flex items-center gap-2'>
-            <div disabled={!data.name} className={`
+            <div  className={`
             ${!data.name ? 'bg-gray-400' : 'bg-blue-400'}
             p-2 rounded text-white w-full lg:w-52
             `}
             >Upload Image</div>
-            <input onChange={handleUploadCategoryImage} type='file'  id ='uploadCategoryImage'  hidden/>
+            <input disabled={!data.name} onChange={handleUploadCategoryImage} type='file' id='uploadCategoryImage' hidden/>
+            {/* <input disabled={!data.name} onChange={handleUploadCategoryImage} type='file' id='uploadCategoryImage' className='hidden'/> */}
             </label>
             </div>
            </div>
