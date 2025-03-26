@@ -6,7 +6,7 @@ export const auth = async(req,res,next)=>{
         const token = req.cookies.accessToken || req?.header?.authorization?.split(" ")[1]
 
         if(!token){
-            res.status(401).json({
+            return res.status(401).json({
                 message: "Provide a valid access token",
                 error : true,
                 success :false
@@ -23,8 +23,8 @@ export const auth = async(req,res,next)=>{
             })
         }
 
-        req.userId = decode.id
-        next()
+        req.userId = decode.id;
+        next();
 
     } catch (error) {
         return res.status(500).json({

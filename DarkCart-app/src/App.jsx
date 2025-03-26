@@ -12,11 +12,16 @@ export default function App() {
   const user = useSelector((state)=> state?.user)
 
   const fetchUser = async () => {
+    try{
       const response = await FetchUserInfo();
       dispatch(setUserDetails(response.data));
+    }
+    catch(error){
+      toast.error("Failed to load user info! Please Login")
+    }
   }
     useEffect(()=>{
-        fetchUser();
+      fetchUser();
   },[])
 
   return (
