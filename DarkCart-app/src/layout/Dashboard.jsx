@@ -7,7 +7,7 @@ function Dashboard() {
     <section className='bg-white'>
       <div className="container mx-auto p-3 flex ">
         {/* Menu */}
-        <div  className='py-4 sticky top-24 overflow-y-auto hidden lg:block border-r'>
+        <div  className='py-4 sticky top-24  max-h-[calc(100vh-200px)] overflow-y-auto hidden lg:block border-r'>
           <UserMenue/>
         </div>
 

@@ -35,7 +35,7 @@ function Header() {
 
   return (
     <>
-      <header className="h-30 lg:h-24 lg:shadow-md sticky top-0 flex items-center justify-center flex-col lg:flex-row p-4 bg-white ">
+      <header className="h-30 lg:h-24 lg:shadow-md sticky top-0 z-40 flex items-center justify-center flex-col lg:flex-row p-4 bg-white ">
         {!(isSearch && ismobile) && (
           <div className="container mx-auto flex justify-between items-center h-full px-4">
             {/* Header */}
