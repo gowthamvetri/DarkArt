@@ -8,7 +8,7 @@ import { logout } from '../store/userSlice'
 import toast from 'react-hot-toast'
 import AxiosTostError from '../utils/AxiosTostError'
 import { FiExternalLink } from "react-icons/fi";
-
+import isAdmin from '../utils/isAdmin'
 function UserMenue({close}) {
     const user = useSelector((state)=> state?.user)
     const dispatch = useDispatch()
@@ -45,7 +45,7 @@ function UserMenue({close}) {
             My Account
         </div>
         <div className='text-sm mt-1 flex gap-3'>
-            <span className='max-w-52 text-ellipsis line-clamp-1'>{user ?. name || user ?. email}</span>
+            <span className='max-w-52 text-ellipsis line-clamp-1'>{user ?. name || user ?. email}<span className='text-blue-600'>{user.role==="ADMIN"?"(admin)":""}</span></span>
             <Link to={"/dashboard/profile"} onClick={handleClose}>
                 <FiExternalLink size={15} className='font-extralight hover:text-yellow-400'/>
             </Link>
@@ -54,10 +54,34 @@ function UserMenue({close}) {
         <Divider/>
 
         <div className='text-sm grid gap-4'>
-        <Link onClick={handleClose} to="/dashboard/category" className='p-2 hover:bg-red-100'>Category</Link>
-        <Link onClick={handleClose} to="/dashboard/subcategory" className='p-2 hover:bg-red-100'>Sub Category</Link>
-        <Link onClick={handleClose} to="/dashboard/upload-product" className='p-2 hover:bg-red-100'>Product</Link>
-        <Link onClick={handleClose} to="/dashboard/product" className='p-2 hover:bg-red-100'>Upload Product</Link>
+            {
+             isAdmin(user.role)&&(
+                <Link onClick={handleClose} to="/dashboard/category" className='p-2 hover:bg-red-100'>Category</Link>
+             )
+
+            }
+            {
+             isAdmin(user.role)&&(
+               
+                 <Link onClick={handleClose} to="/dashboard/subcategory" className='p-2 hover:bg-red-100'>Sub Category</Link>
+             )
+
+            }
+            {
+             isAdmin(user.role)&&(
+                
+                 <Link onClick={handleClose} to="/dashboard/upload-product" className='p-2 hover:bg-red-100'>Product</Link>
+             )
+
+            }
+            {
+             isAdmin(user.role)&&(
+                
+                 <Link onClick={handleClose} to="/dashboard/product" className='p-2 hover:bg-red-100'>Upload Product</Link>
+             )
+
+            }
+        
         <Link onClick={handleClose} to="/dashboard/myorders" className='p-2 hover:bg-red-100'>My Order</Link>
         <Link onClick={handleClose} to="/dashboard/address" className='p-2 hover:bg-red-100'>Save Address</Link>
 

@@ -1,5 +1,6 @@
 import CategoryModel from "../models/category.model.js";
-
+import subCategoryModel from '../models/subCategory.model.js';
+import productModel from "../models/product.model.js";
 export const AddCategoryController = async(request,response)=>{
     try{
 const {name,image}= request.body
@@ -90,13 +91,13 @@ export const deleteCategoryController = async(request,response)=>{
     try {
         const { _id } = request.body 
 
-        const checkSubCategory = await SubCategoryModel.find({
+        const checkSubCategory = await subCategoryModel.find({
             category : {
                 "$in" : [ _id ]
             }
         }).countDocuments()
 
-        const checkProduct = await ProductModel.find({
+        const checkProduct = await productModel.find({
             category : {
                 "$in" : [ _id ]
             }
@@ -104,7 +105,7 @@ export const deleteCategoryController = async(request,response)=>{
 
         if(checkSubCategory >  0 || checkProduct > 0 ){
             return response.status(400).json({
-                message : "Category is already use can't delete",
+                message : "Category already in use can't delete",
                 error : true,
                 success : false
             })

@@ -1,3 +1,4 @@
+import { updateCategoryController } from "../../../server/controllers/category.controller";
 
 export const baseURL = 'http://localhost:8080';
 
@@ -53,6 +54,30 @@ const SummaryApi = {
     getCategory:{
         url:'api/category/get',
         method:"get"
+    },
+    updateCategory :{
+        url:'api/category/update',
+        method:"put"
+    },
+    deleteCategory : {
+        url : '/api/category/delete',
+        method : 'delete'
+    },
+    createSubCategory : {
+        url : '/api/subcategory/create',
+        method : 'post'
+    },
+    getSubCategory : {
+        url : '/api/subcategory/get',
+        method : 'post'
+    },
+    updateSubCategory : {
+        url : '/api/subcategory/update',
+        method : 'put'
+    },
+    deleteSubCategory : {
+        url : '/api/subcategory/delete',
+        method : 'delete'
     }
 }
 

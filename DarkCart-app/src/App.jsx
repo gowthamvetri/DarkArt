@@ -6,6 +6,9 @@ import toast, { Toaster } from 'react-hot-toast';
 import FetchUserInfo from './utils/FetchUserInfo';
 import { useDispatch, useSelector } from 'react-redux';
 import { setUserDetails } from './store/userSlice';
+import { setAllCategory } from './store/productSlice';
+import Axios from './utils/Axios';
+import SummaryApi from './common/SummaryApi';
 
 export default function App() {
   const dispatch = useDispatch();
@@ -20,8 +23,27 @@ export default function App() {
       toast.error("Failed to load user info! Please Login")
     }
   }
+
+  const fetchCategory = async()=>{
+    try {
+        const response = await Axios({
+            ...SummaryApi.getCategory
+        })
+        const { data : responseData } = response
+
+        if(responseData.success){
+           dispatch(setAllCategory(responseData.data.sort((a, b) => a.name.localeCompare(b.name)))) 
+        }
+    } catch (error) {
+        
+    }finally{
+      dispatch(setLoadingCategory(false))
+    }
+  }
+    
     useEffect(()=>{
       fetchUser();
+      fetchCategory();
   },[])
 
   return (

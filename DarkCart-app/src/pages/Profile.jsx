@@ -65,7 +65,7 @@ function Profile() {
     });
   }, [user]);
   return (
-    <div>
+    <div className="p-10">
       <div className="w-20 h-20 bg-red-500 rounded-full flex justify-center items-center overflow-hidden">
         {user.avatar ? (
           <img alt={user.name} src={user.avatar} className="h-full w-full" />

@@ -70,8 +70,8 @@ function UploadCategoryModel   ({close,fetchData})  {
         <h1 className='font-semibold text-lg'>
             Category
         </h1>
-        <button className='absolute top-2 right-2'>
-   <IoClose onClick={close} className='text-2xl text-red-500 cursor-pointer'/>
+        <button onClick={close}>
+                    <IoClose size={25} />
         </button>
     </div>
     <form className='my-3 grid gap-4 'onSubmit={handleSubmit}>

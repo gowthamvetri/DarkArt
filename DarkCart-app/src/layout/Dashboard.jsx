@@ -1,8 +1,12 @@
 import React from 'react'
 import UserMenue from '../components/UserMenue'
 import { Outlet } from 'react-router-dom'
+import { useSelector } from 'react-redux'
 
-function Dashboard() {
+const Dashboard=() => {
+  const user =useSelector(state => state.user)
+
+  console.log("user dashboard ",user)
   return (
     <section className='bg-white'>
       <div className="container mx-auto p-3 flex ">
