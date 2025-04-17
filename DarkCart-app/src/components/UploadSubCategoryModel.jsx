@@ -92,6 +92,9 @@ const UploadSubCategoryModel = ({ close, fetchData }) => {
       AxiosTostError(error);
     }
   };
+  console.log(subCategoryData);
+  console.log(allCategory);
+  
 
   const isSubmitDisabled = !subCategoryData.name || !subCategoryData.image || subCategoryData.category.length === 0;
 
