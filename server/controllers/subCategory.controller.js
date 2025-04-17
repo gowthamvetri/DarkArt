@@ -3,6 +3,7 @@ import SubCategoryModel from "../models/subCategory.model.js";
 export const AddSubCategoryController = async(request,response)=>{
     try {
         const { name, image, category } = request.body 
+        
 
         if(!name && !image && !category[0] ){
             return response.status(400).json({
@@ -15,10 +16,13 @@ export const AddSubCategoryController = async(request,response)=>{
         const payload = {
             name,
             image,
-            category
+            categoryId:category
         }
 
-        const createSubCategory = new SubCategoryModel(payload)
+        console.log(payload)
+
+
+        const createSubCategory = SubCategoryModel(payload)
         const save = await createSubCategory.save()
 
         return response.json({

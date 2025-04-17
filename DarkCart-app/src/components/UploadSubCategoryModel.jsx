@@ -29,6 +29,7 @@ const UploadSubCategoryModel = ({ close, fetchData }) => {
       ...prev,
       [name]: value
     }));
+    console.log(subCategoryData)
   };
 
   const handleUploadSubCategoryImage = async (e) => {
@@ -57,6 +58,7 @@ const UploadSubCategoryModel = ({ close, fetchData }) => {
 
   const handleCategorySelect = (e) => {
     const value = e.target.value;
+    console.log(value)
     if (!value) return;
 
     const categoryDetails = allCategory.find(el => el._id === value);
@@ -76,10 +78,16 @@ const UploadSubCategoryModel = ({ close, fetchData }) => {
     e.preventDefault();
 
     try {
+      
       const response = await Axios({
         ...SummaryApi.createSubCategory,
-        data: subCategoryData
+        data: {
+          name:subCategoryData.name,
+          image:subCategoryData.image,
+          category : subCategoryData.category
+        }
       });
+      console.log(response)
 
       const { data: responseData } = response;
 
