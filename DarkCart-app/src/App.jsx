@@ -6,7 +6,8 @@ import toast, { Toaster } from 'react-hot-toast';
 import FetchUserInfo from './utils/FetchUserInfo';
 import { useDispatch, useSelector } from 'react-redux';
 import { setUserDetails } from './store/userSlice';
-import { setAllCategory } from './store/productSlice';
+import { setAllCategory, setLoadingCategory } from './store/productSlice';
+
 import Axios from './utils/Axios';
 import SummaryApi from './common/SummaryApi';
 
