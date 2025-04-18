@@ -43,7 +43,7 @@ export const AddSubCategoryController = async(request,response)=>{
 
 export const getSubCategoryController = async(request,response)=>{
     try {
-        const data = await SubCategoryModel.find().sort({createdAt : -1})
+        const data = await SubCategoryModel.find().sort({createdAt : -1}).populate("categoryId")
         return response.json({
             message : "Sub Category data",
             data : data,
