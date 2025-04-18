@@ -8,12 +8,17 @@ import { createColumnHelper } from "@tanstack/react-table";
 import ViewImage from "../components/ViewImage";
 import { MdDelete  } from "react-icons/md";
 import { HiPencil } from "react-icons/hi";
+import EditSubCategory from "../components/EditSubCategory";
 const SubCategoryPage = () => {
   const [openAddSubCategory, setOpenAddSubCategory] = useState(false);
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const columnHelper = createColumnHelper();
   const [ImageURL, setImageURL] = useState("");
+  const [openEdit, setOpenEdit] = useState(false);
+  const [editData, setEditData] = useState({
+    _id :""
+  });
 
   const fetchSubCategory = async () => {
     try {
@@ -116,6 +121,10 @@ const SubCategoryPage = () => {
         ImageURL &&
         <ViewImage url={ImageURL} close={()=>setImageURL("")}/>
 
+      }
+      {
+        openEdit &&
+        <EditSubCategory data ={editData} close={()=>setOpenEdit(false)} />
       }
 
 
