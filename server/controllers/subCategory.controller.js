@@ -62,7 +62,8 @@ export const getSubCategoryController = async(request,response)=>{
     try {
         // const { id } = request.params
         const { _id,name, image, category } = request.body 
-  const checkSub = await SubCategoryModel.findById(_id)
+        const checkSub = await SubCategoryModel.findById(_id)
+        console.log(name,checkSub,category)
         if(!checkSub){
             return response.status(404).json({
                 message : "Sub Category Not Found",
@@ -81,10 +82,10 @@ export const getSubCategoryController = async(request,response)=>{
         const payload = {
             name,
             image,
-            categoryId:category
+            categoryId:category._id
         }
 
-        console.log(payload)
+        // console.log(payload)
 
 
         const updateSubCategory = await SubCategoryModel.findByIdAndUpdate(_id,{
@@ -92,7 +93,7 @@ export const getSubCategoryController = async(request,response)=>{
             image,
             categoryId:category
         },{new : true}).populate("categoryId")
-        console.log(updateSubCategory)
+        //console.log(updateSubCategory)
         console.log("updateSubCategory",updateSubCategory)  
 
         return response.json({

@@ -7,7 +7,7 @@ import SummaryApi from '../common/SummaryApi';
 import toast from 'react-hot-toast';
 import AxiosTostError from '../utils/AxiosTostError';
 
-const EditSubCategoryModel = ({ close, data }) => {
+const EditSubCategoryModel = ({ close, data,fetchData }) => {
   const [subCategoryData, setSubCategoryData] = useState({
     name: data.name,
     _id : data._id,
@@ -77,13 +77,12 @@ const EditSubCategoryModel = ({ close, data }) => {
 
   const handleSubmitSubCategory = async (e) => {
     e.preventDefault();
-
     try {
       const response = await Axios({
         ...SummaryApi.updateSubCategory,
         data: subCategoryData
       });
-console.log(response);
+      console.log(response);
       const { data: responseData } = response;
 
       if (responseData.success) {

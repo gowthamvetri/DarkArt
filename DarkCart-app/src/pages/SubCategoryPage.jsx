@@ -40,7 +40,7 @@ const SubCategoryPage = () => {
   useEffect(() => {
     fetchSubCategory();
   }, []);
-  console.log("subdata", data);
+  // console.log("subdata", data);
 
   const column = [
     columnHelper.accessor("name", {
@@ -124,7 +124,7 @@ const SubCategoryPage = () => {
       }
       {
         openEdit &&
-        <EditSubCategory data ={editData} close={()=>setOpenEdit(false)} />
+        <EditSubCategory data ={editData} close={()=>setOpenEdit(false)} fetch = {fetchSubCategory}/>
       }
 
 
