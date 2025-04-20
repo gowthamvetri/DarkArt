@@ -31,27 +31,29 @@ function CategoryPage() {
         setCategoryData(allCategory)
     },[allCategory])
     
-    // const fetchCategory = async () => {
-    //     try {
-    //         setLoading(true)
-    //         const response = await Axios({
-    //             ...SummaryApi.getCategory
-    //         })
-    //         const { data: responseData } = response
-
-    //         if (responseData.success) {
-    //             setCategoryData(responseData.data)
-    //         }
-    //     } catch (error) {
-
-    //     } finally {
-    //         setLoading(false)
-    //     }
-    // }
-
-    // useEffect(() => {
-    //     fetchCategory()
-    // }, [])
+    const fetchCategory = async () => {
+        try {
+            setLoading(true);
+            const response = await Axios({
+                ...SummaryApi.getCategory,
+            });
+    
+            const { data: responseData } = response;
+    
+            if (responseData.success) {
+                setCategoryData(responseData.data);
+            }
+        } catch (error) {
+            AxiosTostError(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+    
+    useEffect(() => {
+        fetchCategory();
+    }, []);
+    
     
     const handleDeleteCategory = async()=>{
         try {
@@ -64,8 +66,12 @@ function CategoryPage() {
 
             if(responseData.success){
                 toast.success(responseData.message)
-                fetchCategory()
-                setOpenConfirmBoxDelete(false)
+                if(responseData.success){
+                
+                    setOpenConfirmBoxDelete(false); 
+                    fetchCategory(); 
+                }
+                
             }
         } catch (error) {
             AxiosTostError(error)
