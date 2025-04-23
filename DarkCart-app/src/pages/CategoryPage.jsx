@@ -25,11 +25,11 @@ function CategoryPage() {
     const [deleteCategory,setDeleteCategory] = useState({
         _id : ""
     })
-    const allCategory = useSelector(state => state.product.allCategory)
+    // const allCategory = useSelector(state => state.product.allCategory)
 
-    useEffect(()=>{
-        setCategoryData(allCategory)
-    },[allCategory])
+    // useEffect(()=>{
+    //     setCategoryData(allCategory)
+    // },[allCategory])
     
     const fetchCategory = async () => {
         try {
@@ -78,7 +78,7 @@ function CategoryPage() {
         }
     }
     return (
-        <section>
+        <section className=''>
             <div className='p-2 font-semibold bg-white shadow-md flex items-center justify-between'>
                 <h2 className='font-light'>Catgeory</h2>
                 <button onClick={() => setOpenUploadCategory(true)}
