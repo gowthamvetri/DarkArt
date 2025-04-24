@@ -6,7 +6,7 @@ import toast, { Toaster } from 'react-hot-toast';
 import FetchUserInfo from './utils/FetchUserInfo';
 import { useDispatch, useSelector } from 'react-redux';
 import { setUserDetails } from './store/userSlice';
-import { setAllCategory, setLoadingCategory } from './store/productSlice';
+import { setAllCategory, setLoadingCategory ,setAllSubCategory} from './store/productSlice';
 
 import Axios from './utils/Axios';
 import SummaryApi from './common/SummaryApi';
@@ -41,10 +41,27 @@ export default function App() {
       dispatch(setLoadingCategory(false))
     }
   }
+  const fetchSubCategory = async()=>{
+    try {
+        const response = await Axios({
+            ...SummaryApi.getSubCategory
+        })
+        const { data : responseData } = response
+
+        if(responseData.success){
+           dispatch(setAllSubCategory(responseData.data.sort((a, b) => a.name.localeCompare(b.name)))) 
+        }
+    } catch (error) {
+        
+    }finally{
+      dispatch(setLoadingCategory(false))
+    }
+  }
     
     useEffect(()=>{
       fetchUser();
       fetchCategory();
+      fetchSubCategory();
   },[])
 
   return (
