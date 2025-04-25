@@ -10,7 +10,10 @@ import { useEffect } from "react";
 import { useSelector } from "react-redux";
 import { IoClose } from "react-icons/io5";
 import AddFieldComponent from "../components/AddFieldComponent";
+import SummaryApi from "../common/SummaryApi.js";
 
+import AxiosTostError from "../utils/AxiosTostError.js";
+import SwertAlert from "../utils/SuccessAlert.js";
 const UploadProduct = () => {
   const [data, setData] = useState({
     name: "",
@@ -99,10 +102,22 @@ const UploadProduct = () => {
     setFieldName("");
     setOpenAddField(false);
   };
-  const handleSubmit =(e)=>{
+  const handleSubmit =async(e)=>{
     e.preventDefault()
-    console.log(data
-    )
+     try{
+         const response = await Axios({
+          ...SummaryApi.createProduct,
+          data :data
+         })
+         const {data :responseData} = response
+         if(responseData.success){
+          SwertAlert(responseData.message)
+         }
+     }
+     catch(error){
+      AxiosTostError(error);
+
+     }
   }
   return (
     <section className="">
