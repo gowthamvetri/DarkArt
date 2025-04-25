@@ -8,7 +8,7 @@ const productSchema = mongoose.Schema({
         type:Array,
         default : []
     },
-    categoryId: [{
+    category: [{
         type : mongoose.Schema.ObjectId,
         ref : 'category'
     }],
@@ -48,6 +48,15 @@ const productSchema = mongoose.Schema({
     },
 },{
     timestamps:true
+})
+
+//create a index
+productSchema.index({
+    name  : "text",
+    description : "text",
+},{
+    name : 10,
+    description : 5
 })
 
 const productModel = mongoose.model('product',productSchema)

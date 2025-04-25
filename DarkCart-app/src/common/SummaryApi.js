@@ -82,7 +82,11 @@ const SummaryApi = {
     createProduct :{
         url :"/api/product/create",
         method : "post"
-    }
+    },
+    getProduct :{
+        url :"/api/product/get",
+        method : "post"
+    },
 }
 
 export default SummaryApi;
