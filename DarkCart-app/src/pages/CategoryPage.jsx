@@ -42,6 +42,7 @@ function CategoryPage() {
     
             if (responseData.success) {
                 setCategoryData(responseData.data);
+                console.log(categoryData)
             }
         } catch (error) {
             AxiosTostError(error);

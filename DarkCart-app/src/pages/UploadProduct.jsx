@@ -13,12 +13,13 @@ import AddFieldComponent from "../components/AddFieldComponent";
 import SummaryApi from "../common/SummaryApi.js";
 
 import AxiosTostError from "../utils/AxiosTostError.js";
-import SwertAlert from "../utils/SuccessAlert.js";
+
+import SuccessAlert from "../utils/SuccessAlert.js";
 const UploadProduct = () => {
   const [data, setData] = useState({
     name: "",
     image: [],
-    category: [],
+    category: [], // Changed from categoryId to category to match the rest of the code
     subCategory: [],
     unit: "",
     stock: "",
@@ -111,7 +112,20 @@ const UploadProduct = () => {
          })
          const {data :responseData} = response
          if(responseData.success){
-          SwertAlert(responseData.message)
+          SuccessAlert(responseData.message)
+          setData({
+            name: "",
+            image: [],
+            category: [],
+            subCategory: [],
+            unit: "",
+            stock: "",
+            price: "",
+            discount: "",
+            description: "",
+            more_details: {},
+          })
+          // setSelectCategory("")
          }
      }
      catch(error){
