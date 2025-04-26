@@ -117,7 +117,7 @@ console.log(response);
               name='name'
               value={subCategoryData.name}
               onChange={handleChange}
-              className='p-3 bg-blue-50 border rounded outline-none focus:border-primary-200'
+              className='p-3 bg-blue-50 border rounded outline-none focus:border-blue-200'
             />
           </div>
 
@@ -139,7 +139,7 @@ console.log(response);
                 }
               </div>
               <label htmlFor='uploadSubCategoryImage'>
-                <div className='px-4 py-1 border border-primary-100 text-primary-200 rounded hover:bg-primary-200 hover:text-neutral-900 cursor-pointer'>
+                <div className='px-4 py-1 border border-blue-100 text-blue-200 rounded hover:bg-blue-200 hover:text-neutral-900 cursor-pointer'>
                   Upload Image
                 </div>
                 <input
@@ -155,7 +155,7 @@ console.log(response);
           {/* Category Selector */}
           <div className='grid gap-1'>
             <label>Select Category</label>
-            <div className='border rounded focus-within:border-primary-200 p-2'>
+            <div className='border rounded focus-within:border-blue-200 p-2'>
               {/* Selected Values */}
               <div className='flex flex-wrap gap-2 mb-2'>
                 {
@@ -195,7 +195,7 @@ console.log(response);
           <button
             type='submit'
             className={`px-4 py-2 border rounded font-semibold transition-colors
-              ${isSubmitDisabled ? "bg-gray-200 cursor-not-allowed" : "bg-primary-200 hover:bg-primary-100"}
+              ${isSubmitDisabled ? "bg-gray-200 cursor-not-allowed" : "bg-blue-200 hover:bg-blue-100"}
             `}
             disabled={isSubmitDisabled}
           >
