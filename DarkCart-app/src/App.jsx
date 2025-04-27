@@ -9,7 +9,9 @@ import { setUserDetails } from './store/userSlice';
 import { setAllCategory, setLoadingCategory ,setAllSubCategory} from './store/productSlice';
 
 import Axios from './utils/Axios';
-import SummaryApi from './common/SummaryApi';
+import SummaryApi from './common/SummaryApi.js';
+import "./App.css"
+import "./index.css"
 
 export default function App() {
   const dispatch = useDispatch();
@@ -27,6 +29,7 @@ export default function App() {
 
   const fetchCategory = async()=>{
     try {
+        dispatch(setLoadingCategory(true))
         const response = await Axios({
             ...SummaryApi.getCategory
         })
