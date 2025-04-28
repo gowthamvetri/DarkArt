@@ -3,6 +3,7 @@ import { DisplayPriceInRupees } from "../utils/DisplayPriceInRupees";
 import { validURLConvert } from "../utils/validURLConvert";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { pricewithDiscount } from "../utils/PriceWithDiscount";
 function CardProduct({ data }) {
   const url = `/product/${validURLConvert(data.name)}-${data._id}`;
   const [loading, setLoading] = useState(false);
@@ -15,9 +16,9 @@ function CardProduct({ data }) {
           />
     </div>
     <div className='flex items-center gap-1'>
-      {/* <div className='rounded text-xs w-fit p-[1px] px-2 text-green-600 bg-green-50'>
+      <div className='rounded text-xs w-fit p-[1px] px-2 text-green-600 bg-green-50'>
             10 min 
-      </div> */}
+      </div>
       <div>
           {
             Boolean(data.discount) && (
@@ -33,26 +34,31 @@ function CardProduct({ data }) {
       {data.unit} 
       
     </div>
-
+    
     <div className='px-2 lg:px-0 flex items-center justify-between gap-1 lg:gap-3 text-sm lg:text-base'>
       <div className='flex items-center gap-1'>
         <div className='font-semibold'>
-            {DisplayPriceInRupees((data.price))} 
+            {DisplayPriceInRupees(pricewithDiscount(data.price,data.discount))} 
         </div>
         
         
       </div>
       <div className=''>
-       
-          <button className='bg-green-600 text-white text-xs lg:text-sm px-2 lg:px-3 py-1 rounded'>
+          {
+            data.stock == 0 ? (
+              <p className='text-red-500 text-sm text-center'>Out of stock</p>
+            ) : (
+<button className='border px-2 py-1 text-sm border-green-600 bg-green-100 text-green-800 hover:bg-green-200 rounded'>Add</button>
+            )
+          }
             
-            Add
-          </button>
-      </div>
+        </div>
     </div>
-
-  </Link>
+    
+    </Link>
   );
 }
 
 export default CardProduct;
+
+  

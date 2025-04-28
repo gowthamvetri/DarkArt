@@ -58,7 +58,7 @@ const ProductAdmin = () => {
     setSearch(value);
     setPage(1);
   };
-  console.log("search", search);
+
   useEffect(() => {
     let flag = true;
     const interval = setTimeout(() => {
@@ -92,7 +92,8 @@ const ProductAdmin = () => {
         <div className="min-h-[55vh]">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4">
             {productData.map((p, index) => {
-              return <ProductCardAdmin data={p} />;
+              return <ProductCardAdmin data={p} 
+              fetchProductData={fetchProductData}/>;
             })}
           </div>
         </div>
