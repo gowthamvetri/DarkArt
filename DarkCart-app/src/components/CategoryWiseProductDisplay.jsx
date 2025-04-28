@@ -44,14 +44,11 @@
 //     const handleScrollRight = () => {
 //         containerRef.current.scrollBy({ left: 300, behavior: 'smooth' });
 //       };
-      
+
 //       const handleScrollLeft = () => {
 //         containerRef.current.scrollBy({ left: -300, behavior: 'smooth' });
 //       };
-      
 
-
-  
 //   return (
 //     <div>
 //       <div>
@@ -69,7 +66,6 @@
 //                             )
 //                         })
 //                     }
-
 
 //                     {
 //                         data.map((p, index) => {
