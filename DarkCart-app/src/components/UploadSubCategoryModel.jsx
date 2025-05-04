@@ -99,7 +99,7 @@ console.log(response);
   const isSubmitDisabled = !subCategoryData.name || !subCategoryData.image || subCategoryData.category.length === 0;
 
   return (
-    <section className='fixed top-0 bottom-0 left-0 right-0 bg-black/30 backdrop-blur-md flex items-center justify-center z-50'>
+    <section className='fixed top-0 bottom-0 left-0 right-0 bg-black/20 backdrop-blur-md flex items-center justify-center z-50'>
       <div className='w-full max-w-5xl bg-white p-4 rounded shadow-lg'>
         <div className='flex items-center justify-between'>
           <h1 className='text-xl font-semibold'>Add Sub Category</h1>

@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer'
 import toast, { Toaster } from 'react-hot-toast';
@@ -13,6 +13,7 @@ import SummaryApi from './common/SummaryApi';
 
 export default function App() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const user = useSelector((state)=> state?.user)
 
   const fetchUser = async () => {
@@ -21,7 +22,7 @@ export default function App() {
       dispatch(setUserDetails(response.data));
     }
     catch(error){
-      toast.error("Failed to load user info! Please Login")
+      navigate("/login");
     }
   }
 

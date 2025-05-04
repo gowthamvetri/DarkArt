@@ -70,14 +70,14 @@ function UserMenue({close}) {
             {
              isAdmin(user.role)&&(
                 
-                 <Link onClick={handleClose} to="/dashboard/upload-product" className='p-2 hover:bg-red-100'>Product</Link>
+                 <Link onClick={handleClose} to="/dashboard/product" className='p-2 hover:bg-red-100'>Product</Link>
              )
 
             }
             {
              isAdmin(user.role)&&(
                 
-                 <Link onClick={handleClose} to="/dashboard/product" className='p-2 hover:bg-red-100'>Upload Product</Link>
+                 <Link onClick={handleClose} to="/dashboard/upload-product" className='p-2 hover:bg-red-100'>Upload Product</Link>
              )
 
             }
