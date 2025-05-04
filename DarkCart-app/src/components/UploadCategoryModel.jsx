@@ -84,7 +84,7 @@ function UploadCategoryModel   ({close,fetchData})  {
                         value={data.name}
                         name='name'
                         onChange={handleOnChange}
-                        className='bg-blue-50 p-2 border border-blue-100 focus-within:border-primary-200 outline-none rounded'
+                        className='bg-blue-50 p-2 border border-blue-100 focus-within:border-blue-200 outline-none rounded'
             />
         </div>
         

@@ -47,7 +47,6 @@ function CategoryPage() {
     useEffect(() => {
         fetchCategory()
     }, [])
-    
     const handleDeleteCategory = async()=>{
         try {
             const response = await Axios({
@@ -59,15 +58,19 @@ function CategoryPage() {
 
             if(responseData.success){
                 toast.success(responseData.message)
-                fetchCategory()
-                setOpenConfirmBoxDelete(false)
+                if(responseData.success){
+                
+                    setOpenConfirmBoxDelete(false); 
+                    fetchCategory(); 
+                }
+                
             }
         } catch (error) {
             AxiosTostError(error)
         }
     }
     return (
-        <section>
+        <section className=''>
             <div className='p-2 font-semibold bg-white shadow-md flex items-center justify-between'>
                 <h2 className='font-light'>Catgeory</h2>
                 <button onClick={() => setOpenUploadCategory(true)}
