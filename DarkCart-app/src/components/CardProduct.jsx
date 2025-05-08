@@ -7,42 +7,15 @@ import { pricewithDiscount } from "../utils/PriceWithDiscount";
 import SummaryApi from "../common/SummaryApi";
 import Axios from "../utils/Axios";
 import AxiosTostError from "../utils/AxiosTostError"
-import { set } from "mongoose";
 import toast from "react-hot-toast";
 import { useGlobalContext } from "../provider/GlobalProvider";
+import AddToCartButton from "./AddToCartButton";
+
+
 function CardProduct({ data }) {
   const url = `/product/${validURLConvert(data.name)}-${data._id}`;
   const [loading, setLoading] = useState(false);
-  const {fetchCartItems} = useGlobalContext()
-  const handleADDToCart = async(e) => {
-    e.preventDefault()
-    e.stopPropagation()
-    // console.log(data._id)
-    try {
-      setLoading(true)
-
-      const response = await Axios({
-        ...SummaryApi.addToCart,
-        data : {
-          productId : data?._id
-        }
-      })
-
-      const {data:responseData} = response
-      if(responseData.success) {
-        toast.success("Product added to cart")
-        if(fetchCartItems){
-          fetchCartItems()
-        }
-      }
-    } catch (error) {
-      AxiosTostError(error)
-    }
-    finally {
-      setLoading(false)
-    }
-  };
-
+  
   return (
     <Link
       to={url}
@@ -83,9 +56,7 @@ function CardProduct({ data }) {
           {data.stock == 0 ? (
             <p className="text-red-500 text-sm text-center">Out of stock</p>
           ) : (
-            <button onClick={handleADDToCart} className="border px-2 py-1 text-sm border-green-600 bg-green-100 text-green-800 hover:bg-green-200 rounded">
-              Add
-            </button>
+            <AddToCartButton data={data} />
           )}
         </div>
       </div>

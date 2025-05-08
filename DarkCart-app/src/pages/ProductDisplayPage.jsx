@@ -10,6 +10,8 @@ import image1 from '../assets/logo.jpeg'
 import image2 from '../assets/logo.jpeg'
 import image3 from '../assets/logo.jpeg'
 import { pricewithDiscount } from '../utils/PriceWithDiscount'
+import { AddCategoryController } from '../../../server/controllers/category.controller.js'
+import AddToCartButton from '../components/AddToCartButton.jsx'
 
 const ProductDisplayPage = () => {
   const params = useParams()
@@ -197,14 +199,12 @@ const ProductDisplayPage = () => {
             <p className='text-lg text-red-500 my-2'>Out of Stock</p>
           ) : (
             <div className='my-4'>
-              <button className='my-4 px-4 py-1 bg-green-600 hover:bg-green-700 text-white rounded'>
-                Add
-              </button>
-            </div>
+            <AddToCartButton data={data}/>
+          </div>
           )
         }
        
-        <h2 className='font-semibold'>Why shop from binkeyit? </h2>
+        <h2 className='font-semibold'>Why shop from DarkCart? </h2>
         <div>
           <div className='flex items-center gap-4 my-4'>
             <img
@@ -242,8 +242,28 @@ const ProductDisplayPage = () => {
         </div>
 
             {/****only mobile */}
-            
+            <div className='my-4 grid gap-3 '>
+                <div>
+                    <p className='font-semibold'>Description</p>
+                    <p className='text-base'>{data.description}</p>
+                </div>
+                <div>
+                    <p className='font-semibold'>Unit</p>
+                    <p className='text-base'>{data.unit}</p>
+                </div>
+                {
+                  data?.more_details && Object.keys(data?.more_details).map((element,index)=>{
+                    return(
+                      <div>
+                          <p className='font-semibold'>{element}</p>
+                          <p className='text-base'>{data?.more_details[element]}</p>
+                      </div>
+                    )
+                  })
+                }
+            </div>
         </div>
+       
     </section>
   )
 }

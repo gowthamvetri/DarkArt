@@ -34,6 +34,46 @@ const GlobalProvider = ({children}) => {
           console.log(error)
         }
       }
+      const updateCartItem = async(id,qty)=>{
+        try {
+            const response = await Axios({
+              ...SummaryApi.updateCartItemQty,
+              data : {
+                _id : id,
+                qty : qty
+              }
+            })
+            const { data : responseData } = response
+  
+            if(responseData.success){
+                // toast.success(responseData.message)
+                fetchCartItems()
+                return responseData
+            }
+        } catch (error) {
+          AxiosTostError(error)
+          return error
+        }
+      }
+      const deleteCartItem = async(cartId)=>{
+        try {
+            const response = await Axios({
+              ...SummaryApi.deleteCartItem,
+              data : {
+                _id : cartId
+              }
+            })
+            const { data : responseData} = response
+  
+            if(responseData.success){
+              toast.success(responseData.message)
+              fetchCartItems()
+            }
+        } catch (error) {
+           AxiosTostError(error)
+        }
+      }
+  
 
     useEffect(()=>{
         fetchCartItems()
@@ -43,6 +83,9 @@ const GlobalProvider = ({children}) => {
     return(
         <GlobalContext.Provider value={{
           fetchCartItems,
+          updateCartItem,
+            deleteCartItem,
+          
            
         }}>
             {children}
