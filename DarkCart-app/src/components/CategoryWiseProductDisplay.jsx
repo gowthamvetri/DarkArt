@@ -119,7 +119,7 @@ function CategoryWiseProductDisplay({ id, name }) {
       });
 
       const { data: responseData } = response;
-      console.log(responseData);
+      // console.log(responseData);
       if (responseData.success) {
         setData(responseData.data);
       }

@@ -122,8 +122,8 @@ const SubCategoryPage = () => {
   };
 
   return (
-    <section className="">
-      <div className="p-2 bg-white shadow-md flex items-center justify-between ">
+    <section className="min-h-[75vh] max-h-[75vh] overflow-y-auto">
+      <div className="p-2 bg-white shadow-md flex items-center justify-between sticky top-0 z-10">
         <h2 className="font-semibold">Sub Category</h2>
         <button
           onClick={() => setOpenAddSubCategory(true)}

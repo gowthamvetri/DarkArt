@@ -44,7 +44,7 @@ function UserProfileAvatarEdit({close}) {
   };
 
   return (
-    <section className="fixed top-0 left-0 right-0 bottom-0 bg-neutral-800 opacity-70 p-4 flex items-center justify-center">
+    <section className="fixed top-0 left-0 right-0 bottom-0 bg-neutral-800/20 p-4 flex items-center justify-center">
       <div className="bg-white max-w-sm w-full rounded p-4 flex flex-col justify-center items-center gap-3">
         {/* Profile upload and display */}
         <button className="ml-auto cursor-pointer" onClick={close} ><IoClose size={20}/></button>

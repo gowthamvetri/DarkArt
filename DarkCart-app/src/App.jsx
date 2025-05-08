@@ -7,7 +7,6 @@ import FetchUserInfo from './utils/FetchUserInfo';
 import { useDispatch, useSelector } from 'react-redux';
 import { setUserDetails } from './store/userSlice';
 import { setAllCategory, setLoadingCategory ,setAllSubCategory} from './store/productSlice';
-
 import Axios from './utils/Axios';
 import SummaryApi from './common/SummaryApi.js';
 import "./App.css"
@@ -61,11 +60,29 @@ export default function App() {
       dispatch(setLoadingCategory(false))
     }
   }
+
+  const fetchCartItems = async()=>{
+    try {
+      const response = await Axios({
+        ...SummaryApi.getCart
+      })
+
+      const { data : responseData } = response
+      if(responseData.success){
+        // dispatch(setCartItems(responseData.data))
+        console.log(responseData.data)
+      }
+
+    } catch (error) {
+      console.log(error)
+    }
+  }
     
     useEffect(()=>{
       fetchUser();
       fetchCategory();
       fetchSubCategory();
+      fetchCartItems();
   },[])
 
   return (

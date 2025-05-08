@@ -89,11 +89,11 @@ console.log(params)
             <Link
               to={link}
               key={index}
-              className={`w-full p-2 flex flex-col lg:flex-row items-center lg:h-16 gap-2 lg:gap-4 border-b hover:bg-green-100 cursor-pointer ${
+              className={`w-full p-2 flex flex-col lg:flex-row items-center lg:h-18 gap-2 lg:gap-4 border-b hover:bg-green-200 cursor-pointer ${
                 subCategoryId === s._id ? "bg-green-100" : ""
               }`}
             >
-              <div className="w-14 h-14 flex justify-center items-center bg-white rounded">
+              <div className="w-15 h-15 flex justify-center items-center bg-white rounded">
                 <img
                   src={s.image}
                   alt="subCategory"
@@ -114,7 +114,7 @@ console.log(params)
         </div>
 
         {/* Product Cards */}
-        <div className="flex-grow overflow-y-auto p-4">
+        <div className="min-h-[70vh] max-h-[70vh] scrollbar-none flex-grow overflow-y-auto p-4">
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {data.map((p, index) => (
               <CardProduct

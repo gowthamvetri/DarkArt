@@ -10,6 +10,8 @@ function Search() {
   const locate = useLocation();
   const [isSearch, setIsSearch] = useState(false);
   const handleScreen = useMobile();
+  const location = useLocation();
+  const inputText = location.search.slice(3);
 
   useEffect(() => {
     const search = locate.pathname === "/search" ? true : false;
@@ -19,6 +21,15 @@ function Search() {
   const handleSearch = () => {
     navigate("/search");
   };
+
+  const handleOnchange = (e) => {
+    const value = e.target.value;
+    if (value.length > 0) {
+      navigate("/search?q=" + value);
+    } else {
+      navigate("/search");
+    }
+  }
 
   return (
     <div className=" min-w-[300px] lg:min-w-[420px] h-10 lg:h-12 rounded-lg border border-gray-300 flex items-center overflow-hidden text-neutral-500 focus-within:border-yellow-500 group">
@@ -42,6 +53,8 @@ function Search() {
               placeholder="Search with the grocery items"
               className="w-full h-full outline-none "
               autoFocus={true}
+              defaultValue={inputText}
+              onChange={handleOnchange}
             />
           </div>
         ) : (

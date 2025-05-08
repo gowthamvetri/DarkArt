@@ -206,7 +206,7 @@ navigate(url);
         </svg>
       </div>
 
-      <div className='container mx-auto px-4 my-2 grid grid-cols-5 md:grid-cols-8 lg:grid-cols-10  gap-2'>
+      <div className='container mx-auto px-4 lg:px-10 my-2 grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2'>
           {
             loadingCategory ? (
               new Array(12).fill(null).map((c,index)=>{

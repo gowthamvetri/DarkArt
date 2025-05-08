@@ -73,8 +73,8 @@ const ProductAdmin = () => {
   }, [search]);
 
   return (
-    <section className="">
-      <div className="p-2  bg-white shadow-md flex items-center justify-between gap-4">
+    <section className="min-h-[75vh] max-h-[75vh] overflow-y-auto">
+      <div className="p-2 bg-white shadow-md flex items-center justify-between gap-4 sticky z-10 top-0">
         <h2 className="font-semibold">Product</h2>
         <div className="h-full min-w-24 max-w-56 w-full ml-auto bg-blue-50 px-4 flex items-center gap-3 py-2 rounded  border focus-within:border-blue-200">
           <IoSearchOutline size={25} />
@@ -90,7 +90,7 @@ const ProductAdmin = () => {
       {loading && <Loading />}
       <div className="p-4 bg-blue-50 grid">
         <div className="min-h-[55vh]">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4">
+          <div className="grid grid-cols-2 sm:items-center sm:justify-center md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 p-4">
             {productData.map((p, index) => {
               return <ProductCardAdmin data={p} 
               fetchProductData={fetchProductData}/>;

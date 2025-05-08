@@ -70,8 +70,8 @@ function CategoryPage() {
         }
     }
     return (
-        <section className=''>
-            <div className='p-2 font-semibold bg-white shadow-md flex items-center justify-between'>
+        <section className='min-h-[75vh] max-h-[75vh] overflow-y-auto'>
+            <div className='p-2 font-semibold bg-white shadow-md flex items-center justify-between sticky top-0 z-10'>
                 <h2 className='font-light'>Catgeory</h2>
                 <button onClick={() => setOpenUploadCategory(true)}
                     className='text-cyan-100 font-stretch-110% border-b-blue-400 hover:bg-blue-400 px-3 py-1 rounded-md '>

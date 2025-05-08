@@ -46,6 +46,8 @@ const ProductDisplayPage = () => {
     }
   }
 
+  console.log(data.stock)
+
   useEffect(() => {
     fetchProductDetails()
   }, [params])
@@ -122,7 +124,7 @@ const ProductDisplayPage = () => {
                 <div 
                   key={`indicator-${index}`} 
                   onClick={() => setImage(index)}
-                  className={`bg-slate-200 w-3 h-3 lg:w-5 lg:h-5 rounded-full cursor-pointer transition-colors ${index === image ? "bg-green-500" : ""}`}
+                  className={`w-3 h-3 lg:w-5 lg:h-5 rounded-full cursor-pointer transition-colors ${index === image ? "bg-green-500" : "bg-slate-200"}`}
                 ></div>
               )
             })
