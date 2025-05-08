@@ -9,11 +9,11 @@ import Axios from "../utils/Axios";
 import AxiosTostError from "../utils/AxiosTostError"
 import { set } from "mongoose";
 import toast from "react-hot-toast";
-
+import { useGlobalContext } from "../provider/GlobalProvider";
 function CardProduct({ data }) {
   const url = `/product/${validURLConvert(data.name)}-${data._id}`;
   const [loading, setLoading] = useState(false);
-
+  const {fetchCartItems} = useGlobalContext()
   const handleADDToCart = async(e) => {
     e.preventDefault()
     e.stopPropagation()
@@ -31,6 +31,9 @@ function CardProduct({ data }) {
       const {data:responseData} = response
       if(responseData.success) {
         toast.success("Product added to cart")
+        if(fetchCartItems){
+          fetchCartItems()
+        }
       }
     } catch (error) {
       AxiosTostError(error)
