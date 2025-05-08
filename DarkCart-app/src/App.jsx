@@ -11,8 +11,8 @@ import Axios from './utils/Axios';
 import SummaryApi from './common/SummaryApi.js';
 import GlobalProvider from './provider/GlobalProvider';
 import CartMobileLink from './components/CartMobile.jsx';
-import "./App.css"
-import "./index.css"
+
+
 
 export default function App() {
   const dispatch = useDispatch();

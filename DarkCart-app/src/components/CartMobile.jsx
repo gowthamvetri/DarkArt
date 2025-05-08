@@ -9,9 +9,7 @@ const CartMobileLink = () => {
   const { totalPrice, totalQty } = useGlobalContext(); // Accessing global context
   const cartItem = useSelector((state) => state.cartItem.cart); // Accessing cart items from redux
 
-  // Debugging: Log totalQty and totalPrice to check if values are correct
-  console.log("Total Quantity: ", totalQty);
-  console.log("Total Price: ", totalPrice);
+
 
   return (
     <>

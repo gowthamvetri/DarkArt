@@ -91,10 +91,10 @@ const GlobalProvider = ({ children }) => {
     }, 0);
     setTotalPrice(tPrice);
 
-    const notDiscountPrice = cartItem.reduce((preve, curr) => {
+    const notDiscountTotalPrice = cartItem.reduce((preve, curr) => {
       return preve + curr?.productId?.price * curr.quantity;
     }, 0);
-    setNotDiscountTotalPrice(notDiscountPrice);
+    setNotDiscountTotalPrice(notDiscountTotalPrice);
   }, [cartItem]);
 
   useEffect(() => {
@@ -108,6 +108,7 @@ const GlobalProvider = ({ children }) => {
         deleteCartItem,
         totalPrice,
         totalQty,
+        notDiscountTotalPrice
       }}
     >
       {children}

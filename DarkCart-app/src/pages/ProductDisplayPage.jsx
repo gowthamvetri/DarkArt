@@ -6,11 +6,10 @@ import AxiosTostError from '../utils/AxiosTostError'
 import { FaAngleRight, FaAngleLeft } from "react-icons/fa6";
 import { DisplayPriceInRupees } from '../utils/DisplayPriceInRupees'
 import Divider from '../components/Divider'
-import image1 from '../assets/logo.jpeg'
-import image2 from '../assets/logo.jpeg'
-import image3 from '../assets/logo.jpeg'
+import image1 from '../assets/noData.jpg'
+import image2 from '../assets/noData.jpg'
+import image3 from '../assets/noData.jpg'
 import { pricewithDiscount } from '../utils/PriceWithDiscount'
-import { AddCategoryController } from '../../../server/controllers/category.controller.js'
 import AddToCartButton from '../components/AddToCartButton.jsx'
 
 const ProductDisplayPage = () => {
