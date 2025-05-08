@@ -252,15 +252,16 @@ const ProductDisplayPage = () => {
                     <p className='text-base'>{data.unit}</p>
                 </div>
                 {
-                  data?.more_details && Object.keys(data?.more_details).map((element,index)=>{
-                    return(
-                      <div>
-                          <p className='font-semibold'>{element}</p>
-                          <p className='text-base'>{data?.more_details[element]}</p>
-                      </div>
-                    )
-                  })
-                }
+  data?.more_details && Object.keys(data?.more_details).map((element,index)=>{
+    return(
+      <div key={`mobile-details-${element}-${index}`}>
+          <p className='font-semibold'>{element}</p>
+          <p className='text-base'>{data?.more_details[element]}</p>
+      </div>
+    )
+  })
+}
+
             </div>
         </div>
        

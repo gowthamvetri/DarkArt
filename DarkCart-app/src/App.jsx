@@ -10,6 +10,7 @@ import { setAllCategory, setLoadingCategory ,setAllSubCategory} from './store/pr
 import Axios from './utils/Axios';
 import SummaryApi from './common/SummaryApi.js';
 import GlobalProvider from './provider/GlobalProvider';
+import CartMobileLink from './components/CartMobile.jsx';
 import "./App.css"
 import "./index.css"
 
@@ -79,6 +80,11 @@ export default function App() {
       </main>
       <Footer/>
       <Toaster/>
+      {
+        location.pathname !== '/checkout' && (
+          <CartMobileLink/>
+        )
+      }
     </GlobalProvider>
   );
 }

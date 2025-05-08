@@ -10,6 +10,7 @@ import { GoTriangleDown } from "react-icons/go";
 import { GoTriangleUp } from "react-icons/go";
 import UserMenue from "./UserMenue";
 import { DisplayPriceInRupees } from "../utils/DisplayPriceInRupees";
+import { useGlobalContext } from "../provider/GlobalProvider";
 
 function Header() {
   const ismobile = useMobile();
@@ -19,8 +20,7 @@ function Header() {
   const [showUserMenue, setShowUserMenue] = useState(false);
 const  cartItem = useSelector((state) => state.cartItem.cart);
   const user = useSelector((state) => state?.user);
-  const [totalPrice, setTotalPrice] = useState(0);
-  const[totalQty, setTotalQty] = useState(0)
+const {totalPrice, totalQty} = useGlobalContext();
   // console.log(user);
 
   const handleUserMenu = () =>{
@@ -34,18 +34,7 @@ const  cartItem = useSelector((state) => state.cartItem.cart);
     }
     navigate('/user-menu-mobile')
   };
-  useEffect(()=>{
-        const qty = cartItem.reduce((preve,curr)=>{
-            return preve + curr.quantity
-        },0)
-        setTotalQty(qty)
-        
-             const tPrice = cartItem.reduce((preve,curr)=>{
-            return preve + (curr.productId.price * curr.quantity)
-        },0)
-        setTotalPrice(tPrice)
-
-    },[cartItem])
+ 
   return (
     <>
       <header className="h-30 lg:h-24 lg:shadow-md sticky top-0 z-40 flex items-center justify-center flex-col lg:flex-row p-4 bg-white ">
