@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer'
 import toast, { Toaster } from 'react-hot-toast';
@@ -18,6 +18,8 @@ export default function App() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const user = useSelector((state)=> state?.user)
+  const location = useLocation();
+  console.log(user)
 
   const fetchUser = async () => {
     try{
@@ -63,8 +65,6 @@ export default function App() {
     }
   }
 
-
-    
     useEffect(()=>{
       fetchUser();
       fetchCategory();

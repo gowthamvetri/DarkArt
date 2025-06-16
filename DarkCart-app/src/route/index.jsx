@@ -20,6 +20,7 @@ import ProductAdmin from '../pages/ProductAdmin';
 import ProductListPage from '../pages/ProductListPage';
 import ProductDisplayPage from '../pages/ProductDisplayPage';
 import CartMobile from '../pages/CartMobile';
+import CheckoutPage from '../pages/CheckoutPage';
 
 const router = createBrowserRouter([
     {
@@ -101,6 +102,10 @@ const router = createBrowserRouter([
                 path : 'cart',
                 element : <CartMobile/>
             },
+            {
+                path:"checkout",
+                element: <CheckoutPage/>
+            }
         ]
     }
 ])

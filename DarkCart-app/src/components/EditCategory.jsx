@@ -66,7 +66,7 @@ const EditCategory = ({ close, fetchData, data: CategoryData }) => {
         })
     }
     return (
-        <section className='fixed top-0 bottom-0 left-0 right-0 bg-black/30 backdrop-blur-md flex items-center justify-center'>
+        <section className='fixed top-0 bottom-0 left-0 right-0 bg-black/30 backdrop-blur-md flex items-center justify-center z-50'>
             <div className='bg-white max-w-4xl w-full p-4 rounded'>
                 <div className='flex items-center justify-between'>
                     <h1 className='font-semibold'>Update Category</h1>

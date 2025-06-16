@@ -34,7 +34,7 @@ function CardProduct({ data }) {
         <div>
           {Boolean(data.discount) && (
             <p className="text-green-600 bg-green-100 px-2 w-fit text-xs rounded-full">
-              {data.discount}% discount
+              {data.discount}% off
             </p>
           )}
         </div>

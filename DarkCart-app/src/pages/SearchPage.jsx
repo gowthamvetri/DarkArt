@@ -17,7 +17,6 @@ function SearchPage() {
   const [totalPage, setTotalPage] = useState(0);
   const perams = useLocation();
   const searchText = perams?.search?.slice(3);
-  console.log(searchText);
 
   const fetchData = async () => {
     try {

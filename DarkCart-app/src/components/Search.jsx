@@ -124,7 +124,7 @@ function Search() {
 
   return (
     <div
-      className={`min-w-[300px] h-10 lg:h-12 rounded-full border border-blue-300 flex items-center overflow-hidden transition-all duration-300 ease-in-out focus-within:shadow-lg focus-within:border-blue-500 bg-blue-50 ${
+      className={`min-w-[300px] h-10 lg:h-12 rounded-full border border-gray-300 flex items-center overflow-hidden transition-all duration-300 ease-in-out focus-within:shadow-lg   ${
         isSearch ? "lg:w-[520px]" : "lg:w-[420px]"
       }`}
     >
@@ -181,7 +181,7 @@ function Search() {
               ]}
               speed={50}
               repeat={Infinity}
-              className="text-blue-400"
+              className="text-slate-400"
             />
           </div>
         )}
@@ -189,5 +189,7 @@ function Search() {
     </div>
   );
 }
+
+
 
 export default Search;
