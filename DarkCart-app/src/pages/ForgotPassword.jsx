@@ -63,16 +63,21 @@ function ForgotPassword() {
   }
 
   return (
-    <section className="w-full container mx-auto p-2">
-      <div className="bg-white my-3 w-full max-w-lg mx-auto p-8 rounded">
+    <section className="w-full container mx-auto p-4 min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="bg-white w-full max-w-lg mx-auto p-8 rounded-lg shadow-xl border border-gray-200">
+        
+        <div className="text-center mb-6">
+          <h2 className="text-2xl font-bold text-gray-900 font-serif mb-2">Forgot Password</h2>
+          <p className="text-gray-600">Enter your email to receive a verification code</p>
+        </div>
 
-        <form method="POST" action="" className="grid gap-4 mt-6" onSubmit={handleSubmit}>
+        <form method="POST" action="" className="grid gap-6 mt-6" onSubmit={handleSubmit}>
           
           <div className="grid gap-2">
-            <label htmlFor="email">Email:</label>
+            <label htmlFor="email" className="font-medium text-gray-700">Email:</label>
             <input
               id="email"
-              className="w-full bg-blue-50 p-2 border rounded border-gray-300 outline-none focus:border-yellow-500"
+              className="w-full bg-gray-50 p-3 border border-gray-300 rounded-md outline-none focus:border-black focus:bg-white transition-colors"
               name="email"
               value={userInfo.email}
               onChange={handleChange}
@@ -82,12 +87,17 @@ function ForgotPassword() {
           </div>
           
 
-          <button disabled={!checkAllFields()} className={`w-full ${ checkAllFields() ? "bg-green-800 hover:bg-green-700" : "bg-gray-500" } text-white px-4 py-3 rounded-sm cursor-pointer`}>
+          <button disabled={!checkAllFields()} className={`w-full px-4 py-3 rounded-md font-semibold tracking-wide transition-colors ${ checkAllFields() ? "bg-black hover:bg-gray-800 text-white" : "bg-gray-200 text-gray-500 cursor-not-allowed" }`}>
             Send OTP
           </button>
         </form>
 
-        <p className="text-center mt-4">Have an account? <Link className="text-green-700" to={"/login"}>Login</Link></p>
+        <p className="text-center mt-6 text-gray-600">
+          Have an account? 
+          <Link className="text-black hover:text-gray-800 font-medium ml-1 underline" to={"/login"}>
+            Login
+          </Link>
+        </p>
       </div>
     </section>
   );

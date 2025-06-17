@@ -99,36 +99,40 @@ console.log(response);
   const isSubmitDisabled = !subCategoryData.name || !subCategoryData.image || subCategoryData.category.length === 0;
 
   return (
-    <section className='fixed top-0 bottom-0 left-0 right-0 bg-black/20 backdrop-blur-md flex items-center justify-center z-50'>
-      <div className='w-full max-w-5xl bg-white p-4 rounded shadow-lg'>
-        <div className='flex items-center justify-between'>
-          <h1 className='text-xl font-semibold'>Add Sub Category</h1>
-          <button onClick={close}>
+    <section className='fixed top-0 bottom-0 left-0 right-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4'>
+      <div className='w-full max-w-5xl bg-white p-6 rounded-lg shadow-xl border border-gray-100'>
+        <div className='flex items-center justify-between mb-6'>
+          <h1 className='text-xl font-bold text-gray-900 font-serif'>Add Sub Category</h1>
+          <button 
+            onClick={close}
+            className='text-gray-400 hover:text-gray-800 transition-colors p-1 rounded-full hover:bg-gray-100'
+          >
             <IoClose size={25} />
           </button>
         </div>
 
-        <form className='my-4 grid gap-4' onSubmit={handleSubmitSubCategory}>
+        <form className='my-4 grid gap-6' onSubmit={handleSubmitSubCategory}>
           {/* Name Field */}
-          <div className='grid gap-1'>
-            <label htmlFor='name'>Name</label>
+          <div className='grid gap-2'>
+            <label htmlFor='name' className='font-medium text-gray-700'>Name</label>
             <input
               id='name'
               name='name'
               value={subCategoryData.name}
               onChange={handleChange}
-              className='p-3 bg-blue-50 border rounded outline-none focus:border-blue-200'
+              placeholder='Enter subcategory name'
+              className='p-3 bg-gray-50 border border-gray-300 rounded-md outline-none focus:border-black focus:bg-white transition-colors'
             />
           </div>
 
           {/* Image Upload */}
-          <div className='grid gap-1'>
-            <label>Image</label>
-            <div className='flex flex-col lg:flex-row items-center gap-3'>
-              <div className='border h-36 w-full lg:w-36 bg-blue-50 flex items-center justify-center'>
+          <div className='grid gap-2'>
+            <label className='font-medium text-gray-700'>Image</label>
+            <div className='flex flex-col lg:flex-row items-center gap-4'>
+              <div className='border border-gray-300 h-36 w-full lg:w-36 bg-gray-50 flex items-center justify-center rounded-md overflow-hidden'>
                 {
                   !subCategoryData.image ? (
-                    <p className='text-sm text-neutral-400'>No Image</p>
+                    <p className='text-sm text-gray-400'>No Image</p>
                   ) : (
                     <img
                       alt='subCategory'
@@ -139,7 +143,7 @@ console.log(response);
                 }
               </div>
               <label htmlFor='uploadSubCategoryImage'>
-                <div className='px-4 py-1 border border-blue-100 text-blue-200 rounded hover:bg-blue-200 hover:text-neutral-900 cursor-pointer'>
+                <div className='px-6 py-3 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-100 cursor-pointer font-medium transition-colors'>
                   Upload Image
                 </div>
                 <input
@@ -153,18 +157,18 @@ console.log(response);
           </div>
 
           {/* Category Selector */}
-          <div className='grid gap-1'>
-            <label>Select Category</label>
-            <div className='border rounded focus-within:border-blue-200 p-2'>
+          <div className='grid gap-2'>
+            <label className='font-medium text-gray-700'>Select Category</label>
+            <div className='border border-gray-300 rounded-md focus-within:border-black p-3 bg-gray-50 focus-within:bg-white transition-colors'>
               {/* Selected Values */}
-              <div className='flex flex-wrap gap-2 mb-2'>
+              <div className='flex flex-wrap gap-2 mb-3'>
                 {
                   subCategoryData.category.map(cat => (
-                    <p key={cat._id} className='bg-white shadow px-2 py-1 flex items-center gap-2 rounded'>
+                    <p key={cat._id} className='bg-gray-100 border border-gray-200 px-3 py-2 flex items-center gap-2 rounded-md text-gray-700'>
                       {cat.name}
                       <button
                         type='button'
-                        className='hover:text-red-600'
+                        className='hover:text-red-600 transition-colors'
                         onClick={() => handleRemoveCategorySelected(cat._id)}
                       >
                         <IoClose size={18} />
@@ -176,7 +180,7 @@ console.log(response);
 
               {/* Dropdown */}
               <select
-                className='w-full p-2 bg-transparent outline-none border'
+                className='w-full p-2 bg-transparent outline-none border border-gray-300 rounded-md focus:border-black transition-colors'
                 onChange={handleCategorySelect}
               >
                 <option value="">Select Category</option>
@@ -194,12 +198,15 @@ console.log(response);
           {/* Submit Button */}
           <button
             type='submit'
-            className={`px-4 py-2 border rounded font-semibold transition-colors
-              ${isSubmitDisabled ? "bg-gray-200 cursor-not-allowed" : "bg-blue-200 hover:bg-blue-100"}
+            className={`px-6 py-3 rounded-md font-semibold tracking-wide transition-colors
+              ${isSubmitDisabled 
+                ? "bg-gray-200 text-gray-500 cursor-not-allowed" 
+                : "bg-black hover:bg-gray-800 text-white"
+              }
             `}
             disabled={isSubmitDisabled}
           >
-            Submit
+            Add Sub Category
           </button>
         </form>
       </div>

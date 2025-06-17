@@ -1,66 +1,114 @@
-import React from "react";
+import React, { useState } from "react";
 import { DisplayPriceInRupees } from "../utils/DisplayPriceInRupees";
 import { validURLConvert } from "../utils/validURLConvert";
-import { useState } from "react";
 import { Link } from "react-router-dom";
 import { pricewithDiscount } from "../utils/PriceWithDiscount";
-import SummaryApi from "../common/SummaryApi";
-import Axios from "../utils/Axios";
-import AxiosTostError from "../utils/AxiosTostError"
-import toast from "react-hot-toast";
 import { useGlobalContext } from "../provider/GlobalProvider";
 import AddToCartButton from "./AddToCartButton";
-
+import { FaHeart, FaRegHeart, FaStar } from "react-icons/fa";
 
 function CardProduct({ data }) {
   const url = `/product/${validURLConvert(data.name)}-${data._id}`;
   const [loading, setLoading] = useState(false);
+  const [isWishlisted, setIsWishlisted] = useState(false);
   
-  return (
-    <Link
-      to={url}
-      className="border py-2 lg:p-4 grid gap-1 lg:gap-3 min-w-36 lg:min-w-52 rounded cursor-pointer bg-white"
-    >
-      <div className="min-h-20 w-full max-h-24 lg:max-h-32 rounded overflow-hidden">
-        <img
-          src={data.image[0]}
-          className="w-full h-full object-scale-down lg:scale-125"
-        />
-      </div>
-      <div className="flex items-center gap-1">
-        <div className="rounded text-xs w-fit p-[1px] px-2 text-green-600 bg-green-50">
-          10 min
-        </div>
-        <div>
-          {Boolean(data.discount) && (
-            <p className="text-green-600 bg-green-100 px-2 w-fit text-xs rounded-full">
-              {data.discount}% off
-            </p>
-          )}
-        </div>
-      </div>
-      <div className="px-2 lg:px-0 font-medium text-ellipsis text-sm lg:text-base line-clamp-2">
-        {data.name}
-      </div>
-      <div className="w-fit gap-1 px-2 lg:px-0 text-sm lg:text-base">
-        {data.unit}
-      </div>
+  const handleWishlist = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsWishlisted(!isWishlisted);
+  };
 
-      <div className="px-2 lg:px-0 flex items-center justify-between gap-1 lg:gap-3 text-sm lg:text-base">
-        <div className="flex items-center gap-1">
-          <div className="font-semibold">
-            {DisplayPriceInRupees(pricewithDiscount(data.price, data.discount))}
+  return (
+    <div className="group relative">
+      <Link
+        to={url}
+        className="border border-gray-200 p-4 lg:p-4 grid gap-2 lg:gap-3 min-w-36 lg:min-w-52 rounded-lg cursor-pointer bg-white hover:shadow-lg transition-all duration-300 overflow-hidden"
+      >
+        {/* Product Image Container */}
+        <div className="relative min-h-32 w-full max-h-40 lg:max-h-48 rounded-md overflow-hidden bg-gray-50">
+          <img
+            src={data.image[0]}
+            alt={data.name}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          />
+          
+          {/* Wishlist Button */}
+          <button
+            onClick={handleWishlist}
+            className="absolute top-3 right-3 bg-white p-2 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-gray-100"
+          >
+            {isWishlisted ? (
+              <FaHeart size={14} className="text-red-500" />
+            ) : (
+              <FaRegHeart size={14} className="text-gray-600" />
+            )}
+          </button>
+
+          {/* Badges */}
+          <div className="absolute top-3 left-3 flex flex-col gap-2">
+            <div className="rounded-full text-xs w-fit px-3 py-1 text-white bg-black font-medium">
+              NEW
+            </div>
+            {Boolean(data.discount) && (
+              <div className="text-white bg-red-600 px-3 py-1 w-fit text-xs rounded-full font-semibold">
+                {data.discount}% OFF
+              </div>
+            )}
           </div>
         </div>
-        <div className="">
-          {data.stock == 0 ? (
-            <p className="text-red-500 text-sm text-center">Out of stock</p>
-          ) : (
-            <AddToCartButton data={data} />
-          )}
+
+        {/* Product Info */}
+        <div className="space-y-2">
+          {/* Brand/Category */}
+          <div className="text-xs text-gray-500 uppercase tracking-wider font-medium">
+            {data.category?.name || "Fashion"}
+          </div>
+
+          {/* Product Name */}
+          <div className="font-medium text-gray-900 text-ellipsis text-sm lg:text-base line-clamp-2 leading-tight">
+            {data.name}
+          </div>
+
+          {/* Rating */}
+          <div className="flex items-center gap-1">
+            <div className="flex text-yellow-400">
+              {[...Array(5)].map((_, i) => (
+                <FaStar key={i} size={10} className={i < 4 ? "text-yellow-400" : "text-gray-300"} />
+              ))}
+            </div>
+            <span className="text-xs text-gray-500">(124)</span>
+          </div>
+
+          {/* Unit/Size Info */}
+          <div className="text-xs text-gray-600 font-medium">
+            {data.unit}
+          </div>
         </div>
-      </div>
-    </Link>
+
+        {/* Price and Action Section */}
+        <div className="flex items-center justify-between gap-2 lg:gap-3 text-sm lg:text-base pt-2 border-t border-gray-100">
+          <div className="flex flex-col">
+            <div className="font-bold text-gray-900">
+              {DisplayPriceInRupees(pricewithDiscount(data.price, data.discount))}
+            </div>
+            {Boolean(data.discount) && (
+              <div className="text-xs text-gray-500 line-through">
+                {DisplayPriceInRupees(data.price)}
+              </div>
+            )}
+          </div>
+          <div className="flex-shrink-0">
+            {data.stock == 0 ? (
+              <div className="text-red-600 text-xs text-center font-medium bg-red-50 px-3 py-2 rounded-md">
+                Out of Stock
+              </div>
+            ) : (
+              <AddToCartButton data={data} />
+            )}
+          </div>
+        </div>
+      </Link>
+    </div>
   );
 }
 

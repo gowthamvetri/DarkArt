@@ -70,12 +70,12 @@ function CategoryPage() {
         }
     }
     return (
-        <section className='min-h-[75vh] max-h-[75vh] overflow-y-auto'>
-            <div className='p-2 font-semibold bg-white shadow-md flex items-center justify-between sticky top-0 z-10'>
-                <h2 className='font-light'>Catgeory</h2>
+        <section className='min-h-[75vh] max-h-[75vh] overflow-y-auto bg-gray-50'>
+            <div className='p-4 font-semibold bg-white shadow-md flex items-center justify-between sticky top-0 z-10 border-b border-gray-200'>
+                <h2 className='font-bold text-xl text-gray-900 font-serif'>Categories</h2>
                 <button onClick={() => setOpenUploadCategory(true)}
-                    className='text-cyan-100 font-stretch-110% border-b-blue-400 hover:bg-blue-400 px-3 py-1 rounded-md '>
-                    Add Cateogry
+                    className='bg-black text-white hover:bg-gray-800 px-4 py-2 rounded-md font-medium tracking-wide transition-colors'>
+                    Add Category
                 </button>
             </div>
             {
@@ -88,23 +88,26 @@ function CategoryPage() {
                 {
                     categoryData.map((category, index) => {
                         return (
-                            <div className='w-40 p-3 rounded shadow-md' key={category._id}>
-                                <img
-                                    alt={category.name}
-                                    src={category.image}
-                                    className='w-full object-scale-down'
-                                />
-                                <div className='items-center h-9 flex gap-2'>
+                            <div className='w-40 p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow border border-gray-200' key={category._id}>
+                                <div className='h-24 mb-3 bg-gray-50 rounded-md overflow-hidden border border-gray-100'>
+                                    <img
+                                        alt={category.name}
+                                        src={category.image}
+                                        className='w-full h-full object-scale-down'
+                                    />
+                                </div>
+                                <h3 className='text-sm font-medium text-gray-900 text-center mb-3 truncate'>{category.name}</h3>
+                                <div className='flex gap-2'>
                                     <button onClick={() => {
                                         setOpenEdit(true)
                                         setEditData(category)
-                                    }} className='flex-1 bg-green-100 hover:bg-green-200 text-green-600 font-medium py-1 rounded'>
+                                    }} className='flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-gray-900 font-medium py-2 rounded-md transition-colors border border-gray-300'>
                                         Edit
                                     </button>
                                     <button onClick={() => {
                                         setOpenConfirmBoxDelete(true)
                                         setDeleteCategory(category)
-                                    }} className='flex-1 bg-red-100 hover:bg-red-200 text-red-600 font-medium py-1 rounded'>
+                                    }} className='flex-1 bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 font-medium py-2 rounded-md transition-colors border border-red-300'>
                                         Delete
                                     </button>
                                 </div>
@@ -116,7 +119,9 @@ function CategoryPage() {
 
             {
                 loading && (
-                    <Loading />
+                    <div className='flex justify-center items-center h-64'>
+                        <Loading />
+                    </div>
                 )
             }
 

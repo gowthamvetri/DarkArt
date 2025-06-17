@@ -64,7 +64,7 @@ function UploadCategoryModel   ({close,fetchData})  {
     }
   
   return (
-<section className='fixed top-0 bottom-0 left-0 right-0 bg-black/30 backdrop-blur-md flex items-center justify-center z-50'>
+<section className='fixed top-0 bottom-0 left-0 right-0 bg-black/20 bg-opacity-70 backdrop-blur-sm flex items-center justify-center z-50'>
 <div className='bg-white max-w-4xl w-full p-4 rounded'>
     <div className='flex items-center justify-between'>
         <h1 className='font-semibold text-lg'>
@@ -84,7 +84,7 @@ function UploadCategoryModel   ({close,fetchData})  {
                         value={data.name}
                         name='name'
                         onChange={handleOnChange}
-                        className='bg-blue-50 p-2 border border-blue-100 focus-within:border-blue-200 outline-none rounded'
+                        className='bg-gray-50 p-3 border border-gray-300 focus:border-black focus:bg-white outline-none rounded-md transition-colors'
             />
         </div>
         
@@ -93,7 +93,7 @@ function UploadCategoryModel   ({close,fetchData})  {
              Image
             </p>
             <div className='flex gap-4 flex-col  lg:flex-row items-center'>
-            <div className='border bg-blue-50 h-52 w-full lg:w-52  flex items-center justify-center rounded'>
+            <div className='border bg-gray-50 border-gray-300 h-52 w-full lg:w-52 flex items-center justify-center rounded-md'>
                 {
                     data.image ? (
                         <img 
@@ -110,8 +110,8 @@ function UploadCategoryModel   ({close,fetchData})  {
             </div>
             <label htmlFor='uploadCategoryImage' className='flex items-center gap-2'>
             <div  className={`
-            ${!data.name ? 'bg-gray-300' : 'border-blue-200 hover:bg-blue-100'}
-            p-2 rounded text-blue-300 w-full lg:w-52 border  font-medium
+            ${!data.name ? 'bg-gray-300' : 'border-gray-300 hover:bg-gray-100'}
+            p-3 rounded-md text-gray-700 w-full lg:w-52 border  font-medium transition-colors cursor-pointer
             `}
             >Upload Image</div>
             <input disabled={!data.name} onChange={handleUploadCategoryImage} type='file' id='uploadCategoryImage' hidden/>
@@ -121,9 +121,10 @@ function UploadCategoryModel   ({close,fetchData})  {
            </div>
        <button
        className={`
-        ${!data.name && data.image ? 'bg-gray-300  hover:bg-blue-100' : 'bg-blue-300 hover:bg-blue-200'}
-        py-2
+        ${!data.name && data.image ? 'bg-gray-300  hover:bg-blue-100' : 'bg-black hover:bg-gray-800 text-white'}
+        py-3
         font-semibold
+        rounded-md tracking-wide transition-colors
         `}
         >Add category</button>
     </form>

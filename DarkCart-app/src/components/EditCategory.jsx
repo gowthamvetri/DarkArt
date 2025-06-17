@@ -66,7 +66,7 @@ const EditCategory = ({ close, fetchData, data: CategoryData }) => {
         })
     }
     return (
-        <section className='fixed top-0 bottom-0 left-0 right-0 bg-black/30 backdrop-blur-md flex items-center justify-center z-50'>
+        <section className='fixed top-0 bottom-0 left-0 right-0 bg-black/20 bg-opacity-70 backdrop-blur-sm flex items-center justify-center z-50'>
             <div className='bg-white max-w-4xl w-full p-4 rounded'>
                 <div className='flex items-center justify-between'>
                     <h1 className='font-semibold'>Update Category</h1>
@@ -84,13 +84,13 @@ const EditCategory = ({ close, fetchData, data: CategoryData }) => {
                             value={data.name}
                             name='name'
                             onChange={handleOnChange}
-                            className='bg-blue-50 p-2 border border-blue-100 focus-within:border-blue-200 outline-none rounded'
+                            className='bg-gray-50 p-3 border border-gray-300 focus:border-black focus:bg-white outline-none rounded-md transition-colors'
                         />
                     </div>
                     <div className='grid gap-1'>
                         <p>Image</p>
                         <div className='flex gap-4 flex-col lg:flex-row items-center'>
-                            <div className='border bg-blue-50 h-36 w-full lg:w-36 flex items-center justify-center rounded'>
+                            <div className='border bg-gray-50 border-gray-300 h-36 w-full lg:w-36 flex items-center justify-center rounded-md'>
                                 {
                                     data.image ? (
                                         <img

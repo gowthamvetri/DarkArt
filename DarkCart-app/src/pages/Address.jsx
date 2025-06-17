@@ -34,43 +34,51 @@ function Address() {
 
   return (
     <div className="">
-      <div className="bg-white p-4 mb-4 shadow-lg flex justify-between items-center rounded-lg">
-        <h1 className=" font-semibold text-ellipsis line-clamp-1">Address</h1>
+      <div className="bg-white p-4 mb-4 shadow-lg flex justify-between items-center rounded-lg border border-gray-200">
+        <h1 className="font-bold text-xl text-gray-900 font-serif text-ellipsis line-clamp-1">
+          Delivery Addresses
+        </h1>
         <button
           onClick={() => setOpenAddress(true)}
-          className="border-2 border-yellow-400 text-yellow-400 px-3 py-1 rounded-full hover:bg-yellow-400 hover:text-white"
+          className="border-2 border-black text-black px-4 py-2 rounded-md hover:bg-black hover:text-white transition-colors font-medium tracking-wide"
         >
           Add Address
         </button>
       </div>
-      <div className="bg-blue-50 p-2">
+      <div className="bg-gray-50 p-2">
         {addressList.map((address, index) => (
           <div
             key={address._id}
-            className={`${address.status ? "bg-gray-100" : "hidden"} bg-white p-4 mb-4 rounded-lg shadow hover:shadow-lg transition-shadow duration-200 flex gap-4`}
+            className={`${
+              address.status ? "bg-white" : "hidden"
+            } p-4 mb-4 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 flex gap-4 border border-gray-200`}
           >
             <div className="w-full">
-              <h4 className="font-semibold">{address.address_line}</h4>
-              <p>
+              <h4 className="font-semibold text-gray-900">
+                {address.address_line}
+              </h4>
+              <p className="text-gray-600">
                 {address.city}, {address.state} - {address.pincode}
               </p>
-              <p>{address.country}</p>
-              <p>Mobile: {address.mobile}</p>
+              <p className="text-gray-600">{address.country}</p>
+              <p className="text-gray-700 font-medium">
+                Mobile: {address.mobile}
+              </p>
             </div>
 
-            <div className="flex flex-col justify-between items-center">
+            <div className="flex flex-col justify-between items-center gap-2">
               <button
                 onClick={() => {
                   setOpenEdit(true);
                   setEditData(address);
                 }}
-                className="bg-green-200 p-2 rounded hover:bg-green-600 hover:text-white transition-colors"
+                className="bg-gray-100 border border-gray-300 p-2 rounded-md hover:bg-gray-200 hover:text-gray-900 transition-colors"
               >
                 <MdEdit size={20} />
               </button>
               <button
                 onClick={() => handleDelete(address._id)}
-                className="bg-red-200 p-2 rounded hover:bg-red-600 hover:text-white transition-colors"
+                className="bg-red-50 border border-red-300 text-red-600 p-2 rounded-md hover:bg-red-100 hover:text-red-700 transition-colors"
               >
                 <MdDelete size={20} />
               </button>
@@ -80,9 +88,9 @@ function Address() {
       </div>
       <div
         onClick={() => setOpenAddress(true)}
-        className="h-16 bg-blue-50 border-2 border-dashed border-blue-300 rounded-lg flex items-center justify-center cursor-pointer hover:bg-blue-100 transition-colors duration-200"
+        className="h-16 bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-100 transition-colors duration-200"
       >
-        Add address
+        <span className="text-gray-600 font-medium">Add address</span>
       </div>
 
       {openAddress && <AddAddress close={() => setOpenAddress(false)} />}

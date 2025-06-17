@@ -9,26 +9,24 @@ const CartMobileLink = () => {
   const { totalPrice, totalQty } = useGlobalContext(); // Accessing global context
   const cartItem = useSelector((state) => state.cartItem.cart); // Accessing cart items from redux
 
-
-
   return (
     <>
       {/* Only show if cart has items */}
       {cartItem.length > 0 && (
         <div className="sticky bottom-4 p-2">
-          <div className="bg-green-600 px-2 py-1 rounded text-neutral-100 text-sm flex items-center justify-between gap-3 lg:hidden">
-            <div className="flex items-center gap-2">
-              <div className="p-2 bg-green-500 rounded w-fit">
-                <FaCartShopping />
+          <div className="bg-black px-4 py-3 rounded-lg text-white text-sm flex items-center justify-between gap-3 lg:hidden shadow-lg border border-gray-800">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-gray-800 rounded-md w-fit">
+                <FaCartShopping size={16} />
               </div>
               <div className="text-xs">
-                <p>{totalQty} items</p>
-                <p>{DisplayPriceInRupees(totalPrice)}</p>
+                <p className="font-medium">{totalQty} items</p>
+                <p className="font-semibold text-sm">{DisplayPriceInRupees(totalPrice)}</p>
               </div>
             </div>
 
             {/* Link to the Cart */}
-            <Link to="/cart" className="flex items-center gap-1">
+            <Link to="/cart" className="flex items-center gap-2 bg-white text-black px-4 py-2 rounded-md hover:bg-gray-100 transition-colors font-medium">
               <span className="text-sm">View Cart</span>
               <FaCaretRight />
             </Link>

@@ -78,29 +78,29 @@ console.log(params)
   }, [params, AllSubCategory]);
 
   return (
-    <section className="sticky top-24 lg:top-20">
+    <section className="sticky top-24 lg:top-20 bg-gray-50">
     <div className="container mx-auto flex gap-4">
 
       {/* Sidebar - Sub Category */}
-      <div className="w-[90px] md:w-[200px] lg:w-[280px] min-h-[88vh] max-h-[88vh] overflow-y-auto bg-white py-2 shadow-md rounded-md flex-shrink-0 hide-scrollbar">
+      <div className="w-[90px] md:w-[200px] lg:w-[280px] min-h-[88vh] max-h-[88vh] overflow-y-auto bg-white py-2 shadow-sm rounded-lg border border-gray-200 flex-shrink-0 hide-scrollbar">
         {DisplaySubCatory.map((s, index) => {  
           const link = `/${validURLConvert(s?.categoryId[0]?.name)}-${s?.categoryId[0]?._id}/${validURLConvert(s.name)}-${s._id}`;
           return (
             <Link
               to={link}
               key={index}
-              className={`w-full p-2 flex flex-col lg:flex-row items-center lg:h-18 gap-2 lg:gap-4 border-b hover:bg-green-200 cursor-pointer ${
-                subCategoryId === s._id ? "bg-green-100" : ""
+              className={`w-full p-3 flex flex-col lg:flex-row items-center lg:h-18 gap-2 lg:gap-4 border-b border-gray-100 hover:bg-gray-100 cursor-pointer transition-colors ${
+                subCategoryId === s._id ? "bg-gray-200 border-l-4 border-l-black" : ""
               }`}
             >
-              <div className="w-15 h-15 flex justify-center items-center bg-white rounded">
+              <div className="w-15 h-15 flex justify-center items-center bg-gray-50 rounded-md border border-gray-200">
                 <img
                   src={s.image}
                   alt="subCategory"
                   className="w-full h-full object-contain"
                 />
               </div>
-              <p className="text-xs lg:text-base text-center lg:text-left">{s.name}</p>
+              <p className="text-xs lg:text-base text-center lg:text-left text-gray-900 font-medium">{s.name}</p>
             </Link>
           );
         })}
@@ -109,12 +109,12 @@ console.log(params)
       {/* Main Content - Products */}
       <div className="flex-grow flex flex-col">
         {/* Subcategory Title */}
-        <div className="bg-white shadow-md p-4 sticky top-20 z-10">
-          <h3 className="font-semibold text-lg">{subCategoryName}</h3>
+        <div className="bg-white shadow-sm p-4 sticky top-20 z-10 rounded-lg border border-gray-200 mb-4">
+          <h3 className="font-bold text-xl text-gray-900 font-serif">{subCategoryName}</h3>
         </div>
 
         {/* Product Cards */}
-        <div className="min-h-[70vh] max-h-[70vh] scrollbar-none flex-grow overflow-y-auto p-4">
+        <div className="min-h-[70vh] max-h-[70vh] scrollbar-none flex-grow overflow-y-auto p-4 bg-white rounded-lg shadow-sm border border-gray-200">
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {data.map((p, index) => (
               <CardProduct
@@ -124,7 +124,11 @@ console.log(params)
             ))}
           </div>
 
-          {loading && <Loading />}
+          {loading && (
+            <div className="flex justify-center items-center py-8">
+              <Loading />
+            </div>
+          )}
         </div>
       </div>
 

@@ -10,66 +10,24 @@ import UserMenue from "./UserMenue";
 import { DisplayPriceInRupees } from "../utils/DisplayPriceInRupees";
 import { useGlobalContext } from "../provider/GlobalProvider";
 import DisplayCartItem from "./DisplayCartItem";
-import logo from "../assets/shopping-cart.png";
-import darkrt from "../assets/logo.jpeg"
 import "../App.css";
 
-// Animated SVG Logo Component
-const AnimatedLogo = () => {
+// Fashion Logo Component
+const FashionLogo = () => {
   return (
-    <svg viewBox="0 0 300 120" width="220" height="80" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#87CEEB">
-            <animate 
-              attributeName="stop-color" 
-              values="#87CEEB; #A7D8FF; #87CEEB" 
-              dur="8s" 
-              repeatCount="indefinite" 
-            />
-          </stop>
-          <stop offset="50%" stopColor="#A7D8FF">
-            <animate 
-              attributeName="stop-color" 
-              values="#A7D8FF; #B0E4FF; #A7D8FF" 
-              dur="8s" 
-              repeatCount="indefinite" 
-            />
-          </stop>
-          <stop offset="100%" stopColor="#B0E4FF">
-            <animate 
-              attributeName="stop-color" 
-              values="#B0E4FF; #D1F3FF; #B0E4FF" 
-              dur="8s" 
-              repeatCount="indefinite" 
-            />
-          </stop>
-        </linearGradient>
-
-        <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-          <feGaussianBlur stdDeviation="3" result="blur" />
-          <feComposite in="SourceGraphic" in2="blur" operator="over" />
-        </filter>
-      </defs>
-    
-      <rect width="300" height="120" fill="transparent" />
-      
-      <circle cx="70" cy="60" r="15" fill="url(#logoGradient)" opacity="0.2">
-        <animate attributeName="r" values="15;22;15" dur="4s" repeatCount="indefinite" />
-      </circle>
-      <circle cx="230" cy="60" r="12" fill="url(#logoGradient)" opacity="0.15">
-        <animate attributeName="r" values="12;18;12" dur="5s" repeatCount="indefinite" />
-      </circle>
-      
-      <text x="150" y="70" fontFamily="Arial, sans-serif" fontSize="48" fontWeight="bold" textAnchor="middle" fill="url(#logoGradient)" filter="url(#glow)">DARKCART</text>
-      
-      <line x1="45" y1="85" x2="255" y2="85" stroke="url(#logoGradient)" strokeWidth="3" strokeLinecap="round">
-        <animate attributeName="x1" values="150;45;45" dur="2s" begin="0s" fill="freeze" />
-        <animate attributeName="x2" values="150;255;255" dur="2s" begin="0s" fill="freeze" />
-        <animate attributeName="stroke-width" values="0;3;3" dur="2s" begin="0s" fill="freeze" />
-        <animate attributeName="opacity" values="0;0.7;1" dur="3s" begin="0s" fill="freeze" />
-      </line>
-    </svg>
+    <div className="flex items-center space-x-3">
+      <div className="w-10 h-10 bg-black text-white flex items-center justify-center font-bold text-xl tracking-wider">
+        CC
+      </div>
+      <div className="flex flex-col">
+        <span className="md:text-2xl font-bold text-black tracking-wider font-serif ">
+          CASUAL CLOTHINGS
+        </span>
+        <span className="text-xs text-gray-500 tracking-widest uppercase">
+          Fashion
+        </span>
+      </div>
+    </div>
   );
 };
 
@@ -82,11 +40,7 @@ function Header() {
   const cartItem = useSelector((state) => state.cartItem.cart);
   const user = useSelector((state) => state?.user);
   const { totalPrice, totalQty } = useGlobalContext();
-  const [openUserMenu, setOpenUserMenu] = useState(false);
   const [openCartSection, setOpenCartSection] = useState(false);
-  
-  // Adjust header height to accommodate larger logo
-  const headerHeight = "h-36 lg:h-25";
 
   const handleUserMenu = () => {
     setShowUserMenue(false);
@@ -102,55 +56,51 @@ function Header() {
 
   return (
     <>
-      <header className={`${headerHeight} lg:shadow-md sticky top-0 z-40 flex items-center justify-center flex-col lg:flex-row p-4 bg-white`}>
-        {!(isSearch && ismobile) && (
-          <div className="container mx-auto flex justify-between items-center h-full px-4">
-            {/* Header with Animated Logo */}
-            <div className="h-full flex items-center">
-              <Link
-                to={"/"}
-                className="flex items-center gap-2 h-full"
-              >
-                {/* Responsive Logo */}
-                {/* <img src={logo} width={80} alt="Logo" className="hidden lg:block" /> */}
-                <img src={darkrt} alt="" width={100} />
-                {/* Animated Logo */}
-                {/* <AnimatedLogo /> */}
+      <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
+        {/* Top Banner */}
+        <div className="bg-black text-white text-center py-2 text-sm font-light tracking-wide">
+          <p>Free shipping on orders over ₹2,499 | Easy 30-day returns</p>
+        </div>
 
-              </Link>
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between py-6">
+            {/* Logo */}
+            <Link to="/" className="flex-shrink-0">
+              <FashionLogo />
+            </Link>
+
+            {/* Desktop Search */}
+            <div className="hidden lg:block flex-1 max-w-lg mx-8">
+              {isSearch && <Search />}
             </div>
 
-            {/* Search bar */}
-            <div className="hidden lg:block">
-              <Search />
-            </div>
-
-            {/* Login/myCart */}
-            <div className="flex gap-3">
-              {/* Login mobile icon */}
+            {/* Right Actions */}
+            <div className="flex items-center gap-6">
+              {/* Mobile User Icon */}
               <button
-                className="text-neutral-600 lg:hidden cursor-pointer"
+                className="text-gray-600 lg:hidden cursor-pointer hover:text-black transition-colors"
                 onClick={handleLoginNavigate}
               >
-                <FaUserCircle size={30} />
+                <FaUserCircle size={24} />
               </button>
-              {/* Login desktop */}
-              <div className="hidden lg:flex items-center gap-9">
+
+              {/* Desktop User Menu */}
+              <div className="hidden lg:flex items-center gap-6">
                 {user?.name ? (
                   <div className="relative">
                     <div
-                      className="flex items-center gap-2 cursor-pointer select-none"
+                      className="flex items-center gap-2 cursor-pointer select-none text-gray-700 hover:text-black transition-colors"
                       onClick={() => setShowUserMenue((prev) => !prev)}
                     >
-                      <p>Account</p>
+                      <p className="font-medium">Account</p>
                       {showUserMenue ? (
-                        <GoTriangleUp size={20} />
+                        <GoTriangleUp size={16} />
                       ) : (
-                        <GoTriangleDown size={20} />
+                        <GoTriangleDown size={16} />
                       )}
                     </div>
                     {showUserMenue && (
-                      <div className="absolute top-14 right-[-1rem] bg-white lg:shadow-md w-56 py-2 rounded-md">
+                      <div className="absolute top-full right-0 mt-2 bg-white shadow-xl rounded-lg w-64 py-2 border border-gray-100 z-50">
                         <div className="p-4">
                           <UserMenue close={handleUserMenu} />
                         </div>
@@ -160,19 +110,19 @@ function Header() {
                 ) : (
                   <button
                     onClick={handleLoginNavigate}
-                    className="bg-green-800 hover:bg-green-700 text-white px-4 py-3 rounded-sm cursor-pointer"
+                    className="bg-black hover:bg-gray-800 text-white px-6 py-2 font-medium tracking-wide transition-colors"
                   >
-                    <p className="font-medium">Login</p>
+                    Sign In
                   </button>
                 )}
+                
+                {/* Cart Button */}
                 <button onClick={() => setOpenCartSection(true)}>
-                  <Link
-                    className="flex items-center gap-2 bg-green-800 hover:bg-green-700 text-white px-3 py-3 rounded-sm"
-                  >
+                  <div className="flex items-center gap-3 bg-black hover:bg-gray-800 text-white px-4 py-3 transition-colors">
                     <div className="animate-bounce">
-                      <BsCartCheckFill size={25} />
+                      <BsCartCheckFill size={20} />
                     </div>
-                    <div className="font-semibold text-sm">
+                    <div className="font-medium text-sm">
                       {cartItem[0] ? (
                         <div>
                           <p>{totalQty} Items</p>
@@ -182,19 +132,41 @@ function Header() {
                         <p>My Cart</p>
                       )}
                     </div>
-                  </Link>
+                  </div>
                 </button>
               </div>
             </div>
           </div>
-        )}
-        <div className="lg:hidden container mx-auto px-5">
-          <Search />
+
+          {/* Mobile Search */}
+          {isSearch && (
+            <div className="lg:hidden pb-4">
+              <Search />
+            </div>
+          )}
         </div>
-        {openCartSection && (
-          <DisplayCartItem close={() => setOpenCartSection(false)} />
-        )}
+
+        {/* Mobile Cart */}
+        {/* {ismobile && (
+          <div className="lg:hidden bg-gray-50 border-t border-gray-200">
+            <div className="container mx-auto px-4 py-3">
+              <button onClick={() => setOpenCartSection(true)}>
+                <div className="flex items-center justify-center gap-3 bg-black text-white w-full py-3 font-medium">
+                  <BsCartCheckFill size={20} />
+                  <span>
+                    {cartItem[0] ? `${totalQty} Items - ${DisplayPriceInRupees(totalPrice)}` : "My Cart"}
+                  </span>
+                </div>
+              </button>
+            </div>
+          </div>
+        )} */}
       </header>
+
+      {/* Cart Sidebar */}
+      {openCartSection && (
+        <DisplayCartItem close={() => setOpenCartSection(false)} />
+      )}
     </>
   );
 }

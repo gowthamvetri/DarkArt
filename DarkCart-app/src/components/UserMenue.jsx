@@ -7,8 +7,10 @@ import SummaryApi from '../common/SummaryApi'
 import { logout } from '../store/userSlice'
 import toast from 'react-hot-toast'
 import AxiosTostError from '../utils/AxiosTostError'
-import { FiExternalLink } from "react-icons/fi";
+import { FiExternalLink, FiUser, FiShoppingBag, FiMapPin, FiSettings, FiLogOut } from "react-icons/fi";
+import { MdDashboard } from "react-icons/md";
 import isAdmin from '../utils/isAdmin'
+
 function UserMenue({close}) {
     const user = useSelector((state)=> state?.user)
     const dispatch = useDispatch()
@@ -22,7 +24,7 @@ function UserMenue({close}) {
                 if(close){
                     close()
                 }
-                toast.success("LogOut Successful")
+                toast.success("Logged out successfully")
                 dispatch(logout())
                 localStorage.clear()
                 navigate("/")
@@ -32,65 +34,87 @@ function UserMenue({close}) {
         }
     }
 
-    
-  const handleClose = () =>{
-    if(close){
-        close()
+    const handleClose = () =>{
+        if(close){
+            close()
+        }
     }
-  }
 
-  return (
-    <div >
-        <div className='text-md font-semibold'>
-            My Account
+    return (
+        <div className="bg-white rounded-lg">
+            {/* User Info Header */}
+            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-t-lg">
+                <div>
+                    <h3 className="font-semibold text-gray-900">My Account</h3>
+                    <p className="text-sm text-gray-600 truncate max-w-[180px]">
+                        {user?.name || user?.email}
+                    </p>
+                    {user.role === "ADMIN" && (
+                        <span className="text-xs bg-black text-white px-2 py-1 rounded-full font-medium mt-1 inline-block">
+                            Admin
+                        </span>
+                    )}
+                </div>
+                <Link to={"/dashboard/profile"} onClick={handleClose}>
+                    <FiExternalLink size={16} className='text-gray-400 hover:text-black transition-colors'/>
+                </Link>
+            </div>
+
+            <Divider/>
+
+            {/* Regular User Menu */}
+            <div className='text-sm grid gap-1'>
+                <Link onClick={handleClose} to="/dashboard/myorders" className='flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors'>
+                    <FiShoppingBag size={16} />
+                    <span>My Orders</span>
+                </Link>
+                <Link onClick={handleClose} to="/dashboard/address" className='flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors'>
+                    <FiMapPin size={16} />
+                    <span>Saved Addresses</span>
+                </Link>
+            </div>
+
+            {/* Admin Section */}
+            {isAdmin(user.role) && (
+                <>
+                    <Divider/>
+                    <div className="px-3 py-2">
+                        <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                            Admin Panel
+                        </span>
+                    </div>
+                    <div className='text-sm grid gap-1'>
+                        <Link onClick={handleClose} to="/dashboard/category" className='flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors'>
+                            <MdDashboard size={16} />
+                            <span>Categories</span>
+                        </Link>
+                        <Link onClick={handleClose} to="/dashboard/subcategory" className='flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors'>
+                            <MdDashboard size={16} />
+                            <span>Sub Categories</span>
+                        </Link>
+                        <Link onClick={handleClose} to="/dashboard/product" className='flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors'>
+                            <FiShoppingBag size={16} />
+                            <span>Products</span>
+                        </Link>
+                        <Link onClick={handleClose} to="/dashboard/upload-product" className='flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors'>
+                            <FiShoppingBag size={16} />
+                            <span>Upload Product</span>
+                        </Link>
+                    </div>
+                </>
+            )}
+
+            <Divider/>
+
+            {/* Logout Button */}
+            <div className="p-2">
+                <button onClick={handleLogOut} className='flex items-center gap-3 w-full p-3 text-red-600 hover:bg-red-50 rounded-md transition-colors'>
+                    <FiLogOut size={16} />
+                    <span className="font-medium">Logout</span>
+                </button>
+            </div>
         </div>
-        <div className='text-sm mt-1 flex gap-3'>
-            <span className='max-w-52 text-ellipsis line-clamp-1'>{user ?. name || user ?. email}<span className='text-blue-600'>{user.role==="ADMIN"?"(admin)":""}</span></span>
-            <Link to={"/dashboard/profile"} onClick={handleClose}>
-                <FiExternalLink size={15} className='font-extralight hover:text-yellow-400'/>
-            </Link>
-        </div>
-
-        <Divider/>
-
-        <div className='text-sm grid gap-4'>
-            {
-             isAdmin(user.role)&&(
-                <Link onClick={handleClose} to="/dashboard/category" className='p-2 hover:bg-red-100'>Category</Link>
-             )
-
-            }
-            {
-             isAdmin(user.role)&&(
-               
-                 <Link onClick={handleClose} to="/dashboard/subcategory" className='p-2 hover:bg-red-100'>Sub Category</Link>
-             )
-
-            }
-            {
-             isAdmin(user.role)&&(
-                
-                 <Link onClick={handleClose} to="/dashboard/product" className='p-2 hover:bg-red-100'>Product</Link>
-             )
-
-            }
-            {
-             isAdmin(user.role)&&(
-                
-                 <Link onClick={handleClose} to="/dashboard/upload-product" className='p-2 hover:bg-red-100'>Upload Product</Link>
-             )
-
-            }
-        
-        <Link onClick={handleClose} to="/dashboard/myorders" className='p-2 hover:bg-red-100'>My Order</Link>
-        <Link onClick={handleClose} to="/dashboard/address" className='p-2 hover:bg-red-100'>Save Address</Link>
-
-            <button onClick={handleLogOut} className='text-red-500 text-left p-2 cursor-pointer hover:bg-red-100'>
-                Logout
-            </button>
-        </div>
-    </div>
-  )
+    )
 }
 
 export default UserMenue

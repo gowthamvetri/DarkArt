@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import UploadSubCategoryModel from "../components/UploadSubCategoryModel";
 import AxiosTostError from "../utils/AxiosTostError";
@@ -54,7 +53,7 @@ const SubCategoryPage = () => {
           <img
             src={row.original.image}
             alt=""
-            className="h-20 w-20 cursor-pointer"
+            className="h-20 w-20 cursor-pointer rounded-lg border border-gray-200"
             onClick={() => setImageURL(row.original.image)}
           />
         </div>
@@ -63,16 +62,16 @@ const SubCategoryPage = () => {
     columnHelper.accessor("categoryId", {
       header: "Category",
       cell: ({ row }) => (
-        <>
+        <div className="flex flex-wrap gap-1">
           {row.original.categoryId.map((category) => (
-            <p
+            <span
               key={category._id + "table"}
-              className="shadow-md px-1 inline-block"
+              className="bg-gray-100 border border-gray-300 px-2 py-1 rounded-md text-sm font-medium text-gray-700"
             >
               {category.name}
-            </p>
+            </span>
           ))}
-        </>
+        </div>
       ),
     }),
     columnHelper.accessor("_id", {
@@ -84,16 +83,16 @@ const SubCategoryPage = () => {
               setOpenEdit(true);
               setEditData(row.original);
             }}
-            className="p-2 bg-green-100 rounded-full hover:text-green-600"
+            className="p-2 bg-gray-100 border border-gray-300 rounded-full hover:bg-gray-200 hover:text-gray-900 transition-colors"
           >
-            <HiPencil size={20} />
+            <HiPencil size={20} className="text-gray-700" />
           </button>
           <button
             onClick={() => {
               setOpenDeleteConfirmBox(true);
               setDeleteSubCategory(row.original);
             }}
-            className="p-2 bg-red-100 rounded-full text-red-500 hover:text-red-600"
+            className="p-2 bg-red-50 border border-red-300 rounded-full text-red-600 hover:bg-red-100 hover:text-red-700 transition-colors"
           >
             <MdDelete size={20} />
           </button>
@@ -122,19 +121,21 @@ const SubCategoryPage = () => {
   };
 
   return (
-    <section className="min-h-[75vh] max-h-[75vh] overflow-y-auto">
-      <div className="p-2 bg-white shadow-md flex items-center justify-between sticky top-0 z-10">
-        <h2 className="font-semibold">Sub Category</h2>
+    <section className="min-h-[75vh] max-h-[75vh] overflow-y-auto bg-gray-50">
+      <div className="p-4 bg-white shadow-md flex items-center justify-between sticky top-0 z-10 border-b border-gray-200">
+        <h2 className="font-bold text-xl text-gray-900 font-serif">Sub Categories</h2>
         <button
           onClick={() => setOpenAddSubCategory(true)}
-          className="text-sm border border-primary-200 hover:bg-primary-200 px-3 py-1 rounded hover:bg-amber-400 hover:text-white cursor-pointer"
+          className="bg-black text-white hover:bg-gray-800 px-4 py-2 rounded-md font-medium tracking-wide transition-colors"
         >
           Add Sub Category
         </button>
       </div>
 
-      <div className="overflow-auto w-full max-w-[95vw]">
-        <DisplayTable data={data} column={columns} />
+      <div className="overflow-auto w-full max-w-[95vw] p-4">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+          <DisplayTable data={data} column={columns} />
+        </div>
       </div>
 
       {openAddSubCategory && (

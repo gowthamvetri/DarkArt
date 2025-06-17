@@ -9,6 +9,7 @@ import Axios from "../utils/Axios.js";
 import Loading from "../components/Loading.jsx";
 import ProductCardAdmin from "../components/ProductCardAdmin.jsx";
 import { IoSearchOutline } from "react-icons/io5";
+
 const ProductAdmin = () => {
   const [productData, setProductData] = useState([]);
   const [page, setPage] = useState(1);
@@ -17,6 +18,7 @@ const ProductAdmin = () => {
   const [totalPageCount, setTotalPageCount] = useState(1);
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
+  
   const fetchProductData = async () => {
     try {
       setLoading(true);
@@ -40,19 +42,23 @@ const ProductAdmin = () => {
       setLoading(false);
     }
   };
+  
   useEffect(() => {
     fetchProductData();
   }, [page]);
+  
   const handleNext = () => {
     if (page !== totalPageCount) {
       setPage((preve) => preve + 1);
     }
   };
+  
   const handlePrevious = () => {
     if (page > 1) {
       setPage((preve) => preve - 1);
     }
   };
+  
   const handleOnChange = (e) => {
     const { value } = e.target;
     setSearch(value);
@@ -73,44 +79,67 @@ const ProductAdmin = () => {
   }, [search]);
 
   return (
-    <section className="min-h-[75vh] max-h-[75vh] overflow-y-auto">
-      <div className="p-2 bg-white shadow-md flex items-center justify-between gap-4 sticky z-10 top-0">
-        <h2 className="font-semibold">Product</h2>
-        <div className="h-full min-w-24 max-w-56 w-full ml-auto bg-blue-50 px-4 flex items-center gap-3 py-2 rounded  border focus-within:border-blue-200">
-          <IoSearchOutline size={25} />
+    <section className="min-h-[75vh] max-h-[75vh] overflow-y-auto bg-gray-50">
+      <div className="p-4 bg-white shadow-md flex items-center justify-between gap-4 sticky z-10 top-0 border-b border-gray-200">
+        <h2 className="font-bold text-xl text-gray-900 font-serif">Products</h2>
+        <div className="h-full min-w-24 max-w-56 w-full ml-auto bg-gray-50 px-4 flex items-center gap-3 py-2 rounded-md border border-gray-300 focus-within:border-black focus-within:bg-white transition-colors">
+          <IoSearchOutline size={20} className="text-gray-500" />
           <input
             type="text"
-            placeholder="Search product here ..."
-            className="h-full w-full  outline-none bg-transparent"
+            placeholder="Search products..."
+            className="h-full w-full outline-none bg-transparent text-gray-900 placeholder-gray-500"
             value={search}
             onChange={handleOnChange}
           />
         </div>
       </div>
-      {loading && <Loading />}
-      <div className="p-4 bg-blue-50 grid">
+      
+      {loading && (
+        <div className="flex justify-center items-center h-64">
+          <Loading />
+        </div>
+      )}
+      
+      <div className="p-4 bg-gray-50 grid">
         <div className="min-h-[55vh]">
           <div className="grid grid-cols-2 sm:items-center sm:justify-center md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 p-4">
             {productData.map((p, index) => {
-              return <ProductCardAdmin data={p} 
-              fetchProductData={fetchProductData}/>;
+              return (
+                <ProductCardAdmin 
+                  key={p._id || index}
+                  data={p} 
+                  fetchProductData={fetchProductData}
+                />
+              );
             })}
           </div>
         </div>
 
-        <div className="flex justify-between my-4">
+        <div className="flex justify-between items-center my-4 gap-3">
           <button
             onClick={handlePrevious}
-            className="border border-blue-200 px-4 py-1 hover:bg-blue-200"
+            disabled={page === 1}
+            className={`border px-4 py-2 rounded-md font-medium transition-colors ${
+              page === 1 
+                ? 'border-gray-300 text-gray-400 bg-gray-100 cursor-not-allowed' 
+                : 'border-gray-300 text-gray-700 bg-white hover:bg-gray-100 hover:text-gray-900'
+            }`}
           >
             Previous
           </button>
-          <button className="w-full bg-slate-100">
-            {page}/{totalPageCount}
-          </button>
+          
+          <div className="flex-1 text-center bg-white border border-gray-300 py-2 rounded-md font-medium text-gray-900">
+            {page} / {totalPageCount}
+          </div>
+          
           <button
             onClick={handleNext}
-            className="border border-blue-200 px-4 py-1 hover:bg-blue-200"
+            disabled={page === totalPageCount}
+            className={`border px-4 py-2 rounded-md font-medium transition-colors ${
+              page === totalPageCount 
+                ? 'border-gray-300 text-gray-400 bg-gray-100 cursor-not-allowed' 
+                : 'border-gray-300 text-gray-700 bg-white hover:bg-gray-100 hover:text-gray-900'
+            }`}
           >
             Next
           </button>

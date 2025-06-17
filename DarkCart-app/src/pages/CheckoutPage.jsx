@@ -48,34 +48,35 @@ const CheckoutPage = () => {
   }
 
   return (
-    <section className="bg-blue-50 ">
-      <div className="container mx-auto p-4 flex flex-col gap-5 w-full lg:flex-row justify-between">
+    <section className="bg-gray-50 min-h-screen">
+      <div className="container mx-auto p-4 flex flex-col gap-6 w-full lg:flex-row justify-between">
         <div className="w-full">
-          <h3 className="text-lg font-semibold">Choose your address</h3>
+          <h3 className="text-xl font-bold text-gray-900 font-serif mb-6">Choose your address</h3>
 
-          <div>
+          <div className="space-y-4">
             {addressList.map((address, index) => (
-              <label htmlFor={`address-${index}`} key={address._id} className={`${address.status ? "" : "hidden"} cursor-pointer`}>
+              <label htmlFor={`address-${index}`} key={address._id} className={`${address.status ? "" : "hidden"} cursor-pointer block`}>
                 <div
                   key={address._id}
-                  className="bg-white p-4 mb-4 rounded-lg shadow hover:shadow-lg transition-shadow duration-200 flex gap-4"
+                  className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 flex gap-4 border border-gray-200"
                 >
-                  <div>
+                  <div className="pt-1">
                     <input
                       id={`address-${index}`}
                       type="radio"
                       name="address"
                       value={index}
                       onClick={() => setSetAddress(index)}
+                      className="w-4 h-4 text-black bg-gray-100 border-gray-300 focus:ring-black focus:ring-2"
                     />
                   </div>
                   <div>
-                    <h4 className="font-semibold">{address.address_line}</h4>
-                    <p>
+                    <h4 className="font-semibold text-gray-900 mb-1">{address.address_line}</h4>
+                    <p className="text-gray-600">
                       {address.city}, {address.state} - {address.pincode}
                     </p>
-                    <p>{address.country}</p>
-                    <p>Mobile: {address.mobile}</p>
+                    <p className="text-gray-600">{address.country}</p>
+                    <p className="text-gray-700 font-medium">Mobile: {address.mobile}</p>
                   </div>
                 </div>
               </label>
@@ -84,43 +85,47 @@ const CheckoutPage = () => {
 
           <div
             onClick={() => setOpenAddress(true)}
-            className="h-16 bg-blue-50 border-2 border-dashed border-blue-300 rounded-lg flex items-center justify-center cursor-pointer hover:bg-blue-100 transition-colors duration-200"
+            className="h-16 bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-100 transition-colors duration-200 mt-4"
           >
-            Add address
+            <span className="text-gray-600 font-medium">Add address</span>
           </div>
           
         </div>
-        <div className="w-full max-w-md bg-white py-4 px-2">
-          <h3 className="text-lg font-semibold">Summary</h3>
-          <div className="bg-white p-4">
-            <h3 className="font-semibold">Bill details</h3>
-            <div className="flex gap-4 justify-between ml-1">
-              <p>Items total</p>
-              <p className="flex items-center gap-2">
-                <span className="line-through text-neutral-400">
-                  {DisplayPriceInRupees(notDiscountTotalPrice)}
-                </span>
-                <span>{DisplayPriceInRupees(totalPrice)}</span>
-              </p>
-            </div>
-            <div className="flex gap-4 justify-between ml-1">
-              <p>Quntity total</p>
-              <p className="flex items-center gap-2">{totalQty} item</p>
-            </div>
-            <div className="flex gap-4 justify-between ml-1">
-              <p>Delivery Charge</p>
-              <p className="flex items-center gap-2">Free</p>
-            </div>
-            <div className="font-semibold flex items-center justify-between gap-4">
-              <p>Grand total</p>
-              <p>{DisplayPriceInRupees(totalPrice)}</p>
+        <div className="w-full max-w-md bg-white py-6 px-6 rounded-lg shadow-sm border border-gray-200">
+          <h3 className="text-xl font-bold text-gray-900 font-serif mb-6">Order Summary</h3>
+          <div className="bg-white">
+            <h4 className="font-semibold text-gray-900 mb-4">Bill details</h4>
+            <div className="space-y-3">
+              <div className="flex gap-4 justify-between">
+                <p className="text-gray-600">Items total</p>
+                <p className="flex items-center gap-2">
+                  <span className="line-through text-gray-400">
+                    {DisplayPriceInRupees(notDiscountTotalPrice)}
+                  </span>
+                  <span className="font-medium text-black">{DisplayPriceInRupees(totalPrice)}</span>
+                </p>
+              </div>
+              <div className="flex gap-4 justify-between">
+                <p className="text-gray-600">Quantity total</p>
+                <p className="font-medium text-black">{totalQty} item{totalQty > 1 ? 's' : ''}</p>
+              </div>
+              <div className="flex gap-4 justify-between">
+                <p className="text-gray-600">Delivery Charge</p>
+                <p className="font-medium text-black">Free</p>
+              </div>
+              <div className="border-t border-gray-200 pt-3 mt-4">
+                <div className="font-bold flex items-center justify-between gap-4 text-lg">
+                  <p className="text-gray-900">Grand total</p>
+                  <p className="text-black">{DisplayPriceInRupees(totalPrice)}</p>
+                </div>
+              </div>
             </div>
           </div>
-          <div className="w-full flex flex-col gap-4">
-            <button className="bg-green-500 px-4 py-2 text-white font-semibold rounded hover:bg-green-700">
+          <div className="w-full flex flex-col gap-3 mt-6">
+            <button className="bg-black px-6 py-3 text-white font-semibold rounded-md hover:bg-gray-800 transition-colors tracking-wide">
               Online Payment
             </button>
-            <button onClick={handleCashOnDelivery} className="px-4 py-2 border-2 border-green-500 text-green-500 font-semibold rounded hover:bg-green-500 hover:text-white">
+            <button onClick={handleCashOnDelivery} className="px-6 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-md hover:bg-gray-100 hover:text-gray-900 transition-colors">
               Cash on Delivery
             </button>
           </div>

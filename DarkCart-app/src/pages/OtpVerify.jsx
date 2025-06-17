@@ -56,17 +56,23 @@ function OtpVerify() {
   })
 
   return (
-    <section className="w-full container mx-auto p-2">
-      <div className="bg-white my-3 w-full max-w-lg mx-auto p-8 rounded">
+    <section className="w-full container mx-auto p-4 min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="bg-white w-full max-w-lg mx-auto p-8 rounded-lg shadow-xl border border-gray-200">
+        
+        <div className="text-center mb-6">
+          <h2 className="text-2xl font-bold text-gray-900 font-serif mb-2">Verify OTP</h2>
+          <p className="text-gray-600">Enter the 6-digit code sent to your email</p>
+        </div>
+
         <form
           method="POST"
           action=""
-          className="grid gap-4 mt-6"
+          className="grid gap-6 mt-6"
           onSubmit={handleSubmit}
         >
-          <div className="grid gap-1">
-            <label htmlFor="otp">Enter your OTP :</label>
-            <div className="flex items-center gap-2 justify-between mt-3">
+          <div className="grid gap-3">
+            <label htmlFor="otp" className="font-medium text-gray-700 text-center">Enter your OTP:</label>
+            <div className="flex items-center gap-3 justify-center mt-3">
                 {
                     userInfo.map((data, index) => (
                         <input
@@ -88,7 +94,7 @@ function OtpVerify() {
                                 Inpref.current[index+1]?.focus()
                             }
                         }}
-                        className="w-full max-w-16 bg-blue-50 p-2 border rounded border-gray-300 outline-none focus:border-yellow-500 text-center font-semibold"
+                        className="w-12 h-12 bg-gray-50 border border-gray-300 rounded-md outline-none focus:border-black focus:bg-white text-center font-bold text-lg transition-colors"
                         type="text"
                       />
                     ))
@@ -98,19 +104,19 @@ function OtpVerify() {
 
           <button
             disabled={!checkAllFields()}
-            className={`w-full ${
+            className={`w-full px-4 py-3 rounded-md font-semibold tracking-wide transition-colors ${
               checkAllFields()
-                ? "bg-green-800 hover:bg-green-700"
-                : "bg-gray-500"
-            } text-white px-4 py-3 rounded-sm cursor-pointer`}
+                ? "bg-black hover:bg-gray-800 text-white"
+                : "bg-gray-200 text-gray-500 cursor-not-allowed"
+            }`}
           >
             Verify OTP
           </button>
         </form>
 
-        <p className="text-center mt-4">
+        <p className="text-center mt-6 text-gray-600">
           Have an account?{" "}
-          <Link className="text-green-700" to={"/login"}>
+          <Link className="text-black hover:text-gray-800 font-medium ml-1 underline" to={"/login"}>
             Login
           </Link>
         </p>

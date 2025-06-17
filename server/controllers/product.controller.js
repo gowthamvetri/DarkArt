@@ -305,7 +305,6 @@ export const deleteProductDetails = async(request,response)=>{
 export const searchProduct = async(request,response)=>{
     try {
         let { search, page , limit } = request.body 
-
         if(!page){
             page = 1
         }

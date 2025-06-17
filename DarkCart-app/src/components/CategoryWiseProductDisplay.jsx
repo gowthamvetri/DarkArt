@@ -143,10 +143,10 @@ function CategoryWiseProductDisplay({ id, name }) {
   };
 
   return (
-    <div className="relative">
+    <div className="relative bg-white py-6">
       <div className="container mx-auto p-4 flex items-center justify-between gap-4">
-        <h3 className="font-semibold text-lg md:text-xl">{name}</h3>
-        <Link className="text-green-600 hover:text-green-400">See All</Link>
+        <h3 className="font-bold text-xl md:text-2xl text-gray-900 font-serif">{name}</h3>
+        <Link className="text-black hover:text-gray-600 font-medium tracking-wide transition-colors">See All</Link>
       </div>
 
       {/* Scrollable Product Cards */}
@@ -172,13 +172,13 @@ function CategoryWiseProductDisplay({ id, name }) {
         <div className="absolute inset-0 flex items-center justify-between px-2 pointer-events-none">
           <button
             onClick={handleScrollLeft}
-            className="z-10 bg-white hover:bg-gray-100 shadow-lg text-lg p-2 rounded-full pointer-events-auto hidden lg:block"
+            className="z-10 bg-white hover:bg-gray-100 shadow-lg text-gray-700 hover:text-black p-3 rounded-full pointer-events-auto hidden lg:block border border-gray-200 transition-colors"
           >
             <FaAngleLeft />
           </button>
           <button
             onClick={handleScrollRight}
-            className="z-10 bg-white hover:bg-gray-100 shadow-lg text-lg p-2 rounded-full pointer-events-auto hidden lg:block"
+            className="z-10 bg-white hover:bg-gray-100 shadow-lg text-gray-700 hover:text-black p-3 rounded-full pointer-events-auto hidden lg:block border border-gray-200 transition-colors"
           >
             <FaAngleRight />
           </button>

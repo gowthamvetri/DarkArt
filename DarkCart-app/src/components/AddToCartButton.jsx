@@ -6,7 +6,7 @@ import toast from "react-hot-toast";
 import AxiosTostError from "../utils/AxiosTostError.js";
 import Loading from "./Loading";
 import { useSelector } from "react-redux";
-import { FaMinus, FaPlus } from "react-icons/fa6";
+import { FaMinus, FaPlus, FaShoppingBag } from "react-icons/fa";
 
 const AddToCartButton = ({ data }) => {
   const { fetchCartItems, updateCartItem, deleteCartItem } = useGlobalContext();
@@ -89,31 +89,39 @@ const AddToCartButton = ({ data }) => {
   return (
     <div className="w-full max-w-[150px]">
       {isAvailableCart ? (
-        <div className="flex w-full h-full">
+        <div className="flex w-full h-full border border-gray-300 rounded-md overflow-hidden bg-white">
           <button
             onClick={decreaseQty}
-            className="bg-green-600 hover:bg-green-700 text-white flex-1 w-full p-1 rounded flex items-center justify-center"
+            className="bg-gray-100 hover:bg-gray-200 text-gray-700 flex-1 w-full p-2 flex items-center justify-center transition-colors border-r border-gray-200"
           >
-            <FaMinus />
+            <FaMinus size={12} />
           </button>
 
-          <p className="flex-1 w-full font-semibold px-1 flex items-center justify-center">
+          <div className="flex-1 w-full font-semibold px-1 flex items-center justify-center text-gray-900 bg-gray-50 min-w-[40px]">
             {qty}
-          </p>
+          </div>
 
           <button
             onClick={increaseQty}
-            className="bg-green-600 hover:bg-green-700 text-white flex-1 w-full p-1 rounded flex items-center justify-center"
+            className="bg-gray-100 hover:bg-gray-200 text-gray-700 flex-1 w-full p-2 flex items-center justify-center transition-colors border-l border-gray-200"
           >
-            <FaPlus />
+            <FaPlus size={12} />
           </button>
         </div>
       ) : (
         <button
           onClick={handleADDTocart}
-          className="bg-green-600 hover:bg-green-700 text-white px-2 lg:px-4 py-1 rounded"
+          disabled={loading}
+          className="bg-black hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-2 rounded-md transition-colors font-medium tracking-wide flex items-center justify-center gap-2 w-full"
         >
-          {loading ? <Loading /> : "Add"}
+          {loading ? (
+            <Loading />
+          ) : (
+            <>
+              <FaShoppingBag size={14} />
+              <span>Add to Cart</span>
+            </>
+          )}
         </button>
       )}
     </div>

@@ -19,7 +19,7 @@ function ResetPassword() {
   const location = useLocation();
 
   const checkAllFields = () => {
-    if( userInfo.email === "" || userInfo.password === ""){
+    if( userInfo.email === "" || userInfo.newPassword === "" || userInfo.confirmPassword === ""){
       return false;
     }
     return true;
@@ -46,6 +46,12 @@ function ResetPassword() {
 
   const handleSubmit = async(e) => { 
     e.preventDefault();
+    
+    if(userInfo.newPassword !== userInfo.confirmPassword){
+      toast.error("Password and Confirm Password should be same");
+      return;
+    }
+    
     console.log(userInfo);
     try {
       const response = await Axios({
@@ -93,26 +99,31 @@ function ResetPassword() {
 
 
   return (
-    <section className="w-full container mx-auto p-2">
-      <div className="bg-white my-3 w-full max-w-lg mx-auto p-8 rounded">
-        Reset Your Password
-        <form method="POST" action="" className="grid gap-4 mt-5" onSubmit={handleSubmit}>
+    <section className="w-full container mx-auto p-4 min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="bg-white w-full max-w-lg mx-auto p-8 rounded-lg shadow-xl border border-gray-200">
+        
+        <div className="text-center mb-6">
+          <h2 className="text-2xl font-bold text-gray-900 font-serif mb-2">Reset Password</h2>
+          <p className="text-gray-600">Create a new password for your account</p>
+        </div>
+
+        <form method="POST" action="" className="grid gap-6 mt-6" onSubmit={handleSubmit}>
           <div className="grid gap-2">
-            <label htmlFor="password">Password:</label>
-            <div className="w-full bg-blue-50 p-2 rounded border-gray-300 flex items-center focus-within:border-yellow-500 border-2">
+            <label htmlFor="password" className="font-medium text-gray-700">New Password:</label>
+            <div className="w-full bg-gray-50 p-3 rounded-md border-gray-300 flex items-center focus-within:border-black focus-within:bg-white border transition-colors">
               <input
                 id="password"
-                className="w-full outline-none"
+                className="w-full outline-none bg-transparent"
                 name="newPassword"
                 value={userInfo.newPassword}
                 onChange={handleChange}
                 type={showPassword ? "text" : "password"}
-                placeholder="Enter your password"
+                placeholder="Enter your new password"
               />
 
               <div
                 onClick={handleShowPassword}
-                className="text-2xl cursor-pointer"
+                className="text-xl cursor-pointer text-gray-500 hover:text-gray-700 transition-colors"
               >
                 {showPassword ? <FaRegEyeSlash /> : <FaRegEye />}
               </div>
@@ -120,21 +131,21 @@ function ResetPassword() {
           </div>
 
           <div className="grid gap-2">
-            <label htmlFor="password">Confirm Password:</label>
-            <div className="w-full bg-blue-50 p-2 rounded border-gray-300 flex items-center focus-within:border-yellow-500 border-2">
+            <label htmlFor="confirmPassword" className="font-medium text-gray-700">Confirm Password:</label>
+            <div className="w-full bg-gray-50 p-3 rounded-md border-gray-300 flex items-center focus-within:border-black focus-within:bg-white border transition-colors">
               <input
                 id="confirmPassword"
-                className="w-full outline-none"
+                className="w-full outline-none bg-transparent"
                 name="confirmPassword"
                 value={userInfo.confirmPassword}
                 onChange={handleChange}
                 type={showConfirmPassword ? "text" : "password"}
-                placeholder="Enter your password"
+                placeholder="Confirm your new password"
               />
 
               <div
                 onClick={handleConfirmPassword}
-                className="text-2xl cursor-pointer"
+                className="text-xl cursor-pointer text-gray-500 hover:text-gray-700 transition-colors"
               >
                 {showConfirmPassword ? <FaRegEyeSlash /> : <FaRegEye />}
               </div>
@@ -142,12 +153,17 @@ function ResetPassword() {
           </div>
           
 
-          <button disabled={!checkAllFields()} className={`w-full ${ checkAllFields() ? "bg-green-800 hover:bg-green-700" : "bg-gray-500" } text-white px-4 py-3 rounded-sm cursor-pointer mt-2`}>
-            Confirm Password
+          <button disabled={!checkAllFields()} className={`w-full px-4 py-3 rounded-md font-semibold tracking-wide transition-colors ${ checkAllFields() ? "bg-black hover:bg-gray-800 text-white" : "bg-gray-200 text-gray-500 cursor-not-allowed" }`}>
+            Reset Password
           </button>
         </form>
 
-        <p className="text-center mt-4">Create an account? <Link className="text-green-700" to={"/register"}>Register</Link></p>
+        <p className="text-center mt-6 text-gray-600">
+          Remember your password? 
+          <Link className="text-black hover:text-gray-800 font-medium ml-1 underline" to={"/login"}>
+            Sign In
+          </Link>
+        </p>
       </div>
     </section>
   );

@@ -62,70 +62,70 @@ const EditAddressData = ({ close, data }) => {
         >
           &times;
         </button>
-        <h2 className="font-semibold ">Edit Address</h2>
-        <form action="" className="mt-4 grid gap-2" onSubmit={handleSubmit(onSubmit)}>
-          <div className="grid gap-1">
-            <label htmlFor="addressline">Address Line:</label>
+        <h2 className="font-semibold text-gray-900">Edit Address</h2>
+        <form action="" className="mt-4 grid gap-4" onSubmit={handleSubmit(onSubmit)}>
+          <div className="grid gap-2">
+            <label htmlFor="addressline" className="font-medium text-gray-700">Address Line:</label>
             <input
               type="text"
               id="addressline"
-              className="border-2 border-gray-300 bg-blue-50 p-2 rounded outline-none"
+              className="border border-gray-300 bg-gray-50 p-3 rounded-md outline-none focus:border-black focus:bg-white transition-colors"
               {...register("address_line",{required: true})}
             />
           </div>
 
-          <div className="grid gap-1">
-            <label htmlFor="city">City :</label>
+          <div className="grid gap-2">
+            <label htmlFor="city" className="font-medium text-gray-700">City :</label>
             <input
               type="text"
               id="city"
-              className="border-2 border-gray-300 bg-blue-50 p-2 rounded outline-none"
+              className="border border-gray-300 bg-gray-50 p-3 rounded-md outline-none focus:border-black focus:bg-white transition-colors"
               {...register("city",{required: true})}
             />
           </div>
 
-          <div className="grid gap-1">
-            <label htmlFor="state">State :</label>
+          <div className="grid gap-2">
+            <label htmlFor="state" className="font-medium text-gray-700">State :</label>
             <input
               type="text"
               id="state"
-              className="border-2 border-gray-300 bg-blue-50 p-2 rounded outline-none"
+              className="border border-gray-300 bg-gray-50 p-3 rounded-md outline-none focus:border-black focus:bg-white transition-colors"
               {...register("state",{required: true})}
             />
           </div>
 
-          <div className="grid gap-1">
-            <label htmlFor="pincode">Pincode :</label>
+          <div className="grid gap-2">
+            <label htmlFor="pincode" className="font-medium text-gray-700">Pincode :</label>
             <input
               type="text"
               id="pincode"
-              className="border-2 border-gray-300 bg-blue-50 p-2 rounded outline-none"
+              className="border border-gray-300 bg-gray-50 p-3 rounded-md outline-none focus:border-black focus:bg-white transition-colors"
               {...register("pincode",{required: true})}
             />
           </div>
 
-          <div className="grid gap-1">
-            <label htmlFor="country">Country :</label>
+          <div className="grid gap-2">
+            <label htmlFor="country" className="font-medium text-gray-700">Country :</label>
             <input
               type="text"
               id="country"
-              className="border-2 border-gray-300 bg-blue-50 p-2 rounded outline-none"
+              className="border border-gray-300 bg-gray-50 p-3 rounded-md outline-none focus:border-black focus:bg-white transition-colors"
               {...register("country",{required: true})}
             />
           </div>
 
-          <div className="grid gap-1">
-            <label htmlFor="mobile">Mobile No :</label>
+          <div className="grid gap-2">
+            <label htmlFor="mobile" className="font-medium text-gray-700">Mobile No :</label>
             <input
               type="text"
               id="mobile"
-              className="border-2 border-gray-300 bg-blue-50 p-2 rounded outline-none"
+              className="border border-gray-300 bg-gray-50 p-3 rounded-md outline-none focus:border-black focus:bg-white transition-colors"
               {...register("mobile",{required: true})}
             />
           </div>
 
-          <button type="submit" className="bg-yellow-500 w-full p-2 rounded mt-4 hover:bg-yellow-400 hover:cursor-pointer transition-colors font-semibold">
-            Submit
+          <button type="submit" className="bg-black text-white w-full p-3 rounded-md mt-4 hover:bg-gray-800 transition-colors font-semibold tracking-wide">
+            Update Address
           </button>
         </form>
       </div>
