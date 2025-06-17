@@ -1,5 +1,3 @@
-import { get } from "mongoose";
-import { updateCategoryController } from "../../../server/controllers/category.controller";
 
 export const baseURL = import.meta.env.VITE_API_URL;
 
