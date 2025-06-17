@@ -18,7 +18,8 @@ import orderRouter from './route/order.route.js'
 dotenv.config()
 const app = express()
 app.use(cors({
-    origin:'*'
+    credentials:true,
+    origin:process.env.FRONT_URL
 }))
 app.use(express.json())
 app.use(cookieParser())
