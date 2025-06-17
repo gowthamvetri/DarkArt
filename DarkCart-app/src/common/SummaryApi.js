@@ -1,6 +1,7 @@
+import { get } from "mongoose";
 import { updateCategoryController } from "../../../server/controllers/category.controller";
 
-export const baseURL = 'http://localhost:8080';
+export const baseURL = import.meta.env.VITE_API_URL;
 
 const SummaryApi = {
     register:{
@@ -135,6 +136,21 @@ const SummaryApi = {
         url : '/api/address/get',
         method : 'get'
     },
+    editAddress : {
+        url : '/api/address/edit',
+        method : 'put'
+    },
+    deleteAddress : {
+        url : '/api/address/delete',
+        method : 'delete'
+    },
+    CashOnDeliveryOrder:{
+        url: '/api/order/cash-on-delivery',
+        method: 'post'
+    },getOrderList:{
+        url: '/api/order/order-list',
+        method: 'get'
+    }
 }
 
 export default SummaryApi;

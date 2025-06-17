@@ -1,6 +1,0 @@
-{
-  "dependencies": {
-    "motion": "^12.6.1",
-    "react-hook-form": "^7.58.0"
-  }
-}

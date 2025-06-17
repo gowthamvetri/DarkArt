@@ -9,7 +9,7 @@ import { pricewithDiscount } from "../utils/PriceWithDiscount.js";
 import { handleAddAddress } from "../store/addressSlice.js";
 // import { pricewithDiscount } from "../utils/PriceWithDiscount";
 // import { handleAddAddress } from "../store/addressSlice";
-// import { setOrder } from "../store/orderSlice";
+import { setOrders } from "../store/orderSlice.js";
 
 export const GlobalContext = createContext(null);
 
@@ -22,6 +22,7 @@ const GlobalProvider = ({ children }) => {
   const cartItem = useSelector((state) => state.cartItem.cart);
   const [notDiscountTotalPrice, setNotDiscountTotalPrice] = useState(0);
   const user = useSelector((state) => state.user);
+  
 
   const fetchCartItems = async () => {
     try {
@@ -116,6 +117,21 @@ const GlobalProvider = ({ children }) => {
     }
   }
 
+  const fetchOrders = async () => {
+    try {
+      const response = await Axios({
+        ...SummaryApi.getOrderList,
+      });
+
+      const { data: responseData } = response;
+      if (responseData.success) {
+        dispatch(setOrders(responseData.data));
+      }
+    } catch (error) {
+      AxiosTostError(error);
+    }
+  };
+
   const handleLoggout = () => {
     localStorage.clear();
     dispatch(handleAddItemCart([]));
@@ -125,6 +141,7 @@ const GlobalProvider = ({ children }) => {
     handleLoggout();
     fetchCartItems();
     fetchAddress();
+    fetchOrders();
   }, [user]);
 
   return (
@@ -134,6 +151,7 @@ const GlobalProvider = ({ children }) => {
         updateCartItem,
         deleteCartItem,
         fetchAddress,
+        fetchOrders,
         totalPrice,
         totalQty,
         notDiscountTotalPrice,

@@ -3,10 +3,34 @@ import { useSelector } from "react-redux";
 import AddAddress from "../components/AddAddress";
 import { MdDelete } from "react-icons/md";
 import { MdEdit } from "react-icons/md";
+import EditAddressData from "../components/EditAddressData";
+import SummaryApi from "../common/SummaryApi";
+import Axios from "../utils/Axios";
+import toast from "react-hot-toast";
+import AxiosTostError from "../utils/AxiosTostError";
+import { useGlobalContext } from "../provider/GlobalProvider";
 
 function Address() {
   const addressList = useSelector((state) => state.addresses.addressList);
   const [openAddress, setOpenAddress] = useState(false);
+  const [openEdit, setOpenEdit] = useState(false);
+  const [editData, setEditData] = useState({});
+  const { fetchAddress } = useGlobalContext();
+
+  const handleDelete = async (id) => {
+    try {
+      const response = await Axios({
+        ...SummaryApi.deleteAddress,
+        data: { _id: id },
+      });
+      if (response.data.success) {
+        toast.success(response.data.message);
+        fetchAddress();
+      }
+    } catch (error) {
+      AxiosTostError(error);
+    }
+  };
 
   return (
     <div className="">
@@ -23,7 +47,7 @@ function Address() {
         {addressList.map((address, index) => (
           <div
             key={address._id}
-            className="bg-white p-4 mb-4 rounded-lg shadow hover:shadow-lg transition-shadow duration-200 flex gap-4"
+            className={`${address.status ? "bg-gray-100" : "hidden"} bg-white p-4 mb-4 rounded-lg shadow hover:shadow-lg transition-shadow duration-200 flex gap-4`}
           >
             <div className="w-full">
               <h4 className="font-semibold">{address.address_line}</h4>
@@ -35,10 +59,19 @@ function Address() {
             </div>
 
             <div className="flex flex-col justify-between items-center">
-              <button className="bg-green-200 p-2 rounded hover:bg-green-600 hover:text-white transition-colors">
+              <button
+                onClick={() => {
+                  setOpenEdit(true);
+                  setEditData(address);
+                }}
+                className="bg-green-200 p-2 rounded hover:bg-green-600 hover:text-white transition-colors"
+              >
                 <MdEdit size={20} />
               </button>
-              <button className="bg-red-200 p-2 rounded hover:bg-red-600 hover:text-white transition-colors">
+              <button
+                onClick={() => handleDelete(address._id)}
+                className="bg-red-200 p-2 rounded hover:bg-red-600 hover:text-white transition-colors"
+              >
                 <MdDelete size={20} />
               </button>
             </div>
@@ -53,6 +86,10 @@ function Address() {
       </div>
 
       {openAddress && <AddAddress close={() => setOpenAddress(false)} />}
+
+      {openEdit && (
+        <EditAddressData close={() => setOpenEdit(false)} data={editData} />
+      )}
     </div>
   );
 }

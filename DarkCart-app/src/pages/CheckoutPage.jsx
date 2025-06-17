@@ -3,13 +3,49 @@ import { useSelector } from "react-redux";
 import { DisplayPriceInRupees } from "../utils/DisplayPriceInRupees";
 import { useGlobalContext } from "../provider/GlobalProvider";
 import AddAddress from "../components/AddAddress";
+import AxiosTostError from "../utils/AxiosTostError";
+import Axios from "../utils/Axios";
+import SummaryApi from "../common/SummaryApi";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 const CheckoutPage = () => {
-  const { notDiscountTotalPrice, totalPrice, totalQty } = useGlobalContext();
+  const { notDiscountTotalPrice, totalPrice, totalQty,fetchCartItems,fetchOrders } = useGlobalContext();
   const [OpenAddress, setOpenAddress] = useState(false);
   const addressList = useSelector((state) => state.addresses.addressList);
   const [setAddress, setSetAddress] = useState(0);
-  console.log(setAddress);
+  const cartItemsList = useSelector((state) => state.cartItem.cart);
+  const navigate = useNavigate();
+  const handleCashOnDelivery = async () => {
+    try {
+
+      const response = await Axios({
+        ...SummaryApi.CashOnDeliveryOrder,
+        data: {
+          list_items: cartItemsList,
+          totalAmount: totalPrice,
+          addressId: addressList[setAddress]?._id,
+          subTotalAmt: totalPrice,
+        },
+      })
+
+      const { data:responseData } = response;
+
+      if(responseData.success) {
+        toast.success("Order placed successfully");
+        fetchCartItems();
+        fetchOrders();
+        navigate("/success",{
+          state:{
+            text:"Order"
+          }
+        })
+      }
+
+    } catch (error) {
+      AxiosTostError(error)
+    }
+  }
 
   return (
     <section className="bg-blue-50 ">
@@ -19,7 +55,7 @@ const CheckoutPage = () => {
 
           <div>
             {addressList.map((address, index) => (
-              <label htmlFor={`address-${index}`} key={address._id} className="cursor-pointer">
+              <label htmlFor={`address-${index}`} key={address._id} className={`${address.status ? "" : "hidden"} cursor-pointer`}>
                 <div
                   key={address._id}
                   className="bg-white p-4 mb-4 rounded-lg shadow hover:shadow-lg transition-shadow duration-200 flex gap-4"
@@ -84,7 +120,7 @@ const CheckoutPage = () => {
             <button className="bg-green-500 px-4 py-2 text-white font-semibold rounded hover:bg-green-700">
               Online Payment
             </button>
-            <button className="px-4 py-2 border-2 border-green-500 text-green-500 font-semibold rounded hover:bg-green-500 hover:text-white">
+            <button onClick={handleCashOnDelivery} className="px-4 py-2 border-2 border-green-500 text-green-500 font-semibold rounded hover:bg-green-500 hover:text-white">
               Cash on Delivery
             </button>
           </div>
