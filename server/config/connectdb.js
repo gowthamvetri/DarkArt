@@ -8,9 +8,11 @@ if (!process.env.MONGODB_URI) {
 }
 
 async function connectDB() {
-  try {
+  try {    
     await mongoose.connect(process.env.MONGODB_URI);
     console.log("DB connected Successfully");
+    console.log("DB Name: " + mongoose.connection.name);
+    console.log("DB Host: " + mongoose.connection.host);
   } catch (error) {
     console.log("Error in connecting to DB" + error);   
     process.exit(1);

@@ -113,7 +113,7 @@ const GlobalProvider = ({ children }) => {
         dispatch(handleAddAddress(responseData.data));
       }    
     } catch (error) {
-      AxiosTostError(error);
+      // AxiosTostError(error);
     }
   }
 
@@ -128,7 +128,7 @@ const GlobalProvider = ({ children }) => {
         dispatch(setOrders(responseData.data));
       }
     } catch (error) {
-      AxiosTostError(error);
+      // AxiosTostError(error);
     }
   };
 
