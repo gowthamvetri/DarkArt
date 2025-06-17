@@ -7,8 +7,6 @@ import AxiosTostError from "../utils/AxiosTostError.js";
 import toast from "react-hot-toast";
 import { pricewithDiscount } from "../utils/PriceWithDiscount.js";
 import { handleAddAddress } from "../store/addressSlice.js";
-// import { pricewithDiscount } from "../utils/PriceWithDiscount";
-// import { handleAddAddress } from "../store/addressSlice";
 import { setOrders } from "../store/orderSlice.js";
 
 export const GlobalContext = createContext(null);
