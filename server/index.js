@@ -18,7 +18,6 @@ import orderRouter from './route/order.route.js'
 dotenv.config()
 const app = express()
 app.use(cors({
-    credentials:true,
     origin:'*'
 }))
 app.use(express.json())
