@@ -13,10 +13,14 @@ const CheckoutPage = () => {
   const { notDiscountTotalPrice, totalPrice, totalQty,fetchCartItems,fetchOrders } = useGlobalContext();
   const [OpenAddress, setOpenAddress] = useState(false);
   const addressList = useSelector((state) => state.addresses.addressList);
-  const [setAddress, setSetAddress] = useState(0);
+  const [setAddress, setSetAddress] = useState(-1);
   const cartItemsList = useSelector((state) => state.cartItem.cart);
   const navigate = useNavigate();
   const handleCashOnDelivery = async () => {
+    if (setAddress === -1) {
+      toast.error("Please select an address");
+      return;
+    }
     try {
 
       const response = await Axios({
