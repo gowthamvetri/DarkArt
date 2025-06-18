@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Tag, Sparkles, Clock } from 'lucide-react';
-import banner1 from "../assets/Homebanner/banner1.jpg";
-import banner2 from "../assets/Homebanner/banner2.jpg";
-import banner3 from "../assets/Homebanner/banner3.jpg";
-import banner4 from "../assets/Homebanner/banner4.jpg";
-
+const banner1 = "/HomeBanner/banner1.jpg";
+const banner2 = "/HomeBanner/banner2.jpg"; 
+const banner3 = "/HomeBanner/banner3.jpg";
+const banner4 = "/HomeBanner/banner4.jpg";
 const HomeBannerCarousel = () => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
