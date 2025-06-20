@@ -4,6 +4,7 @@ import AnimatedImage from '../components/NoData';
 
 function MyOrders() {
   const order = useSelector((state) => state.order.orders);
+  const user = useSelector((state) => state?.user);
   console.log(order);
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -33,6 +34,11 @@ function MyOrders() {
                       {order.paymentStatus}
                     </span>
                   </div>
+
+                  <div className='text-sm text-gray-600 flex flex-col sm:flex-row gap-2 sm:gap-4'>
+                    <p className='font-medium'>Order by: {order?.userId.name}</p>
+                    <p className='font-medium'>Email: {order?.userId.email}</p>
+                  </div>
                   
                   <h3 className='text-lg font-semibold text-gray-900'>{order.productDetails.name}</h3>
                   
@@ -40,7 +46,7 @@ function MyOrders() {
                     <p className='mb-1'>
                       <span className='font-medium text-gray-700'>Delivery Address:</span>
                     </p>
-                    <p>{order.deliveryAddress.city}, {order.deliveryAddress.state}, {order.deliveryAddress.pincode}</p>
+                    <p>{order.deliveryAddress?.address_line}, {order.deliveryAddress?.city}, {order.deliveryAddress?.state}, {order.deliveryAddress?.pincode}</p>
                   </div>
                 </div>
                 

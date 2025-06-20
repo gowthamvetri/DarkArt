@@ -80,6 +80,7 @@ export const getCartItemController = async (req, res) => {
         });
     }
 }
+
 export const updateCartItemQtyController = async(request,response)=>{
     try {
         const userId = request.userId 

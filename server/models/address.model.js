@@ -5,10 +5,6 @@ const addressSchema = mongoose.Schema({
         type: String,
         default : ""
     },
-    address_line :{
-        type: String,
-        default : ""
-    },
     city :{
         type: String,
         default : ""
