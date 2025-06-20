@@ -148,6 +148,9 @@ const SummaryApi = {
     },getOrderList:{
         url: '/api/order/order-list',
         method: 'get'
+    },getAllOrders:{
+        url: '/api/order/all',
+        method: 'get'
     }
 }
 

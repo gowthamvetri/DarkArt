@@ -7,6 +7,7 @@ import AxiosTostError from "../utils/AxiosTostError.js";
 import Loading from "./Loading";
 import { useSelector } from "react-redux";
 import { FaMinus, FaPlus, FaShoppingBag } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 const AddToCartButton = ({ data }) => {
   const { fetchCartItems, updateCartItem, deleteCartItem } = useGlobalContext();
@@ -16,6 +17,7 @@ const AddToCartButton = ({ data }) => {
   const [isAvailableCart, setIsAvailableCart] = useState(false);
   const [qty, setQty] = useState(0);
   const [cartItemDetails, setCartItemsDetails] = useState();
+  const navigate = useNavigate();
 
   const handleADDTocart = async (e) => {
     e.preventDefault();
@@ -40,7 +42,8 @@ const AddToCartButton = ({ data }) => {
         }
       }
     } catch (error) {
-      AxiosTostError(error);
+      toast.error("Please login to add items to cart");
+      navigate("/login");
     } finally {
       setLoading(false);
     }

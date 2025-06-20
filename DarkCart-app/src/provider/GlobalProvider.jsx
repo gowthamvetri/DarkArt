@@ -130,6 +130,23 @@ const GlobalProvider = ({ children }) => {
     }
   };
 
+  const fetchAllOrders = async () => {
+    try {
+      const response = await Axios({
+        ...SummaryApi.getAllOrders,
+      });
+
+      const { data: responseData } = response;
+      if (responseData.success) {
+        dispatch(setOrders(responseData.data));
+      }
+    } catch (error) {
+      // AxiosTostError(error);
+    }
+  };
+
+  const handleOrder = user?.role === "ADMIN" ? fetchAllOrders : fetchOrders;
+
   const handleLoggout = () => {
     localStorage.clear();
     dispatch(handleAddItemCart([]));
@@ -139,7 +156,7 @@ const GlobalProvider = ({ children }) => {
     handleLoggout();
     fetchCartItems();
     fetchAddress();
-    fetchOrders();
+    handleOrder();
   }, [user]);
 
   return (
@@ -149,7 +166,7 @@ const GlobalProvider = ({ children }) => {
         updateCartItem,
         deleteCartItem,
         fetchAddress,
-        fetchOrders,
+        handleOrder,
         totalPrice,
         totalQty,
         notDiscountTotalPrice,

@@ -62,13 +62,32 @@ export const cashOnDeliveryOrderController = async (req, res) => {
 export const getOrderController = async (req, res) => {
     try {
         const userId = req.userId;
-        const orders = await orderModel.find({ userId: userId }).sort({createdAt: -1}).populate("productId", "name image price").populate("deliveryAddress", "addressLine city state pincode");
+        const orders = await orderModel.find({ userId: userId }).sort({createdAt: -1}).populate("productId", "name image price").populate("deliveryAddress", "addressLine city state pincode").populate("userId", "name email");
         return res.json({
             success: true,
             error: false,
             message: "Orders fetched successfully",
             data: orders
         });
+        return res.json({
+            success: true,
+            error: false,
+            message: "Orders fetched successfully",
+            data: orders
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            error: true,
+            message: "Error in fetching orders",
+            error: error.message
+        });
+    }
+}
+
+export const getAllOrdersController = async (req, res) => {
+    try {
+        const orders = await orderModel.find({}).sort({createdAt: -1}).populate("userId", "name email").populate("productId", "name image price").populate("deliveryAddress", "addressLine city state pincode");
         return res.json({
             success: true,
             error: false,

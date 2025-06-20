@@ -27,7 +27,7 @@ export default function App() {
       dispatch(setUserDetails(response.data));
     }
     catch(error){
-      navigate("/login");
+      // navigate("/login");
     }
   }
 
