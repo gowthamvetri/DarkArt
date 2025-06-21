@@ -6,10 +6,10 @@ const forgotPasswordTemplate = ({ name, otp }) => {
     <div style="background: #007BFF; color: #ffffff; font-size: 24px; padding: 15px; text-align: center; font-weight: bold; border-radius: 5px;">
         ${otp}
     </div>
-    <p style="margin-top: 15px;">This OTP is valid for <strong>1 hour</strong> only. Enter this OTP on the <strong>DarkCart</strong> website to proceed with resetting your password.</p>
+    <p style="margin-top: 15px;">This OTP is valid for <strong>1 hour</strong> only. Enter this OTP on the <strong>Casual Clothing Fashion</strong> website to proceed with resetting your password.</p>
     <br/>
     <p>Thanks,</p>
-    <p style="font-weight: bold;">DarkCart Team</p>
+    <p style="font-weight: bold;">Casual Clothing Fashion Team</p>
 </div>
     `;
 };

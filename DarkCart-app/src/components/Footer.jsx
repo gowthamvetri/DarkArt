@@ -31,7 +31,7 @@ function Footer() {
             <div className="w-8 h-8 bg-white text-black flex items-center justify-center font-bold text-xl">
               D
             </div>
-            <span className="text-2xl font-bold tracking-wider font-serif">DARKCART</span>
+            <span className="text-2xl font-bold tracking-wider font-serif">Casual Clothing Fashion</span>
           </div>
           <p className="text-gray-400 text-sm">© All copyrights from 2024</p>
           <p className="text-gray-400 text-sm">Elevating Fashion Since 2024</p>

@@ -25,8 +25,8 @@ dist-ssr
 .env
 
 #manual changes
-DarkCart-app/node_modules
+Casual Clothing Fashion-app/node_modules
 server/node_modules
 .env
-.DarkCart-app/.env
+.Casual Clothing Fashion-app/.env
 .server/.env

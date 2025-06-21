@@ -301,7 +301,7 @@ export async function forgotPasswordController(request,response) {
 
       await sendEmail({
           sendTo : email,
-          subject : "Forgot password from DarkCart",
+          subject : "Forgot password from Casual Clothing Fashion",
           html : forgotPasswordTemplate({
               name : user.name,
               otp : otp

@@ -23,6 +23,7 @@ import CartMobile from '../pages/CartMobile';
 import CheckoutPage from '../pages/CheckoutPage';
 import Success from '../pages/Success';
 import Cancel from '../pages/Cancel';
+import About from '../pages/About';
 
 const router = createBrowserRouter([
     {
@@ -36,6 +37,10 @@ const router = createBrowserRouter([
             {
                 path:"/search",
                 element : <SearchPage/>
+            },
+            {
+                path:"/about",
+                element : <About/>
             },
             {
                 path:"/login",
@@ -84,7 +89,6 @@ const router = createBrowserRouter([
                     path:"product",
                     element:<AdminPermision><ProductAdmin/></AdminPermision>
                 },
-
                 
             ]
             },
