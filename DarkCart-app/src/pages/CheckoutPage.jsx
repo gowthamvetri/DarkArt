@@ -10,38 +10,48 @@ import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 
 const CheckoutPage = () => {
-  const { notDiscountTotalPrice, totalPrice, totalQty,fetchCartItems,fetchOrders } = useGlobalContext();
+  const { notDiscountTotalPrice, totalPrice, totalQty,fetchCartItems,handleOrder } = useGlobalContext();
   const [OpenAddress, setOpenAddress] = useState(false);
   const addressList = useSelector((state) => state.addresses.addressList);
-  const [setAddress, setSetAddress] = useState(-1);
+  const [selectedAddressIndex, setSelectedAddressIndex] = useState(null);
   const cartItemsList = useSelector((state) => state.cartItem.cart);
   const navigate = useNavigate();
   const handleCashOnDelivery = async () => {
-    if (setAddress === -1) {
+    // Better validation
+    if (selectedAddressIndex === null || selectedAddressIndex === undefined || !addressList[selectedAddressIndex]) {
       toast.error("Please select an address");
       return;
     }
-    try {
 
+    // Get the selected address
+    const selectedAddress = addressList[selectedAddressIndex];
+    
+    // Additional validation
+    if (!selectedAddress || !selectedAddress._id) {
+      toast.error("Invalid address selected");
+      return;
+    }
+    
+    try {
       const response = await Axios({
         ...SummaryApi.CashOnDeliveryOrder,
         data: {
           list_items: cartItemsList,
           totalAmount: totalPrice,
-          addressId: addressList[setAddress]?._id,
+          addressId: selectedAddress._id,  // Use the validated address ID
           subTotalAmt: totalPrice,
         },
       })
 
-      const { data:responseData } = response;
-
+      const { data: responseData } = response;
+      console.log(responseData);
       if(responseData.success) {
         toast.success("Order placed successfully");
         fetchCartItems();
-        fetchOrders();
-        navigate("/success",{
-          state:{
-            text:"Order"
+        handleOrder();
+        navigate("/success", {
+          state: {
+            text: "Order"
           }
         })
       }
@@ -70,7 +80,7 @@ const CheckoutPage = () => {
                       type="radio"
                       name="address"
                       value={index}
-                      onClick={() => setSetAddress(index)}
+                      onChange={() => setSelectedAddressIndex(index)}  // Make sure this is onChange, not onClick
                       className="w-4 h-4 text-black bg-gray-100 border-gray-300 focus:ring-black focus:ring-2"
                     />
                   </div>
