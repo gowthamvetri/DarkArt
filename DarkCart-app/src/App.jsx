@@ -11,6 +11,7 @@ import Axios from './utils/Axios';
 import SummaryApi from './common/SummaryApi.js';
 import GlobalProvider from './provider/GlobalProvider';
 import CartMobileLink from './components/CartMobile.jsx';
+import ScrollToTop from './components/ScrollToTop.jsx';
 
 
 
@@ -76,6 +77,7 @@ export default function App() {
     <GlobalProvider>
       <Header/>
       <main className='min-h-[78vh]'>
+        <ScrollToTop/>
         <Outlet/>
       </main>
       <Footer/>
