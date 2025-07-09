@@ -90,7 +90,7 @@ const AddToCartButton = ({ data }) => {
   };
   
   return (
-    <div className="w-full max-w-[150px]">
+    <div className="w-full max-w-[150px] ">
       {isAvailableCart ? (
         <div className="flex w-full h-full border border-gray-300 rounded-md overflow-hidden bg-white">
           <button
@@ -115,7 +115,7 @@ const AddToCartButton = ({ data }) => {
         <button
           onClick={handleADDTocart}
           disabled={loading}
-          className="bg-black hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-2 rounded-md transition-colors font-medium tracking-wide flex items-center justify-center gap-2 w-full"
+          className="bg-black hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed text-white p-2 lg:px-4 lg:py-2 rounded-md transition-colors font-medium tracking-wide flex items-center justify-center gap-1 lg:gap-2 w-full"
         >
           {loading ? (
             <Loading />

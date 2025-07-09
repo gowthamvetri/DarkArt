@@ -119,7 +119,6 @@ function CategoryWiseProductDisplay({ id, name }) {
       });
 
       const { data: responseData } = response;
-      // console.log(responseData);
       if (responseData.success) {
         setData(responseData.data);
       }
@@ -157,14 +156,19 @@ function CategoryWiseProductDisplay({ id, name }) {
         >
           {loading &&
             loadingCardNumber.map((_, index) => (
-              <CardLoading key={"CategorywiseProductDisplay123" + index} />
+              <div key={"CategorywiseProductDisplay123" + index} className="flex-shrink-0">
+                <div className="w-48 h-80 sm:w-52 sm:h-84 md:w-56 md:h-88 lg:w-64 lg:h-96">
+                  <CardLoading />
+                </div>
+              </div>
             ))}
 
           {data.map((p, index) => (
-            <CardProduct
-              data={p}
-              key={p._id + "CategorywiseProductDisplay" + index}
-            />
+            <div key={p._id + "CategorywiseProductDisplay" + index} className="flex-shrink-0">
+              <div className="w-48 h-80 sm:w-52 sm:h-84 md:w-56 md:h-88 lg:w-64 lg:h-96">
+                <CardProduct data={p} />
+              </div>
+            </div>
           ))}
         </div>
 

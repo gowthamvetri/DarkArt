@@ -25,7 +25,7 @@ function CardProduct({ data }) {
         className="border border-gray-200 p-4 lg:p-4 grid gap-2 lg:gap-3 min-w-36 lg:min-w-52 rounded-lg cursor-pointer bg-white hover:shadow-lg transition-all duration-300 overflow-hidden"
       >
         {/* Product Image Container */}
-        <div className="relative min-h-32 w-full max-h-40 lg:max-h-48 rounded-md overflow-hidden bg-gray-50">
+        <div className="relative min-h-32 w-full max-h-32 lg:max-h-39 rounded-md overflow-hidden bg-gray-50">
           <img
             src={data.image[0]}
             alt={data.name}
@@ -33,7 +33,7 @@ function CardProduct({ data }) {
           />
           
           {/* Wishlist Button */}
-          <button
+          {/* <button
             onClick={handleWishlist}
             className="absolute top-3 right-3 bg-white p-2 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-gray-100"
           >
@@ -42,7 +42,7 @@ function CardProduct({ data }) {
             ) : (
               <FaRegHeart size={14} className="text-gray-600" />
             )}
-          </button>
+          </button> */}
 
           {/* Badges */}
           <div className="absolute top-3 left-3 flex flex-col gap-2">
@@ -70,19 +70,19 @@ function CardProduct({ data }) {
           </div>
 
           {/* Rating */}
-          <div className="flex items-center gap-1">
+          {/* <div className="flex items-center gap-1">
             <div className="flex text-yellow-400">
               {[...Array(5)].map((_, i) => (
                 <FaStar key={i} size={10} className={i < 4 ? "text-yellow-400" : "text-gray-300"} />
               ))}
             </div>
             <span className="text-xs text-gray-500">(124)</span>
-          </div>
+          </div> */}
 
           {/* Unit/Size Info */}
-          <div className="text-xs text-gray-600 font-medium">
+          {/* <div className="text-xs text-gray-600 font-medium">
             {data.unit}
-          </div>
+          </div> */}
         </div>
 
         {/* Price and Action Section */}
