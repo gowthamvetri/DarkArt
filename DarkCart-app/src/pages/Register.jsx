@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { FaRegEye } from "react-icons/fa";
 import { FaRegEyeSlash } from "react-icons/fa";
+import { FcGoogle } from "react-icons/fc";
+import { signInWithPopup } from "firebase/auth";
+import { auth, googleProvider } from "../utils/firebase";
 import toast from "react-hot-toast";
 import SummaryApi from "../common/SummaryApi";
 import Axios from "../utils/Axios";
@@ -79,6 +82,37 @@ function Register() {
       AxiosTostError(error);
     }
   }
+
+  const handleGoogleSignIn = async () => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+
+      const googleUserData = {
+        name: user.displayName,
+        email: user.email,
+        photoURL: user.photoURL,
+        uid: user.uid,
+      };
+
+      const response = await Axios({
+        url: SummaryApi.googleSignIn.url,
+        method: SummaryApi.googleSignIn.method,
+        data: googleUserData,
+      });
+
+      if (response.data.error) {
+        toast.error(response.data.message);
+      }
+
+      if (response.data.success) {
+        toast.success(response.data.message);
+        navigate("/login");
+      }
+    } catch (error) {
+      AxiosTostError(error);
+    }
+  };
 
   return (
     <section className="w-full container mx-auto p-4 min-h-screen bg-gray-50 flex items-center justify-center">
@@ -161,6 +195,21 @@ function Register() {
 
           <button disabled={!checkAllFields()} className={`w-full px-4 py-3 rounded-md font-semibold tracking-wide transition-colors ${ checkAllFields() ? "bg-black hover:bg-gray-800 text-white" : "bg-gray-200 text-gray-500 cursor-not-allowed" }`}>
             Create Account
+          </button>
+          
+          <div className="flex items-center my-4">
+            <div className="flex-1 h-px bg-gray-300"></div>
+            <span className="px-4 text-gray-500 text-sm">or</span>
+            <div className="flex-1 h-px bg-gray-300"></div>
+          </div>
+          
+          <button 
+            type="button"
+            onClick={handleGoogleSignIn}
+            className="w-full px-4 py-3 rounded-md font-semibold tracking-wide transition-colors bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 flex items-center justify-center gap-2"
+          >
+            <FcGoogle className="text-xl" />
+            Continue with Google
           </button>
         </form>
 

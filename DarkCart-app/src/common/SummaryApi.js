@@ -1,4 +1,3 @@
-
 export const baseURL = import.meta.env.VITE_API_URL;
 
 const SummaryApi = {
@@ -8,6 +7,10 @@ const SummaryApi = {
     },
     login :{
         url: "/api/user/login",
+        method: 'post'
+    },
+    googleSignIn: {
+        url: "/api/user/google-signin",
         method: 'post'
     },
     forgetPassword :{

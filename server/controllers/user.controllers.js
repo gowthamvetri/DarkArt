@@ -510,3 +510,87 @@ export async function userDetails(request,response){
   }
 }
 
+export async function googleSignInController(req, res) {
+  try {
+    const { name, email, photoURL, uid } = req.body;
+
+    if (!name || !email || !uid) {
+      return res.status(400).json({
+        message: "Name, email, and uid are required",
+        error: true,
+        success: false,
+      });
+    }
+
+    let user = await UserModel.findOne({ email });
+
+    if (user) {
+      const updateUser = await UserModel.findByIdAndUpdate(user._id, {
+        last_login_date: new Date(),
+        ...(photoURL && { avatar: photoURL }),
+      });
+
+      const accessToken = await generatedAccessToken(user._id);
+      const refreshToken = await generatedRefreshToken(user._id);
+
+      const cookieOption = {
+        httpOnly: true,
+        secure: true,
+        sameSite: "None",
+      };
+
+      res.cookie("accessToken", accessToken, cookieOption);
+      res.cookie("refreshToken", refreshToken, cookieOption);
+
+      return res.json({
+        message: "Login successful",
+        error: false,
+        success: true,
+        data: {
+          accessToken,
+          refreshToken,
+        },
+      });
+    } else {
+      const newUser = new UserModel({
+        name,
+        email,
+        password: uid,
+        avatar: photoURL || "",
+        verify_email: true,
+        google_id: uid,
+      });
+
+      const savedUser = await newUser.save();
+
+      const accessToken = await generatedAccessToken(savedUser._id);
+      const refreshToken = await generatedRefreshToken(savedUser._id);
+
+      const cookieOption = {
+        httpOnly: true,
+        secure: true,
+        sameSite: "None",
+      };
+
+      res.cookie("accessToken", accessToken, cookieOption);
+      res.cookie("refreshToken", refreshToken, cookieOption);
+
+      return res.json({
+        message: "Account created and logged in successfully",
+        error: false,
+        success: true,
+        data: {
+          accessToken,
+          refreshToken,
+        },
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message || error,
+      error: true,
+      success: false,
+    });
+  }
+}
+
