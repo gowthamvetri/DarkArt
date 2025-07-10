@@ -13,13 +13,12 @@ import AxiosTostError from '../utils/AxiosTostError';
 import successAlert from '../utils/SuccessAlert';
 import { useEffect } from 'react';
 
-const EditProductAdmin = ({ close ,data : propsData,fetchProductData}) => {
+const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
   const [data, setData] = useState({
-    _id : propsData._id,
+    _id: propsData._id,
     name: propsData.name,
     image: propsData.image,
     category: propsData.category,
-    subCategory: propsData.subCategory,
     unit: propsData.unit,
     stock: propsData.stock,
     price: propsData.price,
@@ -31,8 +30,6 @@ const EditProductAdmin = ({ close ,data : propsData,fetchProductData}) => {
   const [ViewImageURL, setViewImageURL] = useState("")
   const allCategory = useSelector(state => state.product.allCategory)
   const [selectCategory, setSelectCategory] = useState("")
-  const [selectSubCategory, setSelectSubCategory] = useState("")
-  const allSubCategory = useSelector(state => state.product.allSubCategory)
 
   const [openAddField, setOpenAddField] = useState(false)
   const [fieldName, setFieldName] = useState("")
@@ -87,14 +84,6 @@ const EditProductAdmin = ({ close ,data : propsData,fetchProductData}) => {
       }
     })
   }
-  const handleRemoveSubCategory = async (index) => {
-    data.subCategory.splice(index, 1)
-    setData((preve) => {
-      return {
-        ...preve
-      }
-    })
-  }
 
   const handleAddField = () => {
     setData((preve) => {
@@ -123,7 +112,7 @@ const EditProductAdmin = ({ close ,data : propsData,fetchProductData}) => {
 
       if (responseData.success) {
         successAlert(responseData.message)
-        if(close){
+        if (close) {
           close()
         }
         fetchProductData()
@@ -131,7 +120,6 @@ const EditProductAdmin = ({ close ,data : propsData,fetchProductData}) => {
           name: "",
           image: [],
           category: [],
-          subCategory: [],
           unit: "",
           stock: "",
           price: "",
@@ -139,7 +127,6 @@ const EditProductAdmin = ({ close ,data : propsData,fetchProductData}) => {
           description: "",
           more_details: {},
         })
-
       }
     } catch (error) {
       AxiosTostError(error)
@@ -152,10 +139,10 @@ const EditProductAdmin = ({ close ,data : propsData,fetchProductData}) => {
     <section className='fixed top-0 right-0 left-0 bottom-0 bg-black z-50 bg-opacity-80 p-4'>
       <div className='bg-white w-full p-4 max-w-2xl mx-auto rounded overflow-y-auto h-full max-h-[95vh]'>
         <section className=''>
-          <div className='p-2   bg-white shadow-md flex items-center justify-between'>
-            <h2 className='font-semibold'>Upload Product</h2>
+          <div className='p-2 bg-white shadow-md flex items-center justify-between'>
+            <h2 className='font-semibold'>Edit Product</h2>
             <button onClick={close}>
-              <IoClose size={20}/>
+              <IoClose size={20} />
             </button>
           </div>
           <div className='grid p-3'>
@@ -210,7 +197,7 @@ const EditProductAdmin = ({ close ,data : propsData,fetchProductData}) => {
                       onChange={handleUploadImage}
                     />
                   </label>
-                  {/**display uploded image*/}
+                  {/**display uploaded image*/}
                   <div className='flex flex-wrap gap-4'>
                     {
                       data.image.map((img, index) => {
@@ -231,8 +218,8 @@ const EditProductAdmin = ({ close ,data : propsData,fetchProductData}) => {
                     }
                   </div>
                 </div>
-
               </div>
+              
               <div className='grid gap-1'>
                 <label className='font-medium'>Category</label>
                 <div>
@@ -256,7 +243,7 @@ const EditProductAdmin = ({ close ,data : propsData,fetchProductData}) => {
                     {
                       allCategory.map((c, index) => {
                         return (
-                          <option value={c?._id}>{c.name}</option>
+                          <option key={c._id} value={c?._id}>{c.name}</option>
                         )
                       })
                     }
@@ -268,50 +255,6 @@ const EditProductAdmin = ({ close ,data : propsData,fetchProductData}) => {
                           <div key={c._id + index + "productsection"} className='text-sm flex items-center gap-2 bg-gray-100 border border-gray-300 mt-2 p-2 rounded-md'>
                             <p>{c.name}</p>
                             <div className='hover:text-red-500 cursor-pointer' onClick={() => handleRemoveCategory(index)}>
-                              <IoClose size={20} />
-                            </div>
-                          </div>
-                        )
-                      })
-                    }
-                  </div>
-                </div>
-              </div>
-              <div className='grid gap-1'>
-                <label className='font-medium'>Sub Category</label>
-                <div>
-                  <select
-                    className='bg-gray-50 border border-gray-300 w-full p-3 rounded-md focus:border-black focus:bg-white transition-colors'
-                    value={selectSubCategory}
-                    onChange={(e) => {
-                      const value = e.target.value
-                      const subCategory = allSubCategory.find(el => el._id === value)
-
-                      setData((preve) => {
-                        return {
-                          ...preve,
-                          subCategory: [...preve.subCategory, subCategory]
-                        }
-                      })
-                      setSelectSubCategory("")
-                    }}
-                  >
-                    <option value={""} className='text-neutral-600'>Select Sub Category</option>
-                    {
-                      allSubCategory.map((c, index) => {
-                        return (
-                          <option value={c?._id}>{c.name}</option>
-                        )
-                      })
-                    }
-                  </select>
-                  <div className='flex flex-wrap gap-3'>
-                    {
-                      data.subCategory.map((c, index) => {
-                        return (
-                          <div key={c._id + index + "productsection"} className='text-sm flex items-center gap-2 bg-gray-100 border border-gray-300 mt-2 p-2 rounded-md'>
-                            <p>{c.name}</p>
-                            <div className='hover:text-red-500 cursor-pointer' onClick={() => handleRemoveSubCategory(index)}>
                               <IoClose size={20} />
                             </div>
                           </div>
@@ -378,12 +321,11 @@ const EditProductAdmin = ({ close ,data : propsData,fetchProductData}) => {
                 />
               </div>
 
-
               {/**add more field**/}
               {
                 Object?.keys(data?.more_details)?.map((k, index) => {
                   return (
-                    <div className='grid gap-1'>
+                    <div key={k + index} className='grid gap-1'>
                       <label htmlFor={k} className='font-medium'>{k}</label>
                       <input
                         id={k}

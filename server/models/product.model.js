@@ -1,64 +1,52 @@
 import mongoose from "mongoose";
 
 const productSchema = mongoose.Schema({
-    name:{
+    name: {
         type: String,
+        required: true
     },
-    image: { 
-        type:Array,
-        default : []
+    image: {
+        type: Array,
+        default: []
     },
     category: [{
-        type : mongoose.Schema.ObjectId,
-        ref : 'category'
+        type: mongoose.Schema.ObjectId,
+        ref: 'category',
+        required: true
     }],
-    subCategory : [
-        {
-            type: mongoose.Schema.ObjectId,
-            ref : "subCategory"     
-        }
-    ],
-    unit :{
-        type:String,
-        default : ""
-    },
-    stock :{
-        type: Number,
-        default : 0
-    },
-    price : {
-        type: Number,
-        default: null
-    },
-    discount : {
-        type : Number,
-        default : null
-    },
-    description : {
+    // Remove subCategory field
+    unit: {
         type: String,
-        default : ""
+        default: ""
+    },
+    stock: {
+        type: Number,
+        default: 0
+    },
+    price: {
+        type: Number,
+        default: 0
+    },
+    discount: {
+        type: Number,
+        default: 0
+    },
+    description: {
+        type: String,
+        default: ""
     },
     more_details: {
-        type:Object,
-        default : {}
+        type: Object,
+        default: {}
     },
     publish: {
         type: Boolean,
-        default : true
-    },
-},{
-    timestamps:true
-})
+        default: true
+    }
+}, {
+    timestamps: true
+});
 
-//create a index
-productSchema.index({
-    name  : "text",
-    description : "text",
-},{
-    name : 10,
-    description : 5
-})
+const ProductModel = mongoose.model('product', productSchema);
 
-const productModel = mongoose.model('product',productSchema)
-
-export default productModel;
+export default ProductModel;

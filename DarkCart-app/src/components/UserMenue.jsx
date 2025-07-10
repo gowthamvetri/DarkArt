@@ -88,10 +88,10 @@ function UserMenue({close}) {
                             <MdDashboard size={16} />
                             <span>Categories</span>
                         </Link>
-                        <Link onClick={handleClose} to="/dashboard/subcategory" className='flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors'>
+                        {/* <Link onClick={handleClose} to="/dashboard/subcategory" className='flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors'>
                             <MdDashboard size={16} />
                             <span>Sub Categories</span>
-                        </Link>
+                        </Link> */}
                         <Link onClick={handleClose} to="/dashboard/product" className='flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors'>
                             <FiShoppingBag size={16} />
                             <span>Products</span>

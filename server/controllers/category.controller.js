@@ -1,49 +1,47 @@
 import CategoryModel from "../models/category.model.js";
-import subCategoryModel from '../models/subCategory.model.js';
 import productModel from "../models/product.model.js";
+
 export const AddCategoryController = async(request,response)=>{
     try{
-const {name,image}= request.body
-if(!name|| !image){
-    return response.json({
-        message:"All fields are required",
-        error:true,
-        success:false
-    })
-}
-const addCategory = CategoryModel({
-    name,       
-    image
-    })
-    const saveCategory = await addCategory.save()
-    if(!saveCategory)
-    {
-        return response.status(400).json({
-            message:"Category not added",
-            error:true,
-            success:false
+        const {name,image}= request.body
+        if(!name|| !image){
+            return response.json({
+                message:"All fields are required",
+                error:true,
+                success:false
+            })
+        }
+        const addCategory = CategoryModel({
+            name,       
+            image
+        })
+        const saveCategory = await addCategory.save()
+        if(!saveCategory)
+        {
+            return response.status(400).json({
+                message:"Category not added",
+                error:true,
+                success:false
+            })
+        }
+        return response.status(201).json({
+            message:"Category added successfully",
+            data:saveCategory,
+            error:false,
+            success:true
         })
     }
-    return response.status(201).json({
-        message:"Category added successfully",
-        data:saveCategory,
-        error:false,
-        success:true
-    })
-}
     catch(error){
-return response.status(500).json({
-    message: message || error,
-    error:true,
-    success: false
-
-});
-
+        return response.status(500).json({
+            message: error.message || error,
+            error:true,
+            success: false
+        });
     }
 }
+
 export const getCategoryController = async(request,response)=>{
     try {
-        
         const data = await CategoryModel.find().sort({ createdAt : -1 })
 
         return response.json({
@@ -53,13 +51,12 @@ export const getCategoryController = async(request,response)=>{
         })
     } catch (error) {
         return response.status(500).json({
-            message : error.messsage || error,
+            message : error.message || error,
             error : true,
             success : false
         })
     }
 }
-
 
 export const updateCategoryController = async(request,response)=>{
     try {
@@ -91,19 +88,13 @@ export const deleteCategoryController = async(request,response)=>{
     try {
         const { _id } = request.body 
 
-        const checkSubCategory = await subCategoryModel.find({
-            category : {
-                "$in" : [ _id ]
-            }
-        }).countDocuments()
-
         const checkProduct = await productModel.find({
             category : {
                 "$in" : [ _id ]
             }
         }).countDocuments()
 
-        if(checkSubCategory >  0 || checkProduct > 0 ){
+        if(checkProduct > 0){
             return response.status(400).json({
                 message : "Category already in use can't delete",
                 error : true,
