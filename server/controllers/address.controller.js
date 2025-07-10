@@ -5,7 +5,7 @@ export const addAddressController = async (req, res) => {
     try {
         const userId = req.userId; // Assuming user ID is stored in req.user
         // Validate request body
-        const { address_line, city, state, pincode, country, mobile } = req.body;
+        const { address_line, city, state, pincode, country, mobile, addIframe } = req.body;
 
         
         // Create a new address
@@ -17,6 +17,7 @@ export const addAddressController = async (req, res) => {
             country,
             mobile,
             userId: userId, // Associate the address with the user
+            addIframe: addIframe || "",  
         });
 
         const savedAddress = await newAddress.save();
@@ -78,6 +79,7 @@ export const editAddressController = async (req, res) => {
         res.status(500).json({ message: "Error updating address", error:true,success:false });
     }
 }
+
 
 export const deleteAddressController = async (req, res) => {
     try {

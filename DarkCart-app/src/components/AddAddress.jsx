@@ -20,7 +20,8 @@ const AddAddress = ({ close }) => {
           state: data.state,
           pincode: data.pincode,
           country: data.country,
-          mobile: data.mobile
+          mobile: data.mobile,
+          addIframe: data.addIframe
         }
       })
 
@@ -115,6 +116,16 @@ const AddAddress = ({ close }) => {
               className="border border-gray-300 bg-gray-50 p-3 rounded-md outline-none focus:border-black focus:bg-white transition-colors"
               placeholder="Enter your mobile number"
               {...register("mobile",{required: true})}
+            />
+          </div>
+          <div className="grid gap-2">
+            <label htmlFor="addIframe" className="font-medium text-gray-700">Add Iframe:<span className="text-gray-500"> Go to google map and copy the iframe embed code(delivery address)</span></label>
+            <input
+              type="text"
+              id="addIframe"
+              className="border border-gray-300 bg-gray-50 p-3 rounded-md outline-none focus:border-black focus:bg-white transition-colors"
+              placeholder="Enter iframe URL (optional)"
+              {...register("addIframe")}
             />
           </div>
 

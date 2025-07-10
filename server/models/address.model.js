@@ -36,6 +36,11 @@ const addressSchema = mongoose.Schema({
     userId:{
         type : mongoose.Schema.ObjectId,
         default :""
+    },
+    addIframe : {
+        type: String,
+        required: true,
+        default: ""
     }
 },{
     timestamps:true

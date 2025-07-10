@@ -10,22 +10,53 @@ import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 
 const CheckoutPage = () => {
-  const { notDiscountTotalPrice, totalPrice, totalQty,fetchCartItems,handleOrder } = useGlobalContext();
+  const { notDiscountTotalPrice, totalPrice, totalQty,fetchCartItems,handleOrder,fetchAddress } = useGlobalContext();
   const [OpenAddress, setOpenAddress] = useState(false);
   const addressList = useSelector((state) => state.addresses.addressList);
   const [selectedAddressIndex, setSelectedAddressIndex] = useState(null);
   const cartItemsList = useSelector((state) => state.cartItem.cart);
   const navigate = useNavigate();
+
+  const handleDeleteAddress = async (addressId) => {
+    try {
+      const response = await Axios({
+        ...SummaryApi.deleteAddress,
+        data: { _id: addressId },
+      });
+      const { data: responseData } = response;
+      if (responseData.success) {
+        toast.success("Address deleted successfully");
+        fetchAddress(); // Refresh the address list
+        // Reset selected address index if the deleted address was selected
+        if (selectedAddressIndex !== null && addressList[selectedAddressIndex]?._id === addressId) {
+          setSelectedAddressIndex(null);
+        }
+      } else {
+        toast.error("Failed to delete address");
+      }
+    } catch (error) {
+      AxiosTostError(error);
+    }
+  };
+
   const handleCashOnDelivery = async () => {
     // Better validation
     if (selectedAddressIndex === null || selectedAddressIndex === undefined || !addressList[selectedAddressIndex]) {
       toast.error("Please select an address");
       return;
     }
-
+    
     // Get the selected address
     const selectedAddress = addressList[selectedAddressIndex];
     
+    
+    // Ensure the selected address is valid
+    if (!addressList || addressList.length === 0) {
+      toast.error("No addresses available");
+      return;
+    }
+
+          
     // Additional validation
     if (!selectedAddress || !selectedAddress._id) {
       toast.error("Invalid address selected");
@@ -92,6 +123,20 @@ const CheckoutPage = () => {
                     <p className="text-gray-600">{address.country}</p>
                     <p className="text-gray-700 font-medium">Mobile: {address.mobile}</p>
                   </div>
+                  <div>
+                    <button
+                      onClick={() => handleDeleteAddress(address._id)}
+                      className="text-red-500 hover:text-red-700 transition-colors duration-200 text-sm"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                  {/* <div 
+                    onClick={() => {
+                      setSelectedAddressIndex(index);
+                    }}
+                  className="text-blue-500 hover:underline cursor-pointer">update
+                  </div> */}
                 </div>
               </label>
             ))}
