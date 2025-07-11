@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { DisplayPriceInRupees } from "../utils/DisplayPriceInRupees";
 import { useGlobalContext } from "../provider/GlobalProvider";
@@ -8,6 +8,7 @@ import Axios from "../utils/Axios";
 import SummaryApi from "../common/SummaryApi";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import EditAddressData from "../components/EditAddressData";
 
 const CheckoutPage = () => {
   const { notDiscountTotalPrice, totalPrice, totalQty,fetchCartItems,handleOrder,fetchAddress } = useGlobalContext();
@@ -16,6 +17,18 @@ const CheckoutPage = () => {
   const [selectedAddressIndex, setSelectedAddressIndex] = useState(null);
   const cartItemsList = useSelector((state) => state.cartItem.cart);
   const navigate = useNavigate();
+  
+  // State for edit address functionality
+  const [editAddressData, setEditAddressData] = useState(null);
+  const [openEditAddress, setOpenEditAddress] = useState(false);
+  
+  // Add state for countries, states, cities
+  const [countries, setCountries] = useState([]);
+  const [states, setStates] = useState([]);
+  const [cities, setCities] = useState([]);
+  const [isLoadingCountries, setIsLoadingCountries] = useState(false);
+  const [isLoadingStates, setIsLoadingStates] = useState(false);
+  const [isLoadingCities, setIsLoadingCities] = useState(false);
 
   const handleDeleteAddress = async (addressId) => {
     try {
@@ -92,6 +105,82 @@ const CheckoutPage = () => {
     }
   }
 
+  // Add functions to fetch countries, states and cities
+  const fetchCountries = async () => {
+    setIsLoadingCountries(true);
+    try {
+      const response = await fetch("https://countriesnow.space/api/v0.1/countries/positions");
+      const data = await response.json();
+      if (data.data && Array.isArray(data.data)) {
+        setCountries(data.data.map((c) => ({ name: c.name, code: c.iso2 || "" })));
+      }
+    } catch (error) {
+      console.error("Error fetching countries:", error);
+    } finally {
+      setIsLoadingCountries(false);
+    }
+  };
+
+  const fetchStates = async (country) => {
+    if (!country) return;
+
+    setIsLoadingStates(true);
+    setStates([]);
+    setCities([]);
+
+    try {
+      const response = await fetch("https://countriesnow.space/api/v0.1/countries/states", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ country }),
+      });
+
+      const data = await response.json();
+      if (data.data && data.data.states) {
+        setStates(data.data.states);
+      }
+    } catch (error) {
+      console.error("Error fetching states:", error);
+    } finally {
+      setIsLoadingStates(false);
+    }
+  };
+
+  const fetchCities = async (country, state) => {
+    if (!country || !state) return;
+
+    setIsLoadingCities(true);
+    setCities([]);
+
+    try {
+      const response = await fetch("https://countriesnow.space/api/v0.1/countries/state/cities", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ country, state }),
+      });
+
+      const data = await response.json();
+      if (data.data) {
+        setCities(data.data);
+      }
+    } catch (error) {
+      console.error("Error fetching cities:", error);
+    } finally {
+      setIsLoadingCities(false);
+    }
+  };
+
+  // Fetch countries on component mount
+  useEffect(() => {
+    fetchCountries();
+  }, []);
+
+  // Function to handle editing an address
+  const handleEditAddress = (address) => {
+    setEditAddressData(address);
+    setOpenEditAddress(true);
+  };
+
   return (
     <section className="bg-gray-50 min-h-screen">
       <div className="container mx-auto p-4 flex flex-col gap-6 w-full lg:flex-row justify-between">
@@ -115,7 +204,7 @@ const CheckoutPage = () => {
                       className="w-4 h-4 text-black bg-gray-100 border-gray-300 focus:ring-black focus:ring-2"
                     />
                   </div>
-                  <div>
+                  <div className="flex-1">
                     <h4 className="font-semibold text-gray-900 mb-1">{address.address_line}</h4>
                     <p className="text-gray-600">
                       {address.city}, {address.state} - {address.pincode}
@@ -123,20 +212,26 @@ const CheckoutPage = () => {
                     <p className="text-gray-600">{address.country}</p>
                     <p className="text-gray-700 font-medium">Mobile: {address.mobile}</p>
                   </div>
-                  <div>
+                  <div className="flex flex-col gap-2">
                     <button
-                      onClick={() => handleDeleteAddress(address._id)}
+                      onClick={(e) => {
+                        e.preventDefault(); // Prevent radio button selection
+                        handleDeleteAddress(address._id);
+                      }}
                       className="text-red-500 hover:text-red-700 transition-colors duration-200 text-sm"
                     >
                       Delete
                     </button>
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault(); // Prevent radio button selection
+                        handleEditAddress(address);
+                      }}
+                      className="text-blue-500 hover:text-blue-700 transition-colors duration-200 text-sm"
+                    >
+                      Edit
+                    </button>
                   </div>
-                  {/* <div 
-                    onClick={() => {
-                      setSelectedAddressIndex(index);
-                    }}
-                  className="text-blue-500 hover:underline cursor-pointer">update
-                  </div> */}
                 </div>
               </label>
             ))}
@@ -192,6 +287,15 @@ const CheckoutPage = () => {
       </div>
 
       {OpenAddress && <AddAddress close={() => setOpenAddress(false)} />}
+      {openEditAddress && editAddressData && (
+        <EditAddressData 
+          close={() => {
+            setOpenEditAddress(false);
+            setEditAddressData(null);
+          }} 
+          data={editAddressData} 
+        />
+      )}
     </section>
   );
 };
