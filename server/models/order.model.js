@@ -35,6 +35,10 @@ const orderSchema = mongoose.Schema({
         type: String,
         default : ""
     },
+    orderStatus :{
+        type: String,
+        default : "ORDER PLACED"
+    },
     deliveryAddress : {
         type: mongoose.Schema.ObjectId,
         ref : 'address'

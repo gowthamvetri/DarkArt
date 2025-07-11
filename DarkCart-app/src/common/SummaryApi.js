@@ -134,6 +134,9 @@ const SummaryApi = {
     },getAllOrders:{
         url: '/api/order/all',
         method: 'get'
+    },cancelOrder:{
+        url: '/api/order/cancel',
+        method: 'post'
     }
 }
 
