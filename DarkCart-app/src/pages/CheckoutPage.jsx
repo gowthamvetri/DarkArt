@@ -84,6 +84,7 @@ const CheckoutPage = () => {
           totalAmount: totalPrice,
           addressId: selectedAddress._id,  // Use the validated address ID
           subTotalAmt: totalPrice,
+          quantity: totalQty,  // Ensure quantity is passed correctly
         },
       })
 

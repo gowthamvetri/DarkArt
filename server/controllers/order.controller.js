@@ -6,7 +6,7 @@ import CartProductModel from "../models/cartProduct.model.js";
 export const cashOnDeliveryOrderController = async (req, res) => {
   try {
     const userId = req.userId;
-    const { list_items, totalAmount, addressId, subTotalAmt } = req.body;
+    const { list_items, totalAmount, addressId, subTotalAmt, quantity } = req.body;
 
     console.log("Received data:", {
       userId,
@@ -14,6 +14,7 @@ export const cashOnDeliveryOrderController = async (req, res) => {
       totalAmount,
       addressId,
       subTotalAmt,
+      quantity
     });
 
     const payload = list_items.map((item) => {
@@ -26,6 +27,8 @@ export const cashOnDeliveryOrderController = async (req, res) => {
           image: item.productId.image,
         },
         paymentId: "",
+        orderQuantity : quantity,
+        orderDate: new Date(),
         paymentStatus: "CASH ON DELIVERY",
         deliveryAddress: addressId,
         subTotalAmt: subTotalAmt,
@@ -87,7 +90,7 @@ export const getOrderController = async (req, res) => {
 
 export const getAllOrdersController = async (req, res) => {
     try {
-        const orders = await orderModel.find({}).sort({createdAt: -1}).populate("userId", "name email").populate("productId", "name image price").populate("deliveryAddress", "addressLine city state pincode");
+        const orders = await orderModel.find({}).sort({createdAt: -1}).populate("userId", "name email").populate("productId", "name image price").populate("deliveryAddress", "address_line city state pincode country");
         return res.json({
             success: true,
             error: false,

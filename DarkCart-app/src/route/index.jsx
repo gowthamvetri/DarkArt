@@ -23,6 +23,15 @@ import CheckoutPage from '../pages/CheckoutPage';
 import Success from '../pages/Success';
 import Cancel from '../pages/Cancel';
 import About from '../pages/About';
+// Import all static pages
+import Blog from '../pages/Blog';
+import SizeGuide from '../pages/SizeGuide';
+import FAQ from '../pages/FAQ';
+import ShippingReturns from '../pages/ShippingReturns';
+import PrivacyPolicy from '../pages/PrivacyPolicy';
+import TermsConditions from '../pages/TermsConditions';
+import Lookbook from '../pages/Lookbook';
+import Sustainability from '../pages/Sustainability';
 
 const router = createBrowserRouter([
     {
@@ -40,6 +49,38 @@ const router = createBrowserRouter([
             {
                 path:"/about",
                 element : <About/>
+            },
+            {
+                path:"/blog",
+                element : <Blog/>
+            },
+            {
+                path:"/size-guide",
+                element : <SizeGuide/>
+            },
+            {
+                path:"/faq",
+                element : <FAQ/>
+            },
+            {
+                path:"/shipping-returns",
+                element : <ShippingReturns/>
+            },
+            {
+                path:"/privacy-policy",
+                element : <PrivacyPolicy/>
+            },
+            {
+                path:"/terms-conditions",
+                element : <TermsConditions/>
+            },
+            {
+                path:"/lookbook",
+                element : <Lookbook/>
+            },
+            {
+                path:"/sustainability",
+                element : <Sustainability/>
             },
             {
                 path:"/login",

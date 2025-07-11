@@ -15,6 +15,14 @@ const orderSchema = mongoose.Schema({
         type: mongoose.Schema.ObjectId,
         ref : 'product'
     },
+    orderDate:{
+        type: Date,
+        default: Date.now
+    },
+    orderQuantity : {
+        type: Number,
+        default : 1
+    },
     productDetails:{
         name : String,
         image : Array

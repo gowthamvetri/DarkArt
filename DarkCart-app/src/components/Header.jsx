@@ -11,25 +11,28 @@ import { DisplayPriceInRupees } from "../utils/DisplayPriceInRupees";
 import { useGlobalContext } from "../provider/GlobalProvider";
 import DisplayCartItem from "./DisplayCartItem";
 import "../App.css";
+import logo from "../assets/logo.png";
 
-// Fashion Logo Component
 const FashionLogo = () => {
   return (
-    <div className="flex items-center space-x-3">
-      <div className="w-10 h-10 bg-black text-white flex items-center justify-center font-bold text-xl tracking-wider rounded-sm">
-        CC
-      </div>
+    <div className="flex items-center gap-2 sm:gap-3">
+      <img
+        src={logo}
+        alt="Logo"
+        className="w-8 sm:w-10 md:w-14 lg:w-20 xl:w-24 h-auto object-contain"
+      />
       <div className="flex flex-col">
-        <span className="text-xl md:text-2xl font-bold text-black tracking-wider font-serif">
+        <span className="text-sm sm:text-base md:text-xl lg:text-2xl font-bold text-black font-serif tracking-wide leading-tight">
           CASUAL CLOTHINGS
         </span>
-        <span className="text-xs text-gray-500 tracking-widest uppercase">
+        <span className="text-[10px] sm:text-xs lg:text-sm text-gray-500 tracking-widest uppercase">
           Fashion
         </span>
       </div>
     </div>
   );
 };
+
 
 function Header() {
   const ismobile = useMobile();
@@ -63,19 +66,19 @@ function Header() {
         </div>
 
         <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between py-4 md:py-6">
-            {/* Logo */}
+          <div className="flex items-center justify-between py-2 md:py-4">
+            {/* Logo + Title */}
             <Link to="/" className="flex-shrink-0">
               <FashionLogo />
             </Link>
 
-            {/* Desktop Search - Always visible */}
+            {/* Desktop Search */}
             <div className="hidden lg:block flex-1 max-w-lg mx-8">
               <Search />
             </div>
 
             {/* Right Actions */}
-            <div className="flex items-center gap-3 md:gap-6">
+            <div className="flex items-center gap-2 sm:gap-4 md:gap-6">
               {/* Mobile About & User Icon */}
               <div className="lg:hidden flex items-center gap-3">
                 <Link
@@ -95,7 +98,6 @@ function Header() {
 
               {/* Desktop User Menu + About + Cart */}
               <div className="hidden lg:flex items-center gap-8">
-                {/* About Nav Item */}
                 <Link
                   to="/about"
                   className="text-gray-700 hover:text-black transition-colors font-medium tracking-wide relative after:absolute after:w-0 after:h-0.5 after:bg-black after:left-0 after:-bottom-1 after:transition-all after:duration-300 hover:after:w-full"
@@ -156,7 +158,6 @@ function Header() {
                       )}
                     </div>
                   </div>
-                  {/* Cart item count badge */}
                   {cartItem.length > 0 && (
                     <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
                       {cartItem.length}
@@ -164,31 +165,11 @@ function Header() {
                   )}
                 </button>
               </div>
-
-              {/* Mobile Cart Button */}
-              <div className="lg:hidden">
-                <button
-                  onClick={() => setOpenCartSection(true)}
-                  className="relative"
-                >
-                  {/* <div className="flex items-center gap-2 bg-black hover:bg-gray-800 text-white px-3 py-2 rounded-md transition-colors">
-                    <BsCartCheckFill size={18} />
-                    <span className="text-sm font-medium">
-                      {cartItem[0] ? `₹${totalPrice}` : "Cart"}
-                    </span>
-                  </div> */}
-                  {/* {cartItem.length > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
-                      {cartItem.length}
-                    </span>
-                  )} */}
-                </button>
-              </div>
             </div>
           </div>
 
-          {/* Mobile Search - Always visible */}
-          <div className="lg:hidden pb-4">
+          {/* Mobile Search */}
+          <div className="lg:hidden pb-3">
             <Search />
           </div>
         </div>
