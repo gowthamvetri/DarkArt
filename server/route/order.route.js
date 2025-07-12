@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import Auth from '../middleware/Auth.js';
+import Auth from '../middleware/auth.js';
 import { validateStockAvailability } from '../middleware/stockValidation.js';
 import { 
     cashOnDeliveryOrderController,
