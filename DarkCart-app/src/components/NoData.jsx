@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import nodata from "../assets/noData.jpg";
+import nodata from "../assets/productDescriptionImages/Empty-pana.png";
 
 const AnimatedImage = () => {
   return (

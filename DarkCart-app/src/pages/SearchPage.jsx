@@ -7,7 +7,7 @@ import { use } from "react";
 import CardProduct from "../components/CardProduct";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { useLocation } from "react-router-dom";
-import emptyImg from "../assets/noData.jpg";
+import emptyImg from "../assets/productDescriptionImages/Empty-pana.png";
 
 function SearchPage() {
   const [data, setData] = useState([]);

@@ -96,6 +96,10 @@ function UserMenue({close}) {
                             <FiShoppingBag size={16} />
                             <span>Products</span>
                         </Link>
+                        <Link onClick={handleClose} to="/dashboard/orders-admin" className='flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors'>
+                            <FiShoppingBag size={16} />
+                            <span>Orders Management</span>
+                        </Link>
                         <Link onClick={handleClose} to="/dashboard/upload-product" className='flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors'>
                             <FiShoppingBag size={16} />
                             <span>Upload Product</span>

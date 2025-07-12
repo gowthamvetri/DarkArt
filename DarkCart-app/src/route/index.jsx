@@ -23,6 +23,8 @@ import CheckoutPage from '../pages/CheckoutPage';
 import Success from '../pages/Success';
 import Cancel from '../pages/Cancel';
 import About from '../pages/About';
+import OrderSuccessPage from '../pages/OrderSuccessPage';
+import AdminOrderDashboard from '../pages/AdminOrderDashboard';
 // Import all static pages
 import Blog from '../pages/Blog';
 import SizeGuide from '../pages/SizeGuide';
@@ -125,7 +127,10 @@ const router = createBrowserRouter([
                     path:"product",
                     element:<AdminPermision><ProductAdmin/></AdminPermision>
                 },
-                
+                {
+                    path:"orders-admin",
+                    element:<AdminPermision><AdminOrderDashboard/></AdminPermision>
+                }
             ]
             },
             {
@@ -150,6 +155,10 @@ const router = createBrowserRouter([
             {
                 path:"cancel",
                 element : <Cancel/>
+            },
+            {
+                path:"order-success",
+                element : <OrderSuccessPage/>
             }
         ]
     }

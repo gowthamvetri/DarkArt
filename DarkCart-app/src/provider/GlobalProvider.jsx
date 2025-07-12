@@ -20,7 +20,47 @@ const GlobalProvider = ({ children }) => {
   const cartItem = useSelector((state) => state.cartItem.cart);
   const [notDiscountTotalPrice, setNotDiscountTotalPrice] = useState(0);
   const user = useSelector((state) => state.user);
+  const [refreshingOrders, setRefreshingOrders] = useState(false);
   
+  // Function to fetch user orders
+  const fetchOrders = async () => {
+    try {
+      setRefreshingOrders(true);
+      const response = await Axios({
+        url: SummaryApi.getOrderList.url,
+        method: SummaryApi.getOrderList.method
+      });
+      
+      if (response.data.success) {
+        dispatch(setOrders(response.data.data));
+      }
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+      AxiosTostError(error);
+    } finally {
+      setRefreshingOrders(false);
+    }
+  };
+  
+  // Function to fetch all orders (for admin)
+  const fetchAllOrders = async () => {
+    try {
+      setRefreshingOrders(true);
+      const response = await Axios({
+        url: SummaryApi.getAllOrders.url,
+        method: SummaryApi.getAllOrders.method
+      });
+      
+      if (response.data.success) {
+        dispatch(setOrders(response.data.data));
+      }
+    } catch (error) {
+      console.error("Error fetching all orders:", error);
+      AxiosTostError(error);
+    } finally {
+      setRefreshingOrders(false);
+    }
+  };
 
   const fetchCartItems = async () => {
     try {
@@ -77,6 +117,52 @@ const GlobalProvider = ({ children }) => {
     }
   };
 
+  // Function to update order status (for both admin and user views)
+  const updateOrderStatus = async (orderId, newStatus) => {
+    try {
+      const response = await Axios({
+        url: SummaryApi.updateOrderStatus.url,
+        method: SummaryApi.updateOrderStatus.method,
+        data: { orderId, orderStatus: newStatus }
+      });
+      
+      if (response.data.success) {
+        // Don't show toast here - let the component handle it
+        
+        // Refresh orders to get the updated status
+        if (handleOrder) {
+          handleOrder();
+        } else {
+          // Fallback if handleOrder is not defined yet (due to user being null)
+          user?.role?.toUpperCase() === "ADMIN" ? fetchAllOrders() : fetchOrders();
+        }
+        return true;
+      } else {
+        // Just log the error but don't show toast as the component will handle it
+        console.error("API returned error:", response.data);
+        return false;
+      }
+    } catch (error) {
+      // Just log the error but don't show toast as the component will handle it
+      console.error("Error updating order status:", error);
+      return false;
+    }
+  };
+
+  const handleOrder = user?.role === "ADMIN" ? fetchAllOrders : fetchOrders;
+
+  const handleLoggout = () => {
+    localStorage.clear();
+    dispatch(handleAddItemCart([]));
+  };
+
+  useEffect(() => {
+    handleLoggout();
+    fetchCartItems();
+    fetchAddress();
+    handleOrder();
+  }, [user]);
+
   useEffect(() => {
     const qty = cartItem.reduce((preve, curr) => {
       return preve + curr.quantity;
@@ -115,50 +201,6 @@ const GlobalProvider = ({ children }) => {
     }
   }
 
-  const fetchOrders = async () => {
-    try {
-      const response = await Axios({
-        ...SummaryApi.getOrderList,
-      });
-
-      const { data: responseData } = response;
-      if (responseData.success) {
-        dispatch(setOrders(responseData.data));
-      }
-    } catch (error) {
-      // AxiosTostError(error);
-    }
-  };
-
-  const fetchAllOrders = async () => {
-    try {
-      const response = await Axios({
-        ...SummaryApi.getAllOrders,
-      });
-
-      const { data: responseData } = response;
-      if (responseData.success) {
-        dispatch(setOrders(responseData.data));
-      }
-    } catch (error) {
-      // AxiosTostError(error);
-    }
-  };
-
-  const handleOrder = user?.role === "ADMIN" ? fetchAllOrders : fetchOrders;
-
-  const handleLoggout = () => {
-    localStorage.clear();
-    dispatch(handleAddItemCart([]));
-  };
-
-  useEffect(() => {
-    handleLoggout();
-    fetchCartItems();
-    fetchAddress();
-    handleOrder();
-  }, [user]);
-
   return (
     <GlobalContext.Provider
       value={{
@@ -167,6 +209,10 @@ const GlobalProvider = ({ children }) => {
         deleteCartItem,
         fetchAddress,
         handleOrder,
+        fetchOrders,
+        fetchAllOrders,
+        updateOrderStatus,
+        refreshingOrders,
         totalPrice,
         totalQty,
         notDiscountTotalPrice,

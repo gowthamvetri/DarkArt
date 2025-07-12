@@ -1,5 +1,6 @@
 const isAdmin = (s)=>{
-    if(s === 'ADMIN'){
+    // Case-insensitive comparison for admin role check
+    if(s && s.toUpperCase() === 'ADMIN'){
         return true
     }
 

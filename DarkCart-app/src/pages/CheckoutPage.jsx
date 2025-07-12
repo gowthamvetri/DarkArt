@@ -52,6 +52,8 @@ const CheckoutPage = () => {
     }
   };
 
+  const [isProcessing, setIsProcessing] = useState(false);
+
   const handleCashOnDelivery = async () => {
     // Better validation
     if (selectedAddressIndex === null || selectedAddressIndex === undefined || !addressList[selectedAddressIndex]) {
@@ -62,13 +64,11 @@ const CheckoutPage = () => {
     // Get the selected address
     const selectedAddress = addressList[selectedAddressIndex];
     
-    
     // Ensure the selected address is valid
     if (!addressList || addressList.length === 0) {
       toast.error("No addresses available");
       return;
     }
-
           
     // Additional validation
     if (!selectedAddress || !selectedAddress._id) {
@@ -76,7 +76,14 @@ const CheckoutPage = () => {
       return;
     }
     
+    setIsProcessing(true);
+    
     try {
+      // Show a loading toast
+      toast.loading("Processing your order...", {
+        id: "order-processing"
+      });
+      
       const response = await Axios({
         ...SummaryApi.CashOnDeliveryOrder,
         data: {
@@ -90,19 +97,26 @@ const CheckoutPage = () => {
 
       const { data: responseData } = response;
       console.log(responseData);
+      
+      // Dismiss the loading toast
+      toast.dismiss("order-processing");
+      
       if(responseData.success) {
         toast.success("Order placed successfully");
         fetchCartItems();
         handleOrder();
-        navigate("/success", {
+        navigate("/order-success", {
           state: {
             text: "Order"
           }
-        })
+        });
       }
 
     } catch (error) {
-      AxiosTostError(error)
+      toast.dismiss("order-processing");
+      AxiosTostError(error);
+    } finally {
+      setIsProcessing(false);
     }
   }
 
@@ -277,11 +291,26 @@ const CheckoutPage = () => {
             </div>
           </div>
           <div className="w-full flex flex-col gap-3 mt-6">
-            <button className="bg-black px-6 py-3 text-white font-semibold rounded-md hover:bg-gray-800 transition-colors tracking-wide">
+            <button className="bg-black px-6 py-3 text-white font-semibold rounded-md hover:bg-gray-800 transition-all duration-300 tracking-wide transform hover:-translate-y-1 hover:shadow-lg">
               Online Payment
             </button>
-            <button onClick={handleCashOnDelivery} className="px-6 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-md hover:bg-gray-100 hover:text-gray-900 transition-colors">
-              Cash on Delivery
+            <button 
+              onClick={handleCashOnDelivery} 
+              disabled={isProcessing}
+              className={`px-6 py-3 border-2 ${isProcessing ? 'bg-gray-100 border-gray-200 text-gray-400' : 'border-gray-300 text-gray-700 hover:bg-gray-100 hover:text-gray-900 transform hover:-translate-y-1'} font-semibold rounded-md transition-all duration-300 hover:shadow-md relative overflow-hidden group`}
+            >
+              <span className="relative z-10 flex items-center justify-center">
+                {isProcessing ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Processing...
+                  </>
+                ) : "Cash on Delivery"}
+              </span>
+              <span className={`absolute inset-0 bg-gradient-to-r from-gray-100 to-gray-200 transform scale-x-0 ${!isProcessing ? 'group-hover:scale-x-100' : ''} transition-transform origin-left duration-300`}></span>
             </button>
           </div>
         </div>

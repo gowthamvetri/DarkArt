@@ -137,6 +137,9 @@ const SummaryApi = {
     },cancelOrder:{
         url: '/api/order/cancel',
         method: 'post'
+    },updateOrderStatus:{
+        url: '/api/order/update-status',
+        method: 'put'
     }
 }
 
