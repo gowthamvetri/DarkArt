@@ -36,7 +36,7 @@ const GlobalProvider = ({ children }) => {
       }
     } catch (error) {
       console.error("Error fetching orders:", error);
-      AxiosTostError(error);
+      // AxiosTostError(error);
     } finally {
       setRefreshingOrders(false);
     }
@@ -56,7 +56,7 @@ const GlobalProvider = ({ children }) => {
       }
     } catch (error) {
       console.error("Error fetching all orders:", error);
-      AxiosTostError(error);
+      // AxiosTostError(error);
     } finally {
       setRefreshingOrders(false);
     }
@@ -94,7 +94,7 @@ const GlobalProvider = ({ children }) => {
         return responseData;
       }
     } catch (error) {
-      AxiosTostError(error);
+      // AxiosTostError(error);
       return error;
     }
   };
@@ -113,7 +113,7 @@ const GlobalProvider = ({ children }) => {
         fetchCartItems();
       }
     } catch (error) {
-      AxiosTostError(error);
+      // AxiosTostError(error);
     }
   };
 

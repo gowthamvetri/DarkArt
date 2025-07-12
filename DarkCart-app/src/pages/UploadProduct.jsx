@@ -1,31 +1,33 @@
-import React, { useState } from 'react';
-import { useSelector } from 'react-redux';
-import { IoClose } from "react-icons/io5";
+import React, { useState, useEffect } from 'react'
+import { FaCloudUploadAlt } from "react-icons/fa";
 import uploadImage from '../utils/UploadImage';
-import SummaryApi from '../common/SummaryApi';
+import Loading from '../components/Loading';
+import ViewImage from '../components/ViewImage';
+import { IoClose } from 'react-icons/io5';
+import { useSelector } from 'react-redux'
+import AddFieldComponent from '../components/AddFieldComponent';
 import Axios from '../utils/Axios';
-import toast from 'react-hot-toast';
+import SummaryApi from '../common/SummaryApi.js';
 import AxiosTostError from '../utils/AxiosTostError';
+import toast from 'react-hot-toast';
 
-const UploadProduct = () => {
+function UploadProduct() {
   const [data, setData] = useState({
     name: "",
     image: [],
     category: [],
-    unit: "",
     stock: "",
     price: "",
     discount: "",
     description: "",
     more_details: {},
   });
-
-  const [imageLoading, setImageLoading] = useState(false);
+  const [ViewImageURL, setViewImageURL] = useState("");
   const [selectCategory, setSelectCategory] = useState("");
+  const [imageLoading, setImageLoading] = useState(false);
+  const allCategory = useSelector(state => state.product.allCategory);
   const [openAddField, setOpenAddField] = useState(false);
   const [fieldName, setFieldName] = useState("");
-
-  const allCategory = useSelector(state => state.product.allCategory);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -40,36 +42,23 @@ const UploadProduct = () => {
     if (!file) return;
 
     setImageLoading(true);
-    try {
-      const response = await uploadImage(file);
-      const { data: ImageResponse } = response;
-      setData(prev => ({
-        ...prev,
-        image: [...prev.image, ImageResponse.data.url]
-      }));
-    } catch (error) {
-      AxiosTostError(error);
-    } finally {
-      setImageLoading(false);
-    }
-  };
-
-  const handleDeleteImage = (index) => {
-    const updatedImages = [...data.image];
-    updatedImages.splice(index, 1);
+    const response = await uploadImage(file);
+    const { data: ImageResponse } = response;
     setData(prev => ({
       ...prev,
-      image: updatedImages
+      image: [...prev.image, ImageResponse.data.url]
     }));
+    setImageLoading(false);
   };
 
-  const handleRemoveCategory = (index) => {
-    const updatedCategories = [...data.category];
-    updatedCategories.splice(index, 1);
-    setData(prev => ({
-      ...prev,
-      category: updatedCategories
-    }));
+  const handleDeleteImage = async (index) => {
+    data.image.splice(index, 1);
+    setData(prev => ({ ...prev }));
+  };
+
+  const handleRemoveCategory = async (index) => {
+    data.category.splice(index, 1);
+    setData(prev => ({ ...prev }));
   };
 
   const handleAddField = () => {
@@ -101,7 +90,6 @@ const UploadProduct = () => {
           name: "",
           image: [],
           category: [],
-          unit: "",
           stock: "",
           price: "",
           discount: "",
@@ -144,34 +132,27 @@ const UploadProduct = () => {
               required
               multiple
               rows={3}
-              className='bg-gray-50 border border-gray-300 p-2 rounded resize-none focus:outline-none focus:border-primary-200'
+              className='bg-gray-50 border border-gray-300 p-2 rounded focus:outline-none focus:border-primary-200 resize-none'
             />
           </div>
 
-          <div>
+          <div className='grid gap-2'>
             <p className='font-medium'>Image</p>
             <div>
-              <label htmlFor='productImage'>
-                <div className='h-24 bg-gray-50 border border-gray-300 rounded flex items-center justify-center cursor-pointer'>
-                  <div className='text-center flex justify-center items-center flex-col'>
-                    {imageLoading ? (
-                      <div>Loading...</div>
-                    ) : (
-                      <>
-                        <div>Upload Image</div>
-                        <p className='text-sm'>*ratio 1:1 square recommended</p>
-                      </>
-                    )}
-                  </div>
+              <label htmlFor='productImage' className='bg-gray-50 h-32 border border-gray-300 rounded flex items-center justify-center cursor-pointer'>
+                <div className='text-center flex justify-center items-center flex-col'>
+                  {imageLoading ? (
+                    <Loading />
+                  ) : (
+                    <>
+                      <FaCloudUploadAlt size={35} />
+                      <p>Upload Product Image</p>
+                    </>
+                  )}
                 </div>
-                <input
-                  type='file'
-                  id='productImage'
-                  className='hidden'
-                  accept='image/*'
-                  onChange={handleUploadImage}
-                />
+                <input type='file' id='productImage' className='hidden' onChange={handleUploadImage} />
               </label>
+
               <div className='flex flex-wrap gap-4'>
                 {data.image.map((img, index) => (
                   <div key={img + index} className='h-20 mt-1 w-20 min-w-20 bg-gray-50 border relative group'>
@@ -179,6 +160,7 @@ const UploadProduct = () => {
                       src={img}
                       alt={img}
                       className='w-full h-full object-scale-down cursor-pointer'
+                      onClick={() => setViewImageURL(img)}
                     />
                     <div
                       onClick={() => handleDeleteImage(index)}
@@ -228,20 +210,6 @@ const UploadProduct = () => {
           </div>
 
           <div className='grid gap-2'>
-            <label htmlFor='unit' className='font-medium'>Unit</label>
-            <input
-              id='unit'
-              type='text'
-              placeholder='Enter product unit'
-              name='unit'
-              value={data.unit}
-              onChange={handleChange}
-              required
-              className='bg-gray-50 border border-gray-300 p-2 rounded focus:outline-none focus:border-primary-200'
-            />
-          </div>
-
-          <div className='grid gap-2'>
             <label htmlFor='stock' className='font-medium'>Number of Stock</label>
             <input
               id='stock'
@@ -282,74 +250,57 @@ const UploadProduct = () => {
             />
           </div>
 
-          <div>
-            <div className='flex items-center gap-3'>
-              <label className='font-medium'>More Details</label>
-              <button
-                type='button'
-                onClick={() => setOpenAddField(true)}
-                className='bg-black text-white p-1 rounded hover:bg-gray-800'
-              >
-                Add Field
-              </button>
+          {/**add more field**/}
+          {Object?.keys(data?.more_details)?.map((k, index) => (
+            <div key={k + index} className='grid gap-1'>
+              <label htmlFor={k} className='font-medium'>{k}</label>
+              <input
+                id={k}
+                type='text'
+                value={data?.more_details[k]}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setData(prev => ({
+                    ...prev,
+                    more_details: {
+                      ...prev.more_details,
+                      [k]: value
+                    }
+                  }));
+                }}
+                required
+                className='bg-gray-50 p-2 border border-gray-300 rounded focus:outline-none focus:border-primary-200'
+              />
             </div>
-            <div className='grid gap-2'>
-              {Object.entries(data.more_details).map(([key, value], index) => (
-                <div key={index} className='grid gap-1'>
-                  <label htmlFor={key}>{key}</label>
-                  <input
-                    id={key}
-                    type='text'
-                    value={value}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      setData(prev => ({
-                        ...prev,
-                        more_details: {
-                          ...prev.more_details,
-                          [key]: value
-                        }
-                      }));
-                    }}
-                    className='bg-gray-50 border border-gray-300 p-2 rounded focus:outline-none focus:border-primary-200'
-                  />
-                </div>
-              ))}
-            </div>
+          ))}
+
+          <div 
+            onClick={() => setOpenAddField(true)} 
+            className='hover:bg-gray-200 bg-white py-1 px-3 w-32 text-center border border-primary-200 rounded cursor-pointer'
+          >
+            Add Fields
           </div>
 
-          <button className='bg-black hover:bg-gray-800 text-white py-2 rounded my-3 font-semibold'>
+          <button className='bg-black hover:bg-gray-800 text-white py-2 rounded font-semibold'>
             Submit
           </button>
         </form>
-      </div>
 
-      {openAddField && (
-        <section className='fixed top-0 bottom-0 left-0 right-0 bg-black bg-opacity-50 z-50 flex items-center justify-center'>
-          <div className='bg-white p-4 w-full max-w-md rounded'>
-            <div className='flex items-center justify-between gap-4'>
-              <h1 className='font-semibold'>Add Field</h1>
-              <button onClick={() => setOpenAddField(false)}>
-                <IoClose size={25} />
-              </button>
-            </div>
-            <input
-              className='bg-gray-50 border border-gray-300 p-2 rounded w-full my-3 focus:outline-none focus:border-primary-200'
-              placeholder='Enter field name'
-              value={fieldName}
-              onChange={(e) => setFieldName(e.target.value)}
-            />
-            <button
-              onClick={handleAddField}
-              className='bg-black text-white px-4 py-2 rounded hover:bg-gray-800'
-            >
-              Add Field
-            </button>
-          </div>
-        </section>
-      )}
+        {ViewImageURL && (
+          <ViewImage url={ViewImageURL} close={() => setViewImageURL("")} />
+        )}
+
+        {openAddField && (
+          <AddFieldComponent
+            value={fieldName}
+            onChange={(e) => setFieldName(e.target.value)}
+            submit={handleAddField}
+            close={() => setOpenAddField(false)}
+          />
+        )}
+      </div>
     </section>
   );
-};
+}
 
 export default UploadProduct;

@@ -132,7 +132,7 @@ const SummaryApi = {
         url: '/api/order/order-list',
         method: 'get'
     },getAllOrders:{
-        url: '/api/order/all',
+        url: '/api/order/all-orders',
         method: 'get'
     },cancelOrder:{
         url: '/api/order/cancel',

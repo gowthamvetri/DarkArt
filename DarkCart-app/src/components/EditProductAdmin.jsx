@@ -19,7 +19,6 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
     name: propsData.name,
     image: propsData.image,
     category: propsData.category,
-    unit: propsData.unit,
     stock: propsData.stock,
     price: propsData.price,
     discount: propsData.discount,
@@ -30,14 +29,11 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
   const [ViewImageURL, setViewImageURL] = useState("")
   const allCategory = useSelector(state => state.product.allCategory)
   const [selectCategory, setSelectCategory] = useState("")
-
   const [openAddField, setOpenAddField] = useState(false)
   const [fieldName, setFieldName] = useState("")
 
-
   const handleChange = (e) => {
     const { name, value } = e.target
-
     setData((preve) => {
       return {
         ...preve,
@@ -48,7 +44,6 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
 
   const handleUploadImage = async (e) => {
     const file = e.target.files[0]
-
     if (!file) {
       return
     }
@@ -64,7 +59,6 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
       }
     })
     setImageLoading(false)
-
   }
 
   const handleDeleteImage = async (index) => {
@@ -120,7 +114,6 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
           name: "",
           image: [],
           category: [],
-          unit: "",
           stock: "",
           price: "",
           discount: "",
@@ -131,8 +124,6 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
     } catch (error) {
       AxiosTostError(error)
     }
-
-
   }
 
   return (
@@ -175,29 +166,25 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
                   className='bg-gray-50 p-3 outline-none border border-gray-300 focus:border-black focus:bg-white rounded-md transition-colors resize-none'
                 />
               </div>
-              <div>
+              <div className='grid gap-1'>
                 <p className='font-medium'>Image</p>
                 <div>
-                  <label htmlFor='productImage' className='bg-gray-50 h-24 border border-gray-300 rounded-md flex justify-center items-center cursor-pointer hover:bg-gray-100 transition-colors'>
+                  <label htmlFor='productImage' className='bg-gray-50 h-32 border border-gray-300 rounded-md flex items-center justify-center cursor-pointer'>
                     <div className='text-center flex justify-center items-center flex-col'>
                       {
-                        imageLoading ? <Loading /> : (
+                        imageLoading ? (
+                          <Loading />
+                        ) : (
                           <>
                             <FaCloudUploadAlt size={35} />
-                            <p>Upload Image</p>
+                            <p>Upload Product Image</p>
                           </>
                         )
                       }
                     </div>
-                    <input
-                      type='file'
-                      id='productImage'
-                      className='hidden'
-                      accept='image/*'
-                      onChange={handleUploadImage}
-                    />
+                    <input type='file' id='productImage' className='hidden' onChange={handleUploadImage} />
                   </label>
-                  {/**display uploaded image*/}
+
                   <div className='flex flex-wrap gap-4'>
                     {
                       data.image.map((img, index) => {
@@ -263,20 +250,6 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
                     }
                   </div>
                 </div>
-              </div>
-
-              <div className='grid gap-1'>
-                <label htmlFor='unit' className='font-medium'>Unit</label>
-                <input
-                  id='unit'
-                  type='text'
-                  placeholder='Enter product unit'
-                  name='unit'
-                  value={data.unit}
-                  onChange={handleChange}
-                  required
-                  className='bg-gray-50 p-3 outline-none border border-gray-300 focus:border-black focus:bg-white rounded-md transition-colors'
-                />
               </div>
 
               <div className='grid gap-1'>

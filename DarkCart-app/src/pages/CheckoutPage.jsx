@@ -11,17 +11,17 @@ import { useNavigate } from "react-router-dom";
 import EditAddressData from "../components/EditAddressData";
 
 const CheckoutPage = () => {
-  const { notDiscountTotalPrice, totalPrice, totalQty,fetchCartItems,handleOrder,fetchAddress } = useGlobalContext();
+  const { notDiscountTotalPrice, totalPrice, totalQty, fetchCartItems, handleOrder, fetchAddress } = useGlobalContext();
   const [OpenAddress, setOpenAddress] = useState(false);
   const addressList = useSelector((state) => state.addresses.addressList);
   const [selectedAddressIndex, setSelectedAddressIndex] = useState(null);
   const cartItemsList = useSelector((state) => state.cartItem.cart);
   const navigate = useNavigate();
-  
+
   // State for edit address functionality
   const [editAddressData, setEditAddressData] = useState(null);
   const [openEditAddress, setOpenEditAddress] = useState(false);
-  
+
   // Add state for countries, states, cities
   const [countries, setCountries] = useState([]);
   const [states, setStates] = useState([]);
@@ -60,65 +60,64 @@ const CheckoutPage = () => {
       toast.error("Please select an address");
       return;
     }
-    
+
     // Get the selected address
     const selectedAddress = addressList[selectedAddressIndex];
-    
+
     // Ensure the selected address is valid
     if (!addressList || addressList.length === 0) {
       toast.error("No addresses available");
       return;
     }
-          
+
     // Additional validation
     if (!selectedAddress || !selectedAddress._id) {
       toast.error("Invalid address selected");
       return;
     }
-    
+
     setIsProcessing(true);
-    
+
     try {
       // Show a loading toast
       toast.loading("Processing your order...", {
-        id: "order-processing"
+        id: "order-processing",
       });
-      
+
       const response = await Axios({
         ...SummaryApi.CashOnDeliveryOrder,
         data: {
           list_items: cartItemsList,
           totalAmount: totalPrice,
-          addressId: selectedAddress._id,  // Use the validated address ID
+          addressId: selectedAddress._id, // Use the validated address ID
           subTotalAmt: totalPrice,
-          quantity: totalQty,  // Ensure quantity is passed correctly
+          quantity: totalQty, // Ensure quantity is passed correctly
         },
-      })
+      });
 
       const { data: responseData } = response;
       console.log(responseData);
-      
+
       // Dismiss the loading toast
       toast.dismiss("order-processing");
-      
-      if(responseData.success) {
+
+      if (responseData.success) {
         toast.success("Order placed successfully");
         fetchCartItems();
         handleOrder();
         navigate("/order-success", {
           state: {
-            text: "Order"
-          }
+            text: "Order",
+          },
         });
       }
-
     } catch (error) {
       toast.dismiss("order-processing");
       AxiosTostError(error);
     } finally {
       setIsProcessing(false);
     }
-  }
+  };
 
   // Add functions to fetch countries, states and cities
   const fetchCountries = async () => {
@@ -196,6 +195,46 @@ const CheckoutPage = () => {
     setOpenEditAddress(true);
   };
 
+  const handleOrderSubmit = async () => {
+    setLoading(true);
+    try {
+      const orderData = {
+        list_items: cartItem.map((item) => ({
+          productId: item.productId,
+          quantity: item.quantity,
+        })),
+        totalAmount: totalPrice,
+        addressId: selectedAddress._id,
+        subTotalAmt: notDiscountTotalPrice,
+      };
+
+      const response = await Axios({
+        ...SummaryApi.cashOnDelivery,
+        data: orderData,
+      });
+
+      if (response.data.success) {
+        toast.success(response.data.message);
+        // Redirect to success page
+        navigate("/order-success");
+      }
+    } catch (error) {
+      if (error.response?.data?.productId) {
+        // Handle specific stock error
+        const errorData = error.response.data;
+        toast.error(
+          `${errorData.message}\nPlease update your cart and try again.`
+        );
+        // Optionally refresh cart to show updated stock
+        fetchCartItems();
+      } else {
+        toast.error(error.response?.data?.message || "Order failed");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <section className="bg-gray-50 min-h-screen">
       <div className="container mx-auto p-4 flex flex-col gap-6 w-full lg:flex-row justify-between">
@@ -215,7 +254,7 @@ const CheckoutPage = () => {
                       type="radio"
                       name="address"
                       value={index}
-                      onChange={() => setSelectedAddressIndex(index)}  // Make sure this is onChange, not onClick
+                      onChange={() => setSelectedAddressIndex(index)} // Make sure this is onChange, not onClick
                       className="w-4 h-4 text-black bg-gray-100 border-gray-300 focus:ring-black focus:ring-2"
                     />
                   </div>
@@ -258,7 +297,6 @@ const CheckoutPage = () => {
           >
             <span className="text-gray-600 font-medium">Add address</span>
           </div>
-          
         </div>
         <div className="w-full max-w-md bg-white py-6 px-6 rounded-lg shadow-sm border border-gray-200">
           <h3 className="text-xl font-bold text-gray-900 font-serif mb-6">Order Summary</h3>
@@ -268,9 +306,7 @@ const CheckoutPage = () => {
               <div className="flex gap-4 justify-between">
                 <p className="text-gray-600">Items total</p>
                 <p className="flex items-center gap-2">
-                  <span className="line-through text-gray-400">
-                    {DisplayPriceInRupees(notDiscountTotalPrice)}
-                  </span>
+                  <span className="line-through text-gray-400">{DisplayPriceInRupees(notDiscountTotalPrice)}</span>
                   <span className="font-medium text-black">{DisplayPriceInRupees(totalPrice)}</span>
                 </p>
               </div>
@@ -294,8 +330,8 @@ const CheckoutPage = () => {
             <button className="bg-black px-6 py-3 text-white font-semibold rounded-md hover:bg-gray-800 transition-all duration-300 tracking-wide transform hover:-translate-y-1 hover:shadow-lg">
               Online Payment
             </button>
-            <button 
-              onClick={handleCashOnDelivery} 
+            <button
+              onClick={handleCashOnDelivery}
               disabled={isProcessing}
               className={`px-6 py-3 border-2 ${isProcessing ? 'bg-gray-100 border-gray-200 text-gray-400' : 'border-gray-300 text-gray-700 hover:bg-gray-100 hover:text-gray-900 transform hover:-translate-y-1'} font-semibold rounded-md transition-all duration-300 hover:shadow-md relative overflow-hidden group`}
             >
@@ -318,12 +354,12 @@ const CheckoutPage = () => {
 
       {OpenAddress && <AddAddress close={() => setOpenAddress(false)} />}
       {openEditAddress && editAddressData && (
-        <EditAddressData 
+        <EditAddressData
           close={() => {
             setOpenEditAddress(false);
             setEditAddressData(null);
-          }} 
-          data={editAddressData} 
+          }}
+          data={editAddressData}
         />
       )}
     </section>

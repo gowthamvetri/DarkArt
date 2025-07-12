@@ -35,7 +35,7 @@ const OrderTimeline = ({ status }) => {
               const isCurrent = index === currentStatusIndex;
               
               return (
-                <div key={step.name} className="z-10 flex flex-col items-center relative">
+                <div key={step.name} className="z-10 mt-4 flex flex-col items-center relative">
                   <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
                     isCurrent 
                       ? `${step.color} bg-white border-2 border-current animate-pulse` 
@@ -45,7 +45,7 @@ const OrderTimeline = ({ status }) => {
                   }`}>
                     {step.icon}
                   </div>
-                  <p className={`text-xs font-medium mt-2 text-center max-w-[80px] ${
+                  <p className={`text-xs font-medium mt-2 text-center max-w-[120px] ${
                     isCurrent 
                       ? step.color 
                       : isCompleted 
