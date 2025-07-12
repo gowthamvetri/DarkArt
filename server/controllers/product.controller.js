@@ -6,7 +6,6 @@ export const createProductController = async(request,response)=>{
             name,
             image,
             category,
-            unit,
             stock,
             price,
             discount,
@@ -14,7 +13,7 @@ export const createProductController = async(request,response)=>{
             more_details,
         } = request.body 
 
-        if(!name || !image[0] || !category[0] || !unit || !price || !description ){
+        if(!name || !image[0] || !category[0] || !price || !description ){
             return response.status(400).json({
                 message : "Enter required fields",
                 error : true,
@@ -26,7 +25,6 @@ export const createProductController = async(request,response)=>{
             name,
             image,
             category,
-            unit,
             stock,
             price,
             discount,
@@ -95,41 +93,27 @@ export const getProductController = async(request,response)=>{
 
 export const getProductByCategory = async (request, response) => {
     try {
-      let { id, page, limit } = request.body;
+      const { id } = request.body;
   
-      if (!id) {
+      if (!id || !Array.isArray(id)) {
         return response.status(400).json({
-          message: "Category id is required",
+          message: "Category id required and should be array",
           error: true,
-          success: false
+          success: false,
         });
       }
   
-      if (!Array.isArray(id)) {
-        id = [id];
-      }
-
-      // Set default pagination
-      page = page || 1;
-      limit = limit || 15;
-      const skip = (page - 1) * limit;
-  
       const product = await ProductModel.find({
-        category: { $in: id } 
-      }).skip(skip).limit(limit).populate('category');
-
-      const totalCount = await ProductModel.countDocuments({
-        category: { $in: id }
-      });
+        category: {
+          $in: id,
+        },
+      }).limit(15).populate('category');
   
       return response.json({
-        message: "Category product list",
+        message: "category wise product",
         data: product,
-        totalCount: totalCount,
-        page: page,
-        limit: limit,
+        success: true,
         error: false,
-        success: true
       });
     } catch (error) {
       return response.status(500).json({
@@ -233,7 +217,7 @@ export const searchProduct = async(request,response)=>{
             page = 1
         }
         if(!limit){
-            limit  = 10
+            limit = 10
         }
 
         const query = search ? {
@@ -242,24 +226,21 @@ export const searchProduct = async(request,response)=>{
             }
         } : {}
 
-        const skip = ( page - 1) * limit
+        const skip = (page - 1) * limit
 
-        const [data,dataCount] = await Promise.all([
-            ProductModel.find(query).sort({ createdAt  : -1 }).skip(skip).limit(limit).populate('category'),
+        const [data,totalCount] = await Promise.all([
+            ProductModel.find(query).sort({createdAt : -1 }).skip(skip).limit(limit).populate('category'),
             ProductModel.countDocuments(query)
         ])
 
         return response.json({
-            message : "Product data",
+            message : "Search Product data",
             error : false,
             success : true,
-            data : data,
-            totalCount :dataCount,
-            totalPage : Math.ceil(dataCount/limit),
-            page : page,
-            limit : limit 
+            totalCount : totalCount,
+            totalNoPage : Math.ceil( totalCount / limit),
+            data : data
         })
-
     } catch (error) {
         return response.status(500).json({
             message : error.message || error,

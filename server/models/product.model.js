@@ -14,11 +14,6 @@ const productSchema = mongoose.Schema({
         ref: 'category',
         required: true
     }],
-    // Remove subCategory field
-    unit: {
-        type: String,
-        default: ""
-    },
     stock: {
         type: Number,
         default: 0

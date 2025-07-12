@@ -1,14 +1,21 @@
-import Router from 'express';
-import auth from '../middleware/auth.js';
-import { admin } from '../middleware/Admin.js';
-import { cancelOrderController, cashOnDeliveryOrderController, getAllOrdersController, getOrderController, updateOrderStatusController } from '../controllers/order.controller.js';
+import { Router } from 'express';
+import Auth from '../middleware/Auth.js';
+import { validateStockAvailability } from '../middleware/stockValidation.js';
+import { 
+    cashOnDeliveryOrderController,
+    getOrderController,
+    getAllOrdersController,
+    cancelOrderController,
+    updateOrderStatusController
+} from '../controllers/order.controller.js';
 
 const orderRouter = Router();
 
-orderRouter.post("/cash-on-delivery",auth,cashOnDeliveryOrderController)
-orderRouter.get('/order-list',auth,getOrderController);
-orderRouter.get('/all',auth,admin,getAllOrdersController);
-orderRouter.post('/cancel', auth, cancelOrderController);
-orderRouter.put('/update-status', auth, admin, updateOrderStatusController);
+// Apply stock validation middleware before order creation
+orderRouter.post('/cash-on-delivery', Auth, validateStockAvailability, cashOnDeliveryOrderController);
+orderRouter.get('/get', Auth, getOrderController);
+orderRouter.get('/all-orders', Auth, getAllOrdersController);
+orderRouter.post('/cancel-order', Auth, cancelOrderController);
+orderRouter.put('/update-order-status', Auth, updateOrderStatusController);
 
 export default orderRouter;
