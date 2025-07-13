@@ -48,6 +48,40 @@ body{
   display: none;  /* Chrome, Safari and Opera */
 }
 
+/* Card Carousel Enhancements */
+.card-carousel-container {
+  perspective: 1000px;
+  transform-style: preserve-3d;
+}
+
+.card-carousel-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  backface-visibility: hidden;
+  will-change: transform;
+}
+
+.card-carousel-card:hover {
+  transform: translateZ(10px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+/* Responsive Card Styles */
+@media (max-width: 768px) {
+  .card-carousel-container {
+    perspective: 800px;
+  }
+  
+  .card-carousel-card {
+    transform-origin: center center;
+  }
+}
+
+@media (max-width: 480px) {
+  .card-carousel-container {
+    perspective: 600px;
+  }
+}
+
 /* Custom height classes */
 .h-84 {
   height: 21rem; /* 336px */
@@ -233,4 +267,58 @@ body{
   background: rgba(255, 255, 255, 0.75);
   color: #333333;
   backdrop-filter: blur(5px);
+}
+
+
+.embla {
+  overflow: hidden;
+}
+.embla__container {
+  display: flex;
+}
+.embla__slide {
+  flex: 0 0 100%;
+  min-width: 0;
+}
+
+/* Banner text animations */
+.banner-text-fade {
+  animation: fadeInUp 0.8s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Smooth hover effects for mobile */
+@media (hover: none) {
+  .card-carousel-card:hover {
+    transform: none;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  }
+}
+
+/* Large screen optimizations */
+@media (min-width: 1024px) {
+  .card-carousel-container {
+    perspective: 1200px;
+  }
+  
+  .banner-text-fade {
+    animation-duration: 1s;
+    animation-delay: 0.2s;
+  }
+}
+
+@media (min-width: 1440px) {
+  .card-carousel-container {
+    perspective: 1400px;
+  }
 }

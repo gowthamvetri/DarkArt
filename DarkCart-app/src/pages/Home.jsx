@@ -3,7 +3,8 @@ import { useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { validURLConvert } from "../utils/validURLConvert";
 import CategoryWiseProductDisplay from "../components/CategoryWiseProductDisplay";
-import HomeBannerCarousel from "../components/HomeBannerCarousel";
+import HomeBannerCarousel from "../components/EmblaCarousel";
+import EmblaCarousel from "../components/EmblaCarousel";
 
 function Home() {
   const loadingCategory = useSelector((state) => state.product.loadingCategory);
@@ -18,7 +19,7 @@ function Home() {
   return (
     <section className="bg-gray-50">
       {/* Animated Banner Carousel */}
-      <HomeBannerCarousel />
+      <EmblaCarousel />
 
       {/* Category Section */}
       <div className="container mx-auto px-4 lg:px-10 my-8 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3 md:gap-4">
