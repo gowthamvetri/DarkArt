@@ -95,7 +95,7 @@ export const getProductByCategory = async (request, response) => {
     try {
       const { id } = request.body;
   
-      if (!id || !Array.isArray(id)) {
+      if (!id) {
         return response.status(400).json({
           message: "Category id required and should be array",
           error: true,
@@ -104,9 +104,7 @@ export const getProductByCategory = async (request, response) => {
       }
   
       const product = await ProductModel.find({
-        category: {
-          $in: id,
-        },
+        category: id
       }).limit(15).populate('category');
   
       return response.json({

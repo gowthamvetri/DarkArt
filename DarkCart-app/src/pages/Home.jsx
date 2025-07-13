@@ -11,7 +11,7 @@ function Home() {
   const navigate = useNavigate();
 
   const handleRedirectProductListPage = (id, category) => {
-    const url = `/${validURLConvert(category)}-${id}`;
+    const url = `category/${validURLConvert(category)}-${id}`;
     navigate(url);
   };
 

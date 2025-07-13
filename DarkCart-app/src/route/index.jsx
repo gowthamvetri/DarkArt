@@ -1,39 +1,39 @@
-import { createBrowserRouter} from 'react-router-dom'
-import App from '../App'
-import Home from '../pages/Home';
-import SearchPage from '../pages/SearchPage'; 
-import Login from '../pages/Login';
-import Register from '../pages/Register';
-import ForgotPassword from '../pages/ForgotPassword';
-import OtpVerify from '../pages/OtpVerify';
-import ResetPassword from '../pages/ResetPassword';
-import UserMenuMobile from '../pages/UserMenuMobile';
-import Dashboard from '../layout/Dashboard';
-import Profile from '../pages/Profile';
-import MyOrders from '../pages/MyOrders';
-import Address from '../pages/Address';
-import CategoryPage from '../pages/CategoryPage';
-import UploadProduct from '../pages/UploadProduct';
-import AdminPermision from '../layout/AdminPermission';
-import ProductAdmin from '../pages/ProductAdmin';
-import ProductListPage from '../pages/ProductListPage';
-import ProductDisplayPage from '../pages/ProductDisplayPage';
-import CartMobile from '../pages/CartMobile';
-import CheckoutPage from '../pages/CheckoutPage';
-import Success from '../pages/Success';
-import Cancel from '../pages/Cancel';
-import About from '../pages/About';
-import OrderSuccessPage from '../pages/OrderSuccessPage';
-import AdminOrderDashboard from '../pages/AdminOrderDashboard';
-// Import all static pages
-import Blog from '../pages/Blog';
-import SizeGuide from '../pages/SizeGuide';
-import FAQ from '../pages/FAQ';
-import ShippingReturns from '../pages/ShippingReturns';
-import PrivacyPolicy from '../pages/PrivacyPolicy';
-import TermsConditions from '../pages/TermsConditions';
-import Lookbook from '../pages/Lookbook';
-import Sustainability from '../pages/Sustainability';
+import { createBrowserRouter } from "react-router-dom";
+import App from "../App";
+import Home from "../pages/Home";
+import SearchPage from "../pages/SearchPage";
+import About from "../pages/About";
+import Blog from "../pages/Blog";
+import SizeGuide from "../pages/SizeGuide";
+import FAQ from "../pages/FAQ";
+import ShippingReturns from "../pages/ShippingReturns";
+import PrivacyPolicy from "../pages/PrivacyPolicy";
+import TermsConditions from "../pages/TermsConditions";
+import Lookbook from "../pages/Lookbook";
+import Sustainability from "../pages/Sustainability";
+import Login from "../pages/Login";
+import Register from "../pages/Register";
+import ForgotPassword from "../pages/ForgotPassword";
+import OtpVerify from "../pages/OtpVerify";
+import ResetPassword from "../pages/ResetPassword";
+import UserMenuMobile from "../pages/UserMenuMobile";
+import Dashboard from "../layout/Dashboard";
+import Profile from "../pages/Profile";
+import MyOrders from "../pages/MyOrders";
+import Address from "../pages/Address";
+import CategoryPage from "../pages/CategoryPage";
+import UploadProduct from "../pages/UploadProduct";
+import ProductAdmin from "../pages/ProductAdmin";
+import AdminOrderDashboard from "../pages/AdminOrderDashboard";
+import ProductListPage from "../pages/ProductListPage";
+import ProductDisplayPage from "../pages/ProductDisplayPage";
+import CartMobile from "../pages/CartMobile";
+import CheckoutPage from "../pages/CheckoutPage";
+import Success from "../pages/Success";
+import Cancel from "../pages/Cancel";
+import OrderSuccessPage from "../pages/OrderSuccessPage";
+import PageNotFound from "../pages/PageNotFound"; // Add this import
+import AdminPermision from "../layout/AdminPermission";
 
 const router = createBrowserRouter([
     {
@@ -130,11 +130,16 @@ const router = createBrowserRouter([
                 {
                     path:"orders-admin",
                     element:<AdminPermision><AdminOrderDashboard/></AdminPermision>
+                },
+                // Add catch-all for dashboard subroutes
+                {
+                    path:"*",
+                    element:<PageNotFound/>
                 }
             ]
             },
             {
-                path:":category",
+                path:"category/:category",
                 element :<ProductListPage/>
             },{
                 path:"product/:product",
@@ -159,6 +164,11 @@ const router = createBrowserRouter([
             {
                 path:"order-success",
                 element : <OrderSuccessPage/>
+            },
+            // Add catch-all route for any invalid URLs - THIS MUST BE LAST
+            {
+                path:"*",
+                element : <PageNotFound/>
             }
         ]
     }
