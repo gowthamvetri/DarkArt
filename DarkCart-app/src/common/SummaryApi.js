@@ -129,7 +129,7 @@ const SummaryApi = {
         url: '/api/order/cash-on-delivery',
         method: 'post'
     },getOrderList:{
-        url: '/api/order/order-list',
+        url: '/api/order/get',
         method: 'get'
     },getAllOrders:{
         url: '/api/order/all-orders',
@@ -138,7 +138,7 @@ const SummaryApi = {
         url: '/api/order/cancel',
         method: 'post'
     },updateOrderStatus:{
-        url: '/api/order/update-status',
+        url: '/api/order/update-order-status',
         method: 'put'
     }
 }

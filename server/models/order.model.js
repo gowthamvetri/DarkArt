@@ -3,62 +3,72 @@ import mongoose from "mongoose";
 const orderSchema = mongoose.Schema({
     userId : {
         type: mongoose.Schema.ObjectId,
-        default : "users",
         ref : 'users',
+        required: true
     },
     orderId : {
-        type:String,
-        required:true,
-        unique:true
+        type: String,
+        required: true,
+        unique: true
     },
-    productId:{
-        type: mongoose.Schema.ObjectId,
-        ref : 'product'
-    },
-    orderDate:{
+    // Updated to support multiple items in single order
+    items: [{
+        productId: {
+            type: mongoose.Schema.ObjectId,
+            ref: 'product', // Make sure this matches your product model name
+            required: true
+        },
+        productDetails: {
+            name: String,
+            image: Array,
+            price: Number
+        },
+        quantity: {
+            type: Number,
+            required: true,
+            default: 1
+        },
+        itemTotal: {
+            type: Number,
+            required: true
+        }
+    }],
+    orderDate: {
         type: Date,
         default: Date.now
     },
-    orderQuantity : {
+    totalQuantity: {
         type: Number,
-        default : 1
+        required: true
     },
-    productDetails:{
-        name : String,
-        image : Array
-    },
-    paymentId : {
-        type : String,
-        default : ""
-    },
-    paymentStatus : {
+    paymentId: {
         type: String,
-        default : ""
+        default: ""
     },
-    orderStatus :{
+    paymentStatus: {
         type: String,
-        default : "ORDER PLACED"
+        default: ""
     },
-    deliveryAddress : {
+    orderStatus: {
+        type: String,
+        default: "ORDER PLACED"
+    },
+    deliveryAddress: {
         type: mongoose.Schema.ObjectId,
-        ref : 'address'
+        ref: 'address'
     },
-    subTotalAmt : {
+    subTotalAmt: {
         type: Number,
         default: 0
     },
-    totalAmt : {
+    totalAmt: {
         type: Number,
-        default : 0
+        default: 0
     },
-    invoiceReceipt : {
-        type:String,
-        default : ""
-    }
-},{
-    timestamps : true
-})
+}, {
+    timestamps: true
+});
 
-const orderModel = mongoose.model('order',orderSchema)
+const orderModel = mongoose.model('order', orderSchema);
 
-export default orderModel
+export default orderModel;

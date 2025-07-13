@@ -30,6 +30,8 @@ const CheckoutPage = () => {
   const [isLoadingStates, setIsLoadingStates] = useState(false);
   const [isLoadingCities, setIsLoadingCities] = useState(false);
 
+  console.log(cartItemsList)
+
   const handleDeleteAddress = async (addressId) => {
     try {
       const response = await Axios({
@@ -195,45 +197,7 @@ const CheckoutPage = () => {
     setOpenEditAddress(true);
   };
 
-  const handleOrderSubmit = async () => {
-    setLoading(true);
-    try {
-      const orderData = {
-        list_items: cartItem.map((item) => ({
-          productId: item.productId,
-          quantity: item.quantity,
-        })),
-        totalAmount: totalPrice,
-        addressId: selectedAddress._id,
-        subTotalAmt: notDiscountTotalPrice,
-      };
 
-      const response = await Axios({
-        ...SummaryApi.cashOnDelivery,
-        data: orderData,
-      });
-
-      if (response.data.success) {
-        toast.success(response.data.message);
-        // Redirect to success page
-        navigate("/order-success");
-      }
-    } catch (error) {
-      if (error.response?.data?.productId) {
-        // Handle specific stock error
-        const errorData = error.response.data;
-        toast.error(
-          `${errorData.message}\nPlease update your cart and try again.`
-        );
-        // Optionally refresh cart to show updated stock
-        fetchCartItems();
-      } else {
-        toast.error(error.response?.data?.message || "Order failed");
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <section className="bg-gray-50 min-h-screen">

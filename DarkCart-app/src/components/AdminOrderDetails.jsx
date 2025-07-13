@@ -31,40 +31,29 @@ const AdminOrderDetails = ({ order, onClose }) => {
 
     setUpdatingStatus(true);
     try {
-      // Get the readable label for the selected status
       const statusLabel = statusOptions.find(option => option.value === selectedStatus)?.label || selectedStatus;
       
       const success = await updateOrderStatus(order.orderId, selectedStatus);
       
       if (success) {
-        // Update local state to reflect the change immediately
         setLocalOrderStatus(selectedStatus);
-        
-        // Use the actual status label in the toast
         toast.success(`Order status updated to ${statusLabel}`);
         
-        // Update the order object for the parent component
         if (order) {
           order.orderStatus = selectedStatus;
         }
         
-        // Close the modal after a short delay to show the updated status
         setTimeout(() => {
           onClose();
         }, 1500);
-      } else {
-        // Only show error if there's a failure but don't duplicate existing errors
-        // Silent failure here as the GlobalProvider might already show an error
       }
     } catch (error) {
-      // Just log the error but don't show toast as it might be duplicated from GlobalProvider
       console.error('Error updating order status:', error);
     } finally {
       setUpdatingStatus(false);
     }
   };
 
-  // Format date
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return new Intl.DateTimeFormat('en-US', {
@@ -201,6 +190,10 @@ const AdminOrderDetails = ({ order, onClose }) => {
                   </div>
                 </div>
                 <div className="mb-3">
+                  <span className="block text-sm text-gray-500 mb-1">Total Quantity</span>
+                  <span className="font-medium text-gray-800">{order.totalQuantity} items</span>
+                </div>
+                <div className="mb-3">
                   <span className="block text-sm text-gray-500 mb-1">Subtotal</span>
                   <span className="font-medium text-gray-800">₹{order.subTotalAmt?.toFixed(2)}</span>
                 </div>
@@ -212,31 +205,104 @@ const AdminOrderDetails = ({ order, onClose }) => {
             </div>
           </div>
 
-          {/* Product Details */}
+          {/* Products Information - Fixed for Multiple Items */}
           <div className="mt-8">
-            <h3 className="font-bold text-gray-700 mb-4">Product Information</h3>
-            <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-              <div className="flex flex-col md:flex-row items-start p-4 gap-4">
-                <div className="w-20 h-20 rounded-md overflow-hidden bg-gray-100 flex-shrink-0">
-                  {order.productDetails?.image && order.productDetails.image.length > 0 && (
-                    <img 
-                      src={order.productDetails.image[0]} 
-                      alt={order.productDetails?.name} 
-                      className="w-full h-full object-cover"
-                    />
-                  )}
-                </div>
-                <div className="flex-grow">
-                  <h4 className="font-medium text-gray-900 mb-1">{order.productDetails?.name}</h4>
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-8">
-                    <div className="flex items-center">
-                      <span className="text-sm text-gray-500 mr-2">Quantity:</span>
-                      <span className="font-medium text-gray-800">{order.orderQuantity}</span>
+            <h3 className="font-bold text-gray-700 mb-4 flex items-center">
+              <FaBox className="text-gray-500 mr-2" />
+              Products Information ({order.items?.length || 0} items)
+            </h3>
+            
+            {/* Check if order has items array (new structure) or single product (old structure) */}
+            {order.items && order.items.length > 0 ? (
+              <div className="space-y-4">
+                {order.items.map((item, index) => {
+                  // Handle both populated and non-populated productId
+                  const productInfo = item.productId && typeof item.productId === 'object' 
+                    ? item.productId  // If populated, use the populated data
+                    : item.productDetails; // Otherwise, use productDetails
+                  
+                  const productId = item.productId && typeof item.productId === 'object'
+                    ? item.productId._id  // If populated, get the _id
+                    : item.productId;     // Otherwise, use the ID string
+                  
+                  return (
+                    <div key={index} className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                      <div className="flex flex-col md:flex-row items-start p-4 gap-4">
+                        <div className="w-20 h-20 rounded-md overflow-hidden bg-gray-100 flex-shrink-0">
+                          {productInfo?.image && productInfo.image.length > 0 && (
+                            <img 
+                              src={productInfo.image[0]} 
+                              alt={productInfo?.name} 
+                              className="w-full h-full object-cover"
+                            />
+                          )}
+                        </div>
+                        <div className="flex-grow">
+                          <h4 className="font-medium text-gray-900 mb-2">{productInfo?.name}</h4>
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                            <div>
+                              <span className="text-gray-500">Quantity:</span>
+                              <p className="font-medium text-gray-800">{item.quantity}</p>
+                            </div>
+                            <div>
+                              <span className="text-gray-500">Unit Price:</span>
+                              <p className="font-medium text-gray-800">₹{productInfo?.price?.toFixed(2)}</p>
+                            </div>
+                            <div>
+                              <span className="text-gray-500">Item Total:</span>
+                              <p className="font-medium text-gray-800">₹{item.itemTotal?.toFixed(2)}</p>
+                            </div>
+                            <div>
+                              <span className="text-gray-500">Product ID:</span>
+                              <p className="font-medium text-gray-800 text-xs break-all">
+                                {typeof productId === 'string' ? productId : productId?.toString()}
+                              </p>
+                            </div>
+                          </div>
+                          {/* Stock info if available from populated data */}
+                          {productInfo?.stock !== undefined && (
+                            <div className="mt-2 text-sm">
+                              <span className="text-gray-500">Current Stock:</span>
+                              <span className={`ml-1 font-medium ${productInfo.stock > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                {productInfo.stock} units
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              // Fallback for old order structure with single product
+              <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                <div className="flex flex-col md:flex-row items-start p-4 gap-4">
+                  <div className="w-20 h-20 rounded-md overflow-hidden bg-gray-100 flex-shrink-0">
+                    {order.productDetails?.image && order.productDetails.image.length > 0 && (
+                      <img 
+                        src={order.productDetails.image[0]} 
+                        alt={order.productDetails?.name} 
+                        className="w-full h-full object-cover"
+                      />
+                    )}
+                  </div>
+                  <div className="flex-grow">
+                    <h4 className="font-medium text-gray-900 mb-1">{order.productDetails?.name}</h4>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-8">
+                      <div className="flex items-center">
+                        <span className="text-sm text-gray-500 mr-2">Quantity:</span>
+                        <span className="font-medium text-gray-800">{order.orderQuantity}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <span className="text-sm text-gray-500 mr-2">Price:</span>
+                        <span className="font-medium text-gray-800">₹{order.productDetails?.price?.toFixed(2)}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
 
           {/* Shipping Address */}

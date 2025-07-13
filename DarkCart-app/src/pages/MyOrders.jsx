@@ -196,8 +196,8 @@ function MyOrders() {
                     isCancelled ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-gray-50'
                   }`}>
                     <img
-                      src={order?.productDetails?.image[0]}
-                      alt={order?.productDetails?.name}
+                      src={order?.items[0]?.productDetails?.image[0]}
+                      alt={order?.items[0]?.productDetails}
                       className={`w-full h-full object-cover transition-all duration-300 ${
                         isCancelled ? 'grayscale opacity-60' : ''
                       }`}

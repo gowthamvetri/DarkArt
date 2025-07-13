@@ -170,7 +170,7 @@ const AdminOrderDashboard = () => {
         order.userId?.email?.toLowerCase().includes(query)
       );
     }
-    
+
     setFilteredOrders(result);
   };
   
@@ -509,6 +509,9 @@ const AdminOrderDashboard = () => {
     fetchOrders();
   };
 
+  console.log(orders)
+  console.log(orders[0]?.items[0]?.productDetails?.image[0])
+
   return (
     <div className="bg-gray-50 min-h-screen p-4 sm:p-6">
       <div className="max-w-7xl mx-auto">
@@ -753,7 +756,7 @@ const AdminOrderDashboard = () => {
                 ) : (
                   filteredOrders.map((order) => {
                     const statusDisplay = getStatusDisplay(order.orderStatus);
-                    
+                    {console.log(order?.items[0]?.productDetails?.image[0])}
                     return (
                       <tr 
                         key={order.orderId} 
@@ -768,10 +771,10 @@ const AdminOrderDashboard = () => {
                         <td className="px-4 py-4">
                           <div className="flex items-start gap-3">
                             <div className="w-12 h-12 rounded-md overflow-hidden bg-gray-100 border border-gray-200">
-                              {order.productDetails?.image && (
+                              {order.items && (
                                 <img 
-                                  src={order.productDetails.image[0]} 
-                                  alt={order.productDetails?.name} 
+                                  src={order?.items[0]?.productDetails?.image[0]} 
+                                  alt={order?.items[0]?.productDetails?.name} 
                                   className="w-full h-full object-cover"
                                 />
                               )}
