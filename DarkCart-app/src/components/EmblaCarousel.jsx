@@ -51,7 +51,7 @@ const HomeBannerCarousel = () => {
 
       {/* CardSwap component with responsive settings */}
       <CardSwap
-        width={420}
+        width={470}
         height={340}
         cardDistance={55}
         verticalDistance={65}

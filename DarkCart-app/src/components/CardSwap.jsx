@@ -287,7 +287,7 @@ const CardSwap = ({
   return (
     <div
       ref={container}
-      className="z-0 absolute right-0 bottom-0 sm:bottom-6 md:bottom-40
+      className="z-0 absolute right-0 bottom-0 sm:bottom-6 sm:left-100 md:left-130 md:bottom-40 md:right-30 lg:left-180
 transform origin-bottom-right perspective-[900px] overflow-visible z--1
 
 translate-x-[-10%] translate-y-[20%]
