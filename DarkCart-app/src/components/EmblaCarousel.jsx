@@ -32,18 +32,18 @@ const HomeBannerCarousel = () => {
   ];
 
   return (
-    <div className="relative w-full min-h-[400px] md:min-h-[500px] lg:min-h-[600px] overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 card-carousel-container">
+    <div className="relative w-full min-h-[500px] md:min-h-[600px] lg:min-h-[700px] overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 card-carousel-container">
       {/* Background content */}
-      <div className="absolute inset-0 flex items-center justify-start px-4 md:px-8 lg:px-16 xl:px-20">
-        <div className="max-w-lg lg:max-w-xl xl:max-w-2xl banner-text-fade">
-          <h1 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-gray-800 mb-4 leading-tight">
+      <div className="absolute inset-0 flex items-start md:items-center justify-start px-4 md:px-8 lg:px-16 xl:px-20 pt-8 md:pt-0">
+        <div className="max-w-sm sm:max-w-md lg:max-w-xl xl:max-w-2xl banner-text-fade">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-gray-800 mb-3 md:mb-4 leading-tight">
             Fashion That 
             <span className="block text-black">Defines You</span>
           </h1>
-          <p className="text-gray-600 text-lg md:text-xl lg:text-2xl mb-6 leading-relaxed">
+          <p className="z-100 text-gray-600 text-base sm:text-lg md:text-xl lg:text-2xl mb-4 md:mb-6 leading-relaxed w-100 bg-white/10 backdrop-blur-md border border-white/30 rounded-lg shadow-lg p-6">
             Explore our curated collection of premium clothing designed for the modern lifestyle.
           </p>
-          <button className="bg-black text-white px-6 py-3 md:px-8 md:py-4 lg:px-10 lg:py-5 rounded-none hover:bg-gray-800 transition-all duration-300 font-medium tracking-wide text-sm md:text-base lg:text-lg transform hover:scale-105">
+          <button className="bg-black text-white px-4 py-2 sm:px-6 sm:py-3 md:px-8 md:py-4 lg:px-10 lg:py-5 rounded-none hover:bg-gray-800 transition-all duration-300 font-medium tracking-wide text-xs sm:text-sm md:text-base lg:text-lg transform hover:scale-105">
             Shop Collection
           </button>
         </div>

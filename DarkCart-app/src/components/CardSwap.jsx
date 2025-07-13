@@ -19,12 +19,12 @@ export const Card = forwardRef(
     >
       {rest.children}
       {(title || description) && (
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/95 via-black/80 to-transparent p-3 md:p-4 text-white transition-all duration-300 hover:from-black/100">
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/95 via-black/80 to-transparent p-2 sm:p-3 md:p-4 text-white transition-all duration-300 hover:from-black/100">
           {title && (
-            <h3 className="text-sm md:text-lg font-bold mb-1 md:mb-2 text-white leading-tight">{title}</h3>
+            <h3 className="text-xs sm:text-sm md:text-lg font-bold mb-1 md:mb-2 text-white leading-tight">{title}</h3>
           )}
           {description && (
-            <p className="text-xs md:text-sm text-gray-200 leading-relaxed line-clamp-2 md:line-clamp-3">
+            <p className="text-[10px] sm:text-xs md:text-sm text-gray-200 leading-tight sm:leading-relaxed line-clamp-2 md:line-clamp-3">
               {description}
             </p>
           )}
@@ -141,17 +141,17 @@ const CardSwap = ({
     
     if (screenWidth <= 480) {
       return {
-        width: width * 0.6,
-        height: height * 0.6,
-        cardDistance: cardDistance * 0.5,
-        verticalDistance: verticalDistance * 0.5,
+        width: width * 0.75, // Increased from 0.6 to 0.75
+        height: height * 0.75, // Increased from 0.6 to 0.75
+        cardDistance: cardDistance * 0.6, // Increased from 0.5 to 0.6
+        verticalDistance: verticalDistance * 0.6, // Increased from 0.5 to 0.6
       };
     } else if (screenWidth <= 768) {
       return {
-        width: width * 0.75,
-        height: height * 0.75,
-        cardDistance: cardDistance * 0.7,
-        verticalDistance: verticalDistance * 0.7,
+        width: width * 0.85, // Increased from 0.75 to 0.85
+        height: height * 0.85, // Increased from 0.75 to 0.85
+        cardDistance: cardDistance * 0.75, // Increased from 0.7 to 0.75
+        verticalDistance: verticalDistance * 0.75, // Increased from 0.7 to 0.75
       };
     } else if (screenWidth >= 1024) {
       // Large screens - make cards bigger and adjust spacing
@@ -287,7 +287,18 @@ const CardSwap = ({
   return (
     <div
       ref={container}
-      className="absolute bottom-0 right-0 transform translate-x-[-10%] translate-y-[20%] origin-bottom-right perspective-[900px] overflow-visible lg:translate-x-[-25%] lg:translate-y-[15%] xl:translate-x-[-35%] xl:translate-y-[10%] max-[768px]:translate-x-[15%] max-[768px]:translate-y-[15%] max-[768px]:scale-[0.85] max-[480px]:translate-x-[10%] max-[480px]:translate-y-[10%] max-[480px]:scale-[0.7]"
+      className="z-0 absolute right-0 bottom-0 sm:bottom-6 md:bottom-40
+transform origin-bottom-right perspective-[900px] overflow-visible z--1
+
+translate-x-[-10%] translate-y-[20%]
+sm:translate-x-[-15%] sm:translate-y-[18%]
+md:translate-x-[-20%] md:translate-y-[16%]
+lg:translate-x-[-35%] lg:translate-y-[15%]
+xl:translate-x-[-45%] xl:translate-y-[10%]
+2xl:translate-x-[-50%] 2xl:translate-y-[8%]
+
+max-[768px]:translate-x-[5%] max-[768px]:translate-y-[5%] max-[768px]:scale-[0.95]
+max-[480px]:translate-x-[2%] max-[480px]:translate-y-[2%] max-[480px]:scale-[0.85]"
       style={{ width: responsiveValues.width, height: responsiveValues.height }}
     >
       {rendered}
@@ -295,7 +306,6 @@ const CardSwap = ({
       {/* Responsive pause indicator */}
       {pauseOnHover && (
         <div className="absolute -top-8 left-0 text-xs text-gray-400 opacity-75 max-[768px]:text-[10px] max-[480px]:hidden">
-          Hover to pause
         </div>
       )}
     </div>
