@@ -192,8 +192,9 @@ const AdminOrderDashboard = () => {
     { value: 'CANCELLED', label: 'Cancelled', icon: <FaBan className="text-red-500" /> }
   ];
 
-  // Fetch orders using the context function and update local state
+  // Add the missing fetchOrders function declaration
   const fetchOrders = async () => {
+    // Check user permissions first
     if (!user || !user.role) {
       toast.error('User information not available. Please log in again.');
       return;
@@ -218,7 +219,7 @@ const AdminOrderDashboard = () => {
       setLoading(false);
     }
   };
-  
+
   // Update order status using the context function
   const updateOrderStatus = async (orderId, newStatus) => {
     setUpdatingOrderId(orderId);
@@ -732,7 +733,7 @@ const AdminOrderDashboard = () => {
                   <tr>
                     <td colSpan="6" className="px-4 py-12 text-center">
                       <div className="flex flex-col items-center justify-center">
-                        <div className="w-12 h-12 border-4 border-black border-t-transparent rounded-full animate-spin mb-4"></div>
+                        <div className="w-12 h-12 border-4 border-black border-t-transparent rounded-full mb-4"></div>
                         <p className="text-gray-500">Loading orders...</p>
                       </div>
                     </td>
@@ -771,16 +772,35 @@ const AdminOrderDashboard = () => {
                         <td className="px-4 py-4">
                           <div className="flex items-start gap-3">
                             <div className="w-12 h-12 rounded-md overflow-hidden bg-gray-100 border border-gray-200">
-                              {order.items && (
+                              {/* Fix the image display logic */}
+                              {order.items && order.items.length > 0 && order.items[0]?.productDetails?.image?.[0] ? (
                                 <img 
-                                  src={order?.items[0]?.productDetails?.image[0]} 
-                                  alt={order?.items[0]?.productDetails?.name} 
+                                  src={order.items[0].productDetails.image[0]} 
+                                  alt={order.items[0].productDetails?.name || 'Product'} 
                                   className="w-full h-full object-cover"
+                                  onError={(e) => {
+                                    e.target.style.display = 'none';
+                                  }}
                                 />
+                              ) : order.productDetails?.image?.[0] ? (
+                                <img 
+                                  src={order.productDetails.image[0]} 
+                                  alt={order.productDetails?.name || 'Product'} 
+                                  className="w-full h-full object-cover"
+                                  onError={(e) => {
+                                    e.target.style.display = 'none';
+                                  }}
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center bg-gray-200">
+                                  <FaBox className="text-gray-400 text-lg" />
+                                </div>
                               )}
                             </div>
                             <div className="flex flex-col">
-                              <span className="font-medium text-gray-900">{order.productDetails?.name}</span>
+                              <span className="font-medium text-gray-900">
+                                {order.items?.[0]?.productDetails?.name || order.productDetails?.name || 'Product Name'}
+                              </span>
                               <span className="text-xs text-gray-500">{order.orderId}</span>
                             </div>
                           </div>
@@ -797,55 +817,70 @@ const AdminOrderDashboard = () => {
                             {order.orderStatus.replace(/_/g, ' ')}
                           </span>
                         </td>
-                        <td className="px-4 py-4 text-right">
+                        <td className="px-4 py-4 text-right relative"> {/* Add relative positioning */}
                           <div className="relative inline-block text-left" data-dropdown="true">
                             <button 
                               className="p-1.5 bg-gray-100 rounded-md hover:bg-gray-200 focus:outline-none transition-colors"
                               onClick={(e) => {
-                                e.stopPropagation(); // Stop event from bubbling up
+                                e.stopPropagation();
                                 setOpenDropdownId(openDropdownId === order.orderId ? null : order.orderId);
                               }}
                             >
                               <FaEllipsisV className="w-4 h-4 text-gray-500" />
                             </button>
                             
-                            {/* Dropdown menu */}
+                            {/* Updated Dropdown menu with better z-index and positioning */}
                             <div 
                               data-dropdown="true"
-                              className={`origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-10 ${openDropdownId === order.orderId ? 'block' : 'hidden'}`}
+                              className={`
+                                absolute right-0 top-full mt-2 w-56 
+                                rounded-md shadow-xl bg-white 
+                                ring-1 ring-black ring-opacity-5 
+                                focus:outline-none 
+                                z-[9999]
+                                transform transition-all duration-200 ease-out
+                                ${openDropdownId === order.orderId 
+                                  ? 'opacity-100 scale-100 visible' 
+                                  : 'opacity-0 scale-95 invisible pointer-events-none'
+                                }
+                              `}
+                              style={{
+                                filter: 'drop-shadow(0 10px 15px -3px rgba(0, 0, 0, 0.1)) drop-shadow(0 4px 6px -2px rgba(0, 0, 0, 0.05))'
+                              }}
                             >
                               <div className="py-1">
                                 <button
                                   onClick={(e) => {
-                                    e.stopPropagation(); // Stop event from bubbling up
+                                    e.stopPropagation(); 
                                     handleShowOrderDetails(order);
                                     setOpenDropdownId(null);
                                   }}
-                                  className="w-full text-left px-4 py-2 text-sm flex items-center gap-2 text-gray-700 hover:bg-gray-50 hover:text-gray-900 border-b border-gray-200"
+                                  className="w-full text-left px-4 py-2 text-sm flex items-center gap-2 text-gray-700 hover:bg-gray-50 hover:text-gray-900 border-b border-gray-200 transition-colors"
                                 >
                                   <FaEye className="text-blue-500" />
                                   View Order Details
                                 </button>
                               
-                                <div className="px-3 py-2 text-xs font-medium text-gray-500 border-b border-gray-200 mt-1">
+                                <div className="px-3 py-2 text-xs font-medium text-gray-500 border-b border-gray-200 mt-1 bg-gray-50">
                                   Update Status
                                 </div>
                                 {statusOptions.map(option => (
                                   <button
                                     key={option.value}
                                     onClick={(e) => {
-                                      e.stopPropagation(); // Stop event from bubbling up
+                                      e.stopPropagation();
                                       updateOrderStatus(order.orderId, option.value);
                                       setOpenDropdownId(null);
                                     }}
                                     disabled={updatingOrderId === order.orderId || order.orderStatus === option.value}
-                                    className={`w-full text-left px-4 py-2 text-sm flex items-center gap-2 ${
-                                      order.orderStatus === option.value 
+                                    className={`
+                                      w-full text-left px-4 py-2 text-sm flex items-center gap-2 transition-colors
+                                      ${order.orderStatus === option.value 
                                         ? 'bg-gray-100 text-gray-800' 
                                         : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
-                                    } ${
-                                      updatingOrderId === order.orderId ? 'opacity-50 cursor-not-allowed' : ''
-                                    }`}
+                                      } 
+                                      ${updatingOrderId === order.orderId ? 'opacity-50 cursor-not-allowed' : ''}
+                                    `}
                                   >
                                     {option.icon}
                                     {option.label}
@@ -934,7 +969,6 @@ const AdminOrderDashboard = () => {
         )}
       </div>
     </div>
-  );
-};
-
+  )
+}
 export default AdminOrderDashboard;

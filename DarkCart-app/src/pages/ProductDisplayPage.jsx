@@ -187,6 +187,73 @@ const ProductDisplayPage = () => {
     </div>
   )
 
+  const ProductCard = ({ product }) => {
+    const genderBadgeColor = {
+        'Men': 'bg-blue-100 text-blue-800',
+        'Women': 'bg-pink-100 text-pink-800',
+        'Kids': 'bg-green-100 text-green-800'
+    };
+
+    return (
+        <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+            <div className="relative">
+                <img 
+                    src={product.image[0]} 
+                    alt={product.name}
+                    className="w-full h-48 object-cover"
+                />
+                {product.gender && (
+                    <span className={`absolute top-2 left-2 px-2 py-1 rounded-full text-xs font-medium ${genderBadgeColor[product.gender]}`}>
+                        {product.gender}
+                    </span>
+                )}
+                {product.discount > 0 && (
+                    <span className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-medium">
+                        -{product.discount}%
+                    </span>
+                )}
+            </div>
+            
+            <div className="p-4">
+                <h3 className="font-semibold text-gray-900 mb-2">{product.name}</h3>
+                
+                <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                        <span className="text-lg font-bold text-gray-900">
+                            ₹{product.discount > 0 
+                                ? (product.price - (product.price * product.discount / 100)).toFixed(2)
+                                : product.price.toFixed(2)
+                            }
+                        </span>
+                        {product.discount > 0 && (
+                            <span className="text-sm text-gray-500 line-through">
+                                ₹{product.price.toFixed(2)}
+                            </span>
+                        )}
+                    </div>
+                    
+                    <span className={`text-xs px-2 py-1 rounded-full ${
+                        product.stock > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                    }`}>
+                        {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
+                    </span>
+                </div>
+                
+                <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+                    {product.description}
+                </p>
+                
+                <button 
+                    className="w-full bg-black text-white py-2 rounded-md hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={product.stock === 0}
+                >
+                    {product.stock > 0 ? 'Add to Cart' : 'Out of Stock'}
+                </button>
+            </div>
+        </div>
+    );
+};
+
   return (
     <section className='bg-gray-50 min-h-screen py-6'>
       <div className='container mx-auto p-4'>
