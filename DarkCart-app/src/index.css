@@ -48,6 +48,40 @@ body{
   display: none;  /* Chrome, Safari and Opera */
 }
 
+/* Card Carousel Enhancements */
+.card-carousel-container {
+  perspective: 1000px;
+  transform-style: preserve-3d;
+}
+
+.card-carousel-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  backface-visibility: hidden;
+  will-change: transform;
+}
+
+.card-carousel-card:hover {
+  transform: translateZ(10px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+/* Responsive Card Styles */
+@media (max-width: 768px) {
+  .card-carousel-container {
+    perspective: 800px;
+  }
+  
+  .card-carousel-card {
+    transform-origin: center center;
+  }
+}
+
+@media (max-width: 480px) {
+  .card-carousel-container {
+    perspective: 600px;
+  }
+}
+
 /* Custom height classes */
 .h-84 {
   height: 21rem; /* 336px */
@@ -61,6 +95,7 @@ body{
 .line-clamp-1 {
   display: -webkit-box;
   -webkit-line-clamp: 1;
+  line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -68,6 +103,79 @@ body{
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Prevent text overlap with cards */
+@media (max-width: 640px) {
+  .banner-text-fade {
+    max-width: 280px;
+  }
+}
+
+/* Responsive layout adjustments */
+@media (max-width: 480px) {
+  .card-carousel-container {
+    min-height: 450px;
+  }
+  
+  .banner-text-fade {
+    padding-right: 1rem;
+    max-width: 260px;
+  }
+}
+
+@media (min-width: 481px) and (max-width: 640px) {
+  .banner-text-fade {
+    max-width: 300px;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 768px) {
+  .banner-text-fade {
+    max-width: 400px;
+    padding-right: 2rem;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .banner-text-fade {
+    max-width: 500px;
+    padding-right: 3rem;
+  }
+}
+
+@media (min-width: 1025px) {
+  .banner-text-fade {
+    max-width: none;
+    padding-right: 0;
+  }
+}
+
+/* Text clamping utilities */
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -233,4 +341,88 @@ body{
   background: rgba(255, 255, 255, 0.75);
   color: #333333;
   backdrop-filter: blur(5px);
+}
+
+
+.embla {
+  overflow: hidden;
+}
+.embla__container {
+  display: flex;
+}
+.embla__slide {
+  flex: 0 0 100%;
+  min-width: 0;
+}
+
+/* Banner text animations */
+.banner-text-fade {
+  animation: fadeInUp 0.8s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Smooth hover effects for mobile */
+@media (hover: none) {
+  .card-carousel-card:hover {
+    transform: none;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  }
+}
+
+/* Large screen optimizations */
+@media (min-width: 1024px) {
+  .card-carousel-container {
+    perspective: 1200px;
+  }
+  
+  .banner-text-fade {
+    animation-duration: 1s;
+    animation-delay: 0.2s;
+  }
+}
+
+@media (min-width: 1440px) {
+  .card-carousel-container {
+    perspective: 1400px;
+  }
+}
+
+/* Mobile text positioning and card spacing */
+@media (max-width: 768px) {
+  .banner-text-fade {
+    z-index: 10;
+    position: relative;
+  }
+  
+  .card-carousel-container {
+    min-height: 500px;
+  }
+  
+  .card-carousel-card {
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  }
+}
+
+@media (max-width: 480px) {
+  .card-carousel-container {
+    min-height: 450px;
+  }
+  
+  .banner-text-fade {
+    padding-bottom: 1rem;
+  }
+  
+  .card-carousel-card {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+  }
 }
