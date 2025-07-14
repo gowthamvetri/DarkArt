@@ -15,12 +15,14 @@ function UploadProduct() {
   const [data, setData] = useState({
     name: "",
     image: [],
+    gender: "",
     category: [],
     stock: "",
     price: "",
     discount: "",
     description: "",
     more_details: {},
+    publish: true
   });
   const [ViewImageURL, setViewImageURL] = useState("");
   const [selectCategory, setSelectCategory] = useState("");
@@ -29,11 +31,19 @@ function UploadProduct() {
   const [openAddField, setOpenAddField] = useState(false);
   const [fieldName, setFieldName] = useState("");
 
+  const genderOptions = [
+    { value: "", label: "Select Gender" },
+    { value: "Men", label: "Men" },
+    { value: "Women", label: "Women" },
+    { value: "Kids", label: "Kids" }
+  ];
+
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
+    
     setData(prev => ({
-      ...prev,
-      [name]: value
+        ...prev,
+        [name]: type === 'checkbox' ? checked : value
     }));
   };
 
@@ -171,6 +181,25 @@ function UploadProduct() {
                   </div>
                 ))}
               </div>
+            </div>
+          </div>
+
+          <div className='grid gap-2'>
+            <label className='font-medium'>Gender</label>
+            <div>
+              <select
+                name="gender"
+                value={data.gender}
+                onChange={handleChange}
+                className='bg-gray-50 border border-gray-300 w-full p-2 rounded focus:outline-none focus:border-primary-200'
+                required
+              >
+                {genderOptions.map(option => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 

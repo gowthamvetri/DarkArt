@@ -24,11 +24,15 @@ function SearchPage() {
       try {
         setLoading(true);
 
+        // If searchText is a single character, increase the limit to get more results
+        const limit = searchText.length === 1 ? 20 : 10;
+
         const response = await Axios({
           ...SummaryApi.searchProduct,
           data: {
             search: searchText,
             page: pageNumber,
+            limit: limit
           },
         });
 
@@ -39,12 +43,45 @@ function SearchPage() {
           // Set total pages from API response
           setTotalPage(responseData.totalNoPage);
 
+          let processedData = responseData.data;
+          
+          // For single character searches, sort results to prioritize items that contain the character prominently
+          if (searchText.length === 1) {
+            processedData.sort((a, b) => {
+              const aName = a.name.toLowerCase();
+              const bName = b.name.toLowerCase();
+              const queryChar = searchText.toLowerCase();
+              
+              // First check: if character appears in name
+              const aHasChar = aName.includes(queryChar);
+              const bHasChar = bName.includes(queryChar);
+              
+              if (aHasChar && !bHasChar) return -1;
+              if (!aHasChar && bHasChar) return 1;
+              
+              // Next priority: words that start with the character
+              const aWords = aName.split(/\s+/);
+              const bWords = bName.split(/\s+/);
+              const aStartsWithQuery = aWords.some(word => word.startsWith(queryChar));
+              const bStartsWithQuery = bWords.some(word => word.startsWith(queryChar));
+              
+              if (aStartsWithQuery && !bStartsWithQuery) return -1;
+              if (!aStartsWithQuery && bStartsWithQuery) return 1;
+              
+              // Last priority: how many times the character appears
+              const aCount = (aName.match(new RegExp(queryChar, 'g')) || []).length;
+              const bCount = (bName.match(new RegExp(queryChar, 'g')) || []).length;
+              
+              return bCount - aCount; // Higher count first
+            });
+          }
+
           if (pageNumber === 1 || resetData) {
             // Reset data for new search or first page
-            setData(responseData.data);
+            setData(processedData);
           } else {
             // Append data for pagination
-            setData((prevData) => [...prevData, ...responseData.data]);
+            setData((prevData) => [...prevData, ...processedData]);
           }
 
           // Update hasMore based on current page vs total pages
@@ -93,12 +130,21 @@ function SearchPage() {
           <h2 className="text-xl font-bold text-gray-900 mb-2">
             {searchText ? "Search Results" : "All Products"}
           </h2>
+          
           {searchText && (
             <p className="text-gray-600 mb-2">
               Showing results for:{" "}
               <span className="font-semibold">"{searchText}"</span>
+              
+              {/* Simple message for single character searches */}
+              {searchText.length === 1 && (
+                <span className="text-gray-500 text-xs ml-2">
+                  (Single character search)
+                </span>
+              )}
             </p>
           )}
+          
           <p className="font-semibold text-gray-700">
             Found: {data.length} results
             {totalPage > 0 && (
