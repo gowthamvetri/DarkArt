@@ -106,19 +106,14 @@ function CategoryWiseProductDisplay({ id, name }) {
               </div>
             ))}
 
-          {data.map((p, index) => (
-            <div
-              key={p._id + "CategorywiseProductDisplay" + index}
-              className="flex-shrink-0 transition-transform duration-300 hover:scale-[1.02]"
-              style={{
-                animation: `fadeIn 0.5s ease ${index * 0.1}s both`,
-              }}
-            >
-              <div className="w-48 h-80 sm:w-52 sm:h-84 md:w-56 md:h-88 lg:w-64 lg:h-96">
+          {/* Make sure data is valid before rendering */}
+          {data.map((p, index) =>
+            p && p._id ? (
+              <div key={p._id + "CategorywiseProductDisplay" + index}>
                 <CardProduct data={p} />
               </div>
-            </div>
-          ))}
+            ) : null
+          )}
         </div>
 
         {/* Scroll Buttons */}

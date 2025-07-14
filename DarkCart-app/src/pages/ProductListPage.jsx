@@ -126,6 +126,7 @@ const ProductListPage = () => {
             maxPrice: searchParams.get('maxPrice') || '',
             search: searchParams.get('search') || ''
         });
+        console.log("Products : ",products)
     }, [searchParams]);
 
     return (
@@ -151,7 +152,7 @@ const ProductListPage = () => {
                         </span>
                     </div>
                     
-                    {/* Debug info - remove in production */}
+                    {/* Debug info - remove in production
                     {process.env.NODE_ENV === 'development' && (
                         <div className="mb-4 p-4 bg-gray-100 rounded-lg text-sm">
                             <strong>Debug Info:</strong>
@@ -160,7 +161,7 @@ const ProductListPage = () => {
                             <br />Products count: {products.length}
                             <br />Loading: {loading.toString()}
                         </div>
-                    )}
+                    )} */}
                     
                     {loading ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -171,7 +172,7 @@ const ProductListPage = () => {
                     ) : products.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {products.map(product => (
-                                <ProductCard key={product._id} product={product} />
+                                <ProductCard data={product} />
                             ))}
                         </div>
                     ) : (

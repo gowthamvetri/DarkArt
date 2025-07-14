@@ -8,7 +8,7 @@ import { FaHeart, FaRegHeart, FaStar, FaEye, FaShoppingCart, FaMale, FaFemale, F
 
 // Component to display product name with search highlighting
 const ProductNameWithHighlight = ({ name, searchTerm }) => {
-  if (!searchTerm) return name;
+  if (!searchTerm || !name) return name || '';
   
   const regex = new RegExp(`(${searchTerm})`, 'gi');
   const parts = name.split(regex);
@@ -29,6 +29,20 @@ const ProductNameWithHighlight = ({ name, searchTerm }) => {
 };
 
 function CardProduct({ data }) {
+  // Early return if data is not available
+  if (!data || !data._id) {
+    return (
+      <div className="bg-white shadow-sm border border-gray-200 rounded-xl overflow-hidden animate-pulse">
+        <div className="aspect-square bg-gray-200"></div>
+        <div className="p-3 lg:p-4 space-y-3">
+          <div className="h-4 bg-gray-200 rounded"></div>
+          <div className="h-3 bg-gray-200 rounded w-3/4"></div>
+          <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+        </div>
+      </div>
+    );
+  }
+
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
@@ -38,22 +52,24 @@ function CardProduct({ data }) {
   const searchParams = new URLSearchParams(location.search);
   const searchTerm = searchParams.get('search') || '';
   
-  const url = `/product/${validURLConvert(data.name)}-${data._id}`;
+  // Safe URL generation with fallbacks
+  const productName = data.name || 'product';
+  const productId = data._id || '';
+  const url = `/product/${validURLConvert(productName)}-${productId}`;
 
   const handleWishlist = (e) => {
     e.preventDefault();
     e.stopPropagation();
     setIsWishlisted(!isWishlisted);
-    // Add toast notification
-    // toast.success(isWishlisted ? 'Removed from wishlist' : 'Added to wishlist');
   };
 
   const getStockStatus = () => {
-    if (data.stock <= 0) {
+    const stock = data.stock || 0;
+    if (stock <= 0) {
       return { text: "Out of Stock", color: "text-red-600 bg-red-50 border-red-200" };
-    } else if (data.stock <= 5) {
-      return { text: `Only ${data.stock} left`, color: "text-orange-600 bg-orange-50 border-orange-200" };
-    } else if (data.stock <= 10) {
+    } else if (stock <= 5) {
+      return { text: `Only ${stock} left`, color: "text-orange-600 bg-orange-50 border-orange-200" };
+    } else if (stock <= 10) {
       return { text: "Limited Stock", color: "text-yellow-600 bg-yellow-50 border-yellow-200" };
     } else {
       return { text: "In Stock", color: "text-green-600 bg-green-50 border-green-200" };
@@ -97,13 +113,20 @@ function CardProduct({ data }) {
   const handleQuickView = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    // Add quick view modal functionality
     console.log('Quick view for:', data.name);
   };
 
+  // Safe value extraction with fallbacks
   const stockStatus = getStockStatus();
-  const discountedPrice = pricewithDiscount(data.price, data.discount);
-  const savings = data.price - discountedPrice;
+  const price = data.price || 0;
+  const discount = data.discount || 0;
+  const discountedPrice = pricewithDiscount(price, discount);
+  const savings = price - discountedPrice;
+  const productImage = data.image?.[0] || '';
+  const categoryName = data.category?.[0]?.name || 'Fashion';
+  const description = data.description || '';
+  const moreDetails = data.more_details || {};
+  const createdAt = data.createdAt || new Date();
 
   return (
     <Link
@@ -144,14 +167,14 @@ function CardProduct({ data }) {
       {/* Product Image Container */}
       <div className="relative bg-gradient-to-br from-gray-50 to-gray-100 aspect-square overflow-hidden group-hover:bg-gradient-to-br group-hover:from-gray-100 group-hover:to-gray-200 transition-all duration-300">
         <div className="w-full h-full flex items-center justify-center p-3 lg:p-4">
-          {!imageError ? (
+          {productImage && !imageError ? (
             <>
               {!imageLoaded && (
                 <div className="w-full h-full bg-gray-200 animate-pulse rounded-lg"></div>
               )}
               <img
-                src={data.image[0]}
-                alt={data.name}
+                src={productImage}
+                alt={productName}
                 className={`w-full h-full object-contain transition-all duration-500 group-hover:scale-110 ${
                   data.stock <= 0 ? 'grayscale opacity-60' : ''
                 } ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
@@ -182,15 +205,15 @@ function CardProduct({ data }) {
           <div className="bg-black/90 backdrop-blur-sm text-white px-3 py-1.5 w-fit text-xs rounded-full font-semibold transform transition-all duration-300 group-hover:scale-105 shadow-lg">
             {DisplayPriceInRupees(discountedPrice)}
           </div>
-          {Boolean(data.discount) && (
+          {Boolean(discount) && (
             <div className="text-white bg-gradient-to-r from-red-500 to-red-600 px-3 py-1 w-fit text-xs rounded-full font-semibold transform transition-all duration-300 group-hover:scale-105 shadow-lg">
-              {data.discount}% OFF
+              {discount}% OFF
             </div>
           )}
         </div>
 
         {/* Savings Badge */}
-        {Boolean(data.discount) && (
+        {Boolean(discount) && (
           <div className="absolute bottom-2 right-2">
             <div className="bg-green-500 text-white px-2 py-1 text-xs rounded-full font-medium shadow-lg">
               Save {DisplayPriceInRupees(savings)}
@@ -204,9 +227,9 @@ function CardProduct({ data }) {
         {/* Brand/Category */}
         <div className="flex items-center justify-between">
           <div className="text-xs text-gray-500 uppercase tracking-wider font-medium transition-colors duration-300 group-hover:text-gray-700">
-            {data.category?.[0]?.name || "Fashion"}
+            {categoryName}
           </div>
-          {data.discount > 0 && (
+          {discount > 0 && (
             <div className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-medium">
               SALE
             </div>
@@ -215,13 +238,13 @@ function CardProduct({ data }) {
 
         {/* Product Name with Search Highlighting */}
         <div className="font-medium text-gray-900 text-sm lg:text-base line-clamp-2 leading-tight transition-colors duration-300 group-hover:text-black">
-          <ProductNameWithHighlight name={data.name} searchTerm={searchTerm} />
+          <ProductNameWithHighlight name={productName} searchTerm={searchTerm} />
         </div>
 
         {/* Product Description (if available) */}
-        {data.description && (
+        {description && (
           <div className="text-xs text-gray-600 line-clamp-2 leading-relaxed">
-            {data.description}
+            {description}
           </div>
         )}
 
@@ -251,10 +274,10 @@ function CardProduct({ data }) {
             <div className="font-bold text-gray-900 transition-all duration-300 group-hover:text-black group-hover:scale-105 origin-left">
               {DisplayPriceInRupees(discountedPrice)}
             </div>
-            {Boolean(data.discount) && (
+            {Boolean(discount) && (
               <div className="flex items-center gap-2">
                 <div className="text-xs text-gray-500 line-through">
-                  {DisplayPriceInRupees(data.price)}
+                  {DisplayPriceInRupees(price)}
                 </div>
                 <div className="text-xs text-green-600 font-medium">
                   You save {DisplayPriceInRupees(savings)}
@@ -268,9 +291,9 @@ function CardProduct({ data }) {
         </div>
 
         {/* Additional Product Features */}
-        {data.more_details && Object.keys(data.more_details).length > 0 && (
+        {Object.keys(moreDetails).length > 0 && (
           <div className="flex flex-wrap gap-1 pt-2">
-            {Object.entries(data.more_details).slice(0, 2).map(([key, value]) => (
+            {Object.entries(moreDetails).slice(0, 2).map(([key, value]) => (
               <span key={key} className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
                 {key}: {value}
               </span>
@@ -280,7 +303,7 @@ function CardProduct({ data }) {
       </div>
 
       {/* New Badge for Recently Added Products */}
-      {new Date() - new Date(data.createdAt) < 7 * 24 * 60 * 60 * 1000 && (
+      {new Date() - new Date(createdAt) < 7 * 24 * 60 * 60 * 1000 && (
         <div className="absolute top-2 right-12 z-20">
           <span className="bg-blue-500 text-white px-2 py-1 text-xs font-bold rounded-full animate-pulse">
             NEW
