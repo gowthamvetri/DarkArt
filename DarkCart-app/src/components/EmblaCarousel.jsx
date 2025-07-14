@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import CardSwap, { Card } from '../components/CardSwap';
 import Particles from './Particles';
 
@@ -51,9 +51,9 @@ const HomeBannerCarousel = () => {
       {/* CardSwap component - Middle Layer */}
       <div className="absolute inset-0 z-10">
         <CardSwap
-          width={window?.innerWidth || 1820}
+          width={window?.innerWidth || 1920}
           height={window?.innerHeight || 1080}
-          cardDistance={30}
+          cardDistance={120}
           verticalDistance={100}
           delay={4000}
           pauseOnHover={false}
@@ -101,20 +101,6 @@ const HomeBannerCarousel = () => {
           </div>
         </div>
       </div>
-
-      {/* Center Text for Mobile - Only visible on mobile */}
-      {/* <div className="absolute mt-2 z-999 flex items-center justify-center md:hidden">
-        <div className="text-center px-4 max-w-sm">
-          <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 shadow-2xl">
-            <h3 className="text-lg font-semibold text-black mb-2 drop-shadow-lg">
-              Premium Quality
-            </h3>
-            <p className="text-black text-sm leading-relaxed">
-              Curated fashion pieces that blend comfort, style, and affordability for every occasion.
-            </p>
-          </div>
-        </div>
-      </div> */}
     </div>
   );
 };

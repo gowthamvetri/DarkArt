@@ -34,6 +34,7 @@ import Cancel from "../pages/Cancel";
 import OrderSuccessPage from "../pages/OrderSuccessPage";
 import PageNotFound from "../pages/PageNotFound"; // Add this import
 import AdminPermision from "../layout/AdminPermission";
+import DeliveryChargeCalculator from "../pages/test";
 
 const router = createBrowserRouter([
     {
@@ -164,6 +165,10 @@ const router = createBrowserRouter([
             {
                 path:"order-success",
                 element : <OrderSuccessPage/>
+            },
+            {
+                path:"delivery-charge-calculator",
+                element : <DeliveryChargeCalculator/>
             },
             // Add catch-all route for any invalid URLs - THIS MUST BE LAST
             {
