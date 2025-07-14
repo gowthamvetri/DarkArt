@@ -173,6 +173,27 @@ const SummaryApi = {
     getBundleStats: {
         url: '/api/bundle/admin/stats',
         method: 'get'
+    },
+    // Wishlist API endpoints
+    addToWishlist: {
+        url: '/api/wishlist/add',
+        method: 'post'
+    },
+    removeFromWishlist: {
+        url: '/api/wishlist/remove',
+        method: 'post'
+    },
+    getWishlist: {
+        url: '/api/wishlist/get',
+        method: 'get'
+    },
+    checkWishlistItem: {
+        url: '/api/wishlist/check',
+        method: 'get'
+    },
+    clearWishlist: {
+        url: '/api/wishlist/clear',
+        method: 'delete'
     }
 }
 

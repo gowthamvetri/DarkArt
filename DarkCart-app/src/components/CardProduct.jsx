@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { DisplayPriceInRupees } from "../utils/DisplayPriceInRupees";
 import { validURLConvert } from "../utils/validURLConvert";
 import { Link, useLocation } from "react-router-dom";
 import { pricewithDiscount } from "../utils/PriceWithDiscount";
 import AddToCartButton from "./AddToCartButton";
+import { useGlobalContext } from "../provider/GlobalProvider";
 import { FaHeart, FaRegHeart, FaStar, FaEye, FaShoppingCart, FaMale, FaFemale, FaChild } from "react-icons/fa";
 
 // Component to display product name with search highlighting
@@ -47,6 +48,8 @@ function CardProduct({ data }) {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [showQuickActions, setShowQuickActions] = useState(false);
+  const [processingWishlist, setProcessingWishlist] = useState(false);
+  const { addToWishlist, removeFromWishlist, checkWishlistItem } = useGlobalContext();
   const location = useLocation();
   
   // Extract search term from URL params
@@ -58,10 +61,39 @@ function CardProduct({ data }) {
   const productId = data._id || '';
   const url = `/product/${validURLConvert(productName)}-${productId}`;
 
-  const handleWishlist = (e) => {
+  // Check if product is in wishlist when component mounts
+  useEffect(() => {
+    const checkWishlist = async () => {
+      if (productId) {
+        const isInWishlist = await checkWishlistItem(productId);
+        setIsWishlisted(isInWishlist);
+      }
+    };
+    
+    checkWishlist();
+  }, [productId]);
+
+  const handleWishlist = async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    setIsWishlisted(!isWishlisted);
+    
+    if (processingWishlist) return;
+    
+    setProcessingWishlist(true);
+    
+    try {
+      if (isWishlisted) {
+        await removeFromWishlist(productId);
+        setIsWishlisted(false);
+      } else {
+        await addToWishlist(productId);
+        setIsWishlisted(true);
+      }
+    } catch (error) {
+      console.error("Error updating wishlist:", error);
+    } finally {
+      setProcessingWishlist(false);
+    }
   };
 
   const getStockStatus = () => {

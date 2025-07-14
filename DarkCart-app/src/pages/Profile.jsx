@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { FaRegUserCircle } from "react-icons/fa";
+import { Link } from "react-router-dom";
 import SummaryApi from "../common/SummaryApi";
 import UserProfileAvatarEdit from "../components/UserProfileAvatarEdit";
 import Axios from "../utils/Axios";
@@ -30,32 +31,28 @@ function Profile() {
       };
     });
   };
-  const handleSubmit = async(e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
       setLoading(true);
-      const response = await Axios(
-        {
-          ...SummaryApi.UpdateUser,
-          data:userData
-        }
-      )
-      
-      const {data:responseData} = response
+      const response = await Axios({
+        ...SummaryApi.UpdateUser,
+        data: userData,
+      });
 
-      if(responseData.success){
-        toast.success(responseData.message)
+      const { data: responseData } = response;
+
+      if (responseData.success) {
+        toast.success(responseData.message);
         const response = await FetchUserInfo();
         dispatch(setUserDetails(response.data));
       }
     } catch (error) {
-      AxiosTostError(error)
+      AxiosTostError(error);
+    } finally {
+      setLoading(false);
     }
-    finally{
-      setLoading(false)
-    }
-
   };
   useEffect(() => {
     setUserData({
@@ -70,7 +67,9 @@ function Profile() {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
           {/* Header */}
           <div className="text-center mb-8">
-            <h1 className="text-2xl font-bold text-gray-900 font-serif mb-2">Profile Settings</h1>
+            <h1 className="text-2xl font-bold text-gray-900 font-serif mb-2">
+              Profile Settings
+            </h1>
             <p className="text-gray-600">Manage your personal information</p>
           </div>
 
@@ -78,7 +77,11 @@ function Profile() {
           <div className="flex flex-col items-center mb-8">
             <div className="w-24 h-24 bg-gray-200 rounded-full flex justify-center items-center overflow-hidden border-4 border-gray-100 shadow-sm mb-4">
               {user.avatar ? (
-                <img alt={user.name} src={user.avatar} className="h-full w-full object-cover" />
+                <img
+                  alt={user.name}
+                  src={user.avatar}
+                  className="h-full w-full object-cover"
+                />
               ) : (
                 <FaRegUserCircle size={80} className="text-gray-400" />
               )}
@@ -100,7 +103,12 @@ function Profile() {
           {/* User info form */}
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div className="grid gap-2">
-              <label htmlFor="name" className="font-medium text-gray-700">Full Name</label>
+              <label
+                htmlFor="name"
+                className="font-medium text-gray-700"
+              >
+                Full Name
+              </label>
               <input
                 id="name"
                 type="text"
@@ -113,7 +121,12 @@ function Profile() {
               />
             </div>
             <div className="grid gap-2">
-              <label htmlFor="email" className="font-medium text-gray-700">Email Address</label>
+              <label
+                htmlFor="email"
+                className="font-medium text-gray-700"
+              >
+                Email Address
+              </label>
               <input
                 id="email"
                 type="email"
@@ -126,7 +139,12 @@ function Profile() {
               />
             </div>
             <div className="grid gap-2">
-              <label htmlFor="mobile" className="font-medium text-gray-700">Phone Number</label>
+              <label
+                htmlFor="mobile"
+                className="font-medium text-gray-700"
+              >
+                Phone Number
+              </label>
               <input
                 id="mobile"
                 type="text"
@@ -143,6 +161,53 @@ function Profile() {
               {loading ? "Updating Profile..." : "Update Profile"}
             </button>
           </form>
+
+          {/* Profile Navigation Links */}
+          <div className="mb-8">
+            <h2 className="font-medium text-gray-700 mb-4">Quick Links</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Link
+                to="/dashboard/address"
+                className="flex items-center p-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                <div className="mr-4 bg-black rounded-full p-2">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 text-white"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <div className="font-medium">My Addresses</div>
+                  <div className="text-sm text-gray-500">
+                    Manage delivery addresses
+                  </div>
+                </div>
+              </Link>
+
+              <Link
+                to="/dashboard/wishlist"
+                className="flex items-center p-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                <div className="mr-4 bg-teal-600 rounded-full p-2">
+                  <FaRegUserCircle className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <div className="font-medium">My Wishlist</div>
+                  <div className="text-sm text-gray-500">
+                    View your saved items
+                  </div>
+                </div>
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
     </div>

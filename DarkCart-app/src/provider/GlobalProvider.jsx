@@ -8,6 +8,7 @@ import toast from "react-hot-toast";
 import { pricewithDiscount } from "../utils/PriceWithDiscount.js";
 import { handleAddAddress } from "../store/addressSlice.js";
 import { setOrders } from "../store/orderSlice.js";
+import { setWishlistItems, addWishlistItem, removeWishlistItem, setWishlistLoading } from "../store/wishlistSlice.js";
 
 export const GlobalContext = createContext(null);
 
@@ -201,6 +202,83 @@ const GlobalProvider = ({ children }) => {
     }
   }
 
+  // Function to fetch user's wishlist
+  const fetchWishlist = async () => {
+    try {
+      dispatch(setWishlistLoading(true));
+      const response = await Axios({
+        ...SummaryApi.getWishlist,
+      });
+
+      const { data: responseData } = response;
+      if (responseData.success) {
+        dispatch(setWishlistItems(responseData.data.products));
+      }
+    } catch (error) {
+      console.error("Error fetching wishlist:", error);
+    } finally {
+      dispatch(setWishlistLoading(false));
+    }
+  };
+
+  // Function to add item to wishlist
+  const addToWishlist = async (productId) => {
+    try {
+      const response = await Axios({
+        ...SummaryApi.addToWishlist,
+        data: { productId }
+      });
+
+      const { data: responseData } = response;
+      if (responseData.success) {
+        toast.success("Item added to wishlist");
+        fetchWishlist();
+        return { success: true };
+      }
+      return { success: false };
+    } catch (error) {
+      AxiosTostError(error);
+      return { success: false, error };
+    }
+  };
+
+  // Function to remove item from wishlist
+  const removeFromWishlist = async (productId) => {
+    try {
+      const response = await Axios({
+        ...SummaryApi.removeFromWishlist,
+        data: { productId }
+      });
+
+      const { data: responseData } = response;
+      if (responseData.success) {
+        toast.success("Item removed from wishlist");
+        dispatch(removeWishlistItem(productId));
+        return { success: true };
+      }
+      return { success: false };
+    } catch (error) {
+      AxiosTostError(error);
+      return { success: false, error };
+    }
+  };
+
+  // Function to check if item is in wishlist
+  const checkWishlistItem = async (productId) => {
+    try {
+      const response = await Axios({
+        url: `${SummaryApi.checkWishlistItem.url}/${productId}`,
+        method: SummaryApi.checkWishlistItem.method
+      });
+
+      const { data: responseData } = response;
+      return responseData.isInWishlist;
+    } catch (error) {
+      console.error("Error checking wishlist item:", error);
+      return false;
+    }
+  };
+
   return (
     <GlobalContext.Provider
       value={{
@@ -216,6 +294,10 @@ const GlobalProvider = ({ children }) => {
         totalPrice,
         totalQty,
         notDiscountTotalPrice,
+        fetchWishlist,
+        addToWishlist,
+        removeFromWishlist,
+        checkWishlistItem
       }}
     >
       {children}
