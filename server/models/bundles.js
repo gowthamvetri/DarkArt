@@ -1,0 +1,132 @@
+import mongoose from "mongoose";
+
+const bundleItemSchema = new mongoose.Schema({
+    name: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    image: {
+        type: String,
+        required: true
+    },
+    price: {
+        type: Number,
+        default: 0
+    },
+    productId: {
+        type: mongoose.Schema.ObjectId,
+        ref: 'product'
+    }
+});
+
+const bundleSchema = new mongoose.Schema({
+    title: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    description: {
+        type: String,
+        trim: true
+    },
+    category: {
+        type: String,
+        required: true,
+        enum: ['summer', 'winter', 'formal', 'casual', 'sports', 'ethnic']
+    },
+    originalPrice: {
+        type: Number,
+        required: true,
+        min: 0
+    },
+    bundlePrice: {
+        type: Number,
+        required: true,
+        min: 0
+    },
+    discount: {
+        type: Number,
+        required: true,
+        min: 0,
+        max: 100
+    },
+    tag: {
+        type: String,
+        enum: ['Popular', 'Limited', 'Bestseller', 'New', 'Premium', 'Trending', 'Flash Sale']
+    },
+    items: [bundleItemSchema],
+    rating: {
+        type: Number,
+        default: 0,
+        min: 0,
+        max: 5
+    },
+    reviews: {
+        type: Number,
+        default: 0
+    },
+    isActive: {
+        type: Boolean,
+        default: true
+    },
+    featured: {
+        type: Boolean,
+        default: false
+    },
+    stock: {
+        type: Number,
+        default: 100
+    },
+    soldCount: {
+        type: Number,
+        default: 0
+    },
+    images: [{
+        type: String
+    }],
+    metaTitle: {
+        type: String,
+        trim: true
+    },
+    metaDescription: {
+        type: String,
+        trim: true
+    },
+    slug: {
+        type: String,
+        unique: true,
+        trim: true
+    }
+}, {
+    timestamps: true
+});
+
+// Generate slug before saving
+bundleSchema.pre('save', function(next) {
+    if (this.isModified('title') && !this.slug) {
+        this.slug = this.title
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/(^-|-$)/g, '');
+    }
+    next();
+});
+
+// Calculate savings
+bundleSchema.virtual('savings').get(function() {
+    return this.originalPrice - this.bundlePrice;
+});
+
+// Calculate savings percentage
+bundleSchema.virtual('savingsPercentage').get(function() {
+    return Math.round(((this.originalPrice - this.bundlePrice) / this.originalPrice) * 100);
+});
+
+// Include virtuals when converting to JSON
+bundleSchema.set('toJSON', { virtuals: true });
+bundleSchema.set('toObject', { virtuals: true });
+
+const BundleModel = mongoose.model('bundle', bundleSchema);
+
+export default BundleModel;

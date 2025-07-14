@@ -29,6 +29,9 @@ import ProductListPage from "../pages/ProductListPage";
 import ProductDisplayPage from "../pages/ProductDisplayPage";
 import CartMobile from "../pages/CartMobile";
 import CheckoutPage from "../pages/CheckoutPage";
+import BagPage from "../pages/BagPage";
+import AddressPage from "../pages/AddressPage";
+import PaymentPage from "../pages/PaymentPage";
 import Success from "../pages/Success";
 import Cancel from "../pages/Cancel";
 import OrderSuccessPage from "../pages/OrderSuccessPage";
@@ -151,8 +154,20 @@ const router = createBrowserRouter([
                 element : <CartMobile/>
             },
             {
+                path:"checkout/bag",
+                element: <BagPage/>
+            },
+            {
+                path:"checkout/address",
+                element: <AddressPage/>
+            },
+            {
+                path:"checkout/payment",
+                element: <PaymentPage/>
+            },
+            {
                 path:"checkout",
-                element: <CheckoutPage/>
+                element: <BagPage/>
             },
             {
                 path:"success",

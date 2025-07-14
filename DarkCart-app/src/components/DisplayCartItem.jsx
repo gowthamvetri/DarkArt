@@ -18,7 +18,7 @@ const DisplayCartItem = ({close}) => {
 
     const redirectToCheckoutPage = ()=>{
         if(user?._id){
-            navigate("/checkout")
+            navigate("/checkout/bag")
             if(close){
                 close()
             }

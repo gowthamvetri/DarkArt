@@ -137,9 +137,42 @@ const SummaryApi = {
     },cancelOrder:{
         url: '/api/order/cancel',
         method: 'post'
-    },updateOrderStatus:{
+    },    updateOrderStatus:{
         url: '/api/order/update-order-status',
         method: 'put'
+    },
+    // Bundle API endpoints
+    createBundle: {
+        url: '/api/bundle/create',
+        method: 'post'
+    },
+    getBundles: {
+        url: '/api/bundle',
+        method: 'get'
+    },
+    getBundleById: {
+        url: '/api/bundle',
+        method: 'get'
+    },
+    updateBundle: {
+        url: '/api/bundle/update',
+        method: 'put'
+    },
+    deleteBundle: {
+        url: '/api/bundle/delete',
+        method: 'delete'
+    },
+    toggleBundleStatus: {
+        url: '/api/bundle/toggle-status',
+        method: 'patch'
+    },
+    getFeaturedBundles: {
+        url: '/api/bundle/featured',
+        method: 'get'
+    },
+    getBundleStats: {
+        url: '/api/bundle/admin/stats',
+        method: 'get'
     }
 }
 

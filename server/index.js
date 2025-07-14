@@ -67,6 +67,7 @@ import cartRouter from './route/cart.route.js'
 import addressRouter from './route/address.route.js'
 import orderRouter from './route/order.route.js'
 import contactRouter from './route/contact.route.js'  // Add this import
+import bundleRouter from './route/bundle.route.js'
 
 
 dotenv.config()
@@ -98,6 +99,7 @@ app.use("/api/cart",cartRouter)
 app.use("/api/address",addressRouter)
 app.use("/api/order",orderRouter)
 app.use("/api/contact",contactRouter)  // Add this route
+app.use("/api/bundle",bundleRouter)
 
 
 connectDB().then(

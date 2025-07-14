@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
+import { Link, useNavigate } from "react-router-dom";
 import { DisplayPriceInRupees } from "../utils/DisplayPriceInRupees";
 import { useGlobalContext } from "../provider/GlobalProvider";
 import AddAddress from "../components/AddAddress";
@@ -7,30 +8,74 @@ import AxiosTostError from "../utils/AxiosTostError";
 import Axios from "../utils/Axios";
 import SummaryApi from "../common/SummaryApi";
 import toast from "react-hot-toast";
-import { useNavigate } from "react-router-dom";
 import EditAddressData from "../components/EditAddressData";
 import Logo from "../assets/logo.png";
 import ErrorBoundary from "../components/ErrorBoundary";
 
-const CheckoutPage = () => {
+// Helper function to safely access product properties
+const getProductProperty = (item, propertyPath, fallback = "") => {
+  try {
+    if (!item) return fallback;
+    
+    // Handle different potential structures
+    const paths = [
+      // If product is directly on the item
+      `product.${propertyPath}`,
+      // If product is in productId field
+      `productId.${propertyPath}`,
+      // Direct property on the item
+      propertyPath
+    ];
+    
+    for (const path of paths) {
+      const value = path.split('.').reduce((obj, key) => {
+        // Handle array index notation like "image[0]"
+        if (key.includes('[') && key.includes(']')) {
+          const arrayKey = key.substring(0, key.indexOf('['));
+          const indexMatch = key.match(/\[(\d+)\]/);
+          if (indexMatch && obj && obj[arrayKey] && Array.isArray(obj[arrayKey])) {
+            const index = parseInt(indexMatch[1]);
+            return obj[arrayKey][index];
+          }
+          return undefined;
+        }
+        return obj && obj[key] !== undefined ? obj[key] : undefined;
+      }, item);
+      
+      if (value !== undefined) return value;
+    }
+    
+    return fallback;
+  } catch (error) {
+    console.log(`Error accessing ${propertyPath}:`, error);
+    return fallback;
+  }
+};
+
+const AddressPage = () => {
   const { notDiscountTotalPrice, totalPrice, totalQty, fetchCartItems, handleOrder, fetchAddress } = useGlobalContext();
-  const [OpenAddress, setOpenAddress] = useState(false);
-  const addressList = useSelector((state) => state.addresses.addressList);
+  const [openAddAddress, setOpenAddAddress] = useState(false);
+  
+  // Get addresses from Redux store
+  const reduxAddressList = useSelector((state) => state.addresses.addressList);
+  
+  // Create a local copy for immediate UI updates
+  const [localAddressList, setLocalAddressList] = useState([]);
   const [selectedAddressIndex, setSelectedAddressIndex] = useState(null);
   const cartItemsList = useSelector((state) => state.cartItem.cart);
   const navigate = useNavigate();
+  
+  // Keep local address list in sync with Redux
+  useEffect(() => {
+    setLocalAddressList(reduxAddressList);
+  }, [reduxAddressList]);
+  
+  // Use the local address list for rendering
+  const addressList = localAddressList;
 
   // State for edit address functionality
   const [editAddressData, setEditAddressData] = useState(null);
   const [openEditAddress, setOpenEditAddress] = useState(false);
-
-  // Add state for countries, states, cities
-  const [countries, setCountries] = useState([]);
-  const [states, setStates] = useState([]);
-  const [cities, setCities] = useState([]);
-  const [isLoadingCountries, setIsLoadingCountries] = useState(false);
-  const [isLoadingStates, setIsLoadingStates] = useState(false);
-  const [isLoadingCities, setIsLoadingCities] = useState(false);
 
   // Delivery charge calculation states
   const [deliveryCharge, setDeliveryCharge] = useState(0);
@@ -48,11 +93,9 @@ const CheckoutPage = () => {
     if (!address || !address.city) return null;
     
     let cityName = address.city.toString().trim();
-    console.log(`Raw city name from address: "${cityName}"`);
     
     // Convert to lowercase for processing
     let normalized = cityName.toLowerCase();
-    console.log(`Lowercase city: "${normalized}"`);
     
     // Remove common administrative suffixes that refer to the same place
     normalized = normalized
@@ -66,14 +109,12 @@ const CheckoutPage = () => {
       .replace(/\s+urban$/i, '')    // Remove "urban" suffix
       .trim();
     
-    console.log(`After suffix removal: "${normalized}"`);
-    
     // Handle common variations
     const cityMappings = {
       'tirupur': 'tirupur',
       'thirupur': 'tirupur',
       'tirpur': 'tirupur',
-      'tiruppur': 'tirupur', // Add this mapping for the double 'p' variation
+      'tiruppur': 'tirupur',
       'coimbatore': 'coimbatore',
       'kovai': 'coimbatore',
       'chennai': 'chennai',
@@ -85,7 +126,6 @@ const CheckoutPage = () => {
     // Apply city mappings
     if (cityMappings[normalized]) {
       normalized = cityMappings[normalized];
-      console.log(`After city mapping: "${normalized}"`);
     }
     
     // Capitalize first letter of each word for display
@@ -93,16 +133,13 @@ const CheckoutPage = () => {
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
     
-    console.log(`Final normalized result: "${result}"`);
     return result;
   };
 
-  console.log(cartItemsList)
-
-  // Delivery charge calculation functions (updated from test.jsx logic)
+  // Delivery charge calculation functions
   const getCoordinates = async (address) => {
     try {
-      // Use OpenCage Geocoding API with your API key (same as test.jsx)
+      // Use OpenCage Geocoding API with your API key
       const url = `https://api.opencagedata.com/geocode/v1/json?q=${encodeURIComponent(address + ', India')}&key=${GEOCODING_API_KEY}&limit=1&countrycode=in&language=en`;
       
       const response = await fetch(url);
@@ -226,25 +263,17 @@ const CheckoutPage = () => {
         throw new Error("Unable to extract city from address");
       }
       
-      console.log(`Extracted city: "${normalizedCustomerCity}" from address:`, customerAddress);
-      
-      // Early return for same city (exactly like test.jsx logic)
-      // Check both normalized names before any API calls
+      // Early return for same city
       const shopCity = 'tirupur';
       const customerCity = normalizedCustomerCity.toLowerCase();
       
-      console.log(`Comparing: "${shopCity}" vs "${customerCity}"`);
-      console.log(`Are they equal? ${customerCity === shopCity}`);
-      
       if (customerCity === shopCity) {
-        console.log("✅ Same city delivery detected - charging ₹50 for local delivery");
         setDeliveryDistance('0');
         setDeliveryCharge(50); // ₹50 for same place delivery
-        return; // Exit early, don't call getRoadDistance
+        return;
       }
       
-      // Only call API if cities are different (same as test.jsx)
-      console.log("Different cities - calculating road distance");
+      // Only call API if cities are different
       const roadDistance = await getRoadDistance(SHOP_LOCATION, normalizedCustomerCity);
       const deliveryCharge = getDeliveryChargeFromDistance(roadDistance);
       
@@ -260,221 +289,95 @@ const CheckoutPage = () => {
     }
   };
 
-  // Calculate delivery charge when address is selected
+  // Handle address list changes
   useEffect(() => {
-    if (selectedAddressIndex !== null && addressList[selectedAddressIndex]) {
-      calculateDeliveryCharge(addressList[selectedAddressIndex]);
-    } else {
+    // If there are no addresses, reset the selected index
+    if (!addressList || addressList.length === 0) {
+      setSelectedAddressIndex(null);
       setDeliveryCharge(0);
       setDeliveryDistance(null);
+      return;
     }
+    
+    // If the selected index is no longer valid after an update, reset it
+    if (selectedAddressIndex !== null && selectedAddressIndex >= addressList.length) {
+      setSelectedAddressIndex(null);
+    }
+  }, [addressList]);
+  
+  // Calculate delivery charge when address is selected
+  useEffect(() => {
+    // If selected index is null or invalid, reset values
+    if (selectedAddressIndex === null || !addressList || !addressList[selectedAddressIndex]) {
+      setDeliveryCharge(0);
+      setDeliveryDistance(null);
+      return;
+    }
+    
+    // Calculate delivery charge for the selected address
+    calculateDeliveryCharge(addressList[selectedAddressIndex]);
   }, [selectedAddressIndex, addressList]);
+  
+  // Fetch addresses when component mounts
+  useEffect(() => {
+    // Initial fetch
+    fetchAddress();
+  }, []);
+  
+  // Debug logging for edit address modal
+  useEffect(() => {
+    console.log("Edit address modal state:", { 
+      open: openEditAddress, 
+      data: editAddressData 
+    });
+  }, [openEditAddress, editAddressData]);
 
   const handleDeleteAddress = async (addressId) => {
     try {
+      console.log("Deleting address with ID:", addressId);
+      
+      // Handle the selected index before making the API call
+      const addressToDeleteIndex = addressList.findIndex(addr => addr._id === addressId);
+      if (selectedAddressIndex !== null) {
+        if (addressToDeleteIndex === selectedAddressIndex) {
+          // If the deleted address was selected, clear the selection
+          setSelectedAddressIndex(null);
+        } else if (addressToDeleteIndex < selectedAddressIndex) {
+          // If an address before the selected one was deleted, adjust the index
+          setSelectedAddressIndex(selectedAddressIndex - 1);
+        }
+      }
+      
+      // Immediately update local state to reflect the deletion
+      setLocalAddressList(prevList => prevList.filter(addr => addr._id !== addressId));
+      
+      // Simple implementation similar to Address.jsx
       const response = await Axios({
         ...SummaryApi.deleteAddress,
         data: { _id: addressId },
       });
-      const { data: responseData } = response;
-      if (responseData.success) {
-        toast.success("Address deleted successfully");
-        fetchAddress(); // Refresh the address list
-        // Reset selected address index if the deleted address was selected
-        if (selectedAddressIndex !== null && addressList[selectedAddressIndex]?._id === addressId) {
-          setSelectedAddressIndex(null);
-        }
+      
+      if (response.data.success) {
+        toast.success(response.data.message);
+        // Fetch fresh address data
+        fetchAddress();
       } else {
         toast.error("Failed to delete address");
+        fetchAddress(); // Refresh to restore state if failed
       }
     } catch (error) {
+      console.error("Error in handleDeleteAddress:", error);
       AxiosTostError(error);
+      fetchAddress(); // Refresh to restore state on error
     }
   };
-
-  const [isProcessing, setIsProcessing] = useState(false);
-
-  const handleCashOnDelivery = async () => {
-    // Better validation
-    if (selectedAddressIndex === null || selectedAddressIndex === undefined || !addressList[selectedAddressIndex]) {
-      toast.error("Please select an address");
-      return;
-    }
-
-    // Get the selected address
-    const selectedAddress = addressList[selectedAddressIndex];
-
-    // Ensure the selected address is valid
-    if (!addressList || addressList.length === 0) {
-      toast.error("No addresses available");
-      return;
-    }
-
-    // Additional validation
-    if (!selectedAddress || !selectedAddress._id) {
-      toast.error("Invalid address selected");
-      return;
-    }
-
-    setIsProcessing(true);
-
-    try {
-      // Show a loading toast
-      toast.loading("Processing your order...", {
-        id: "order-processing",
-      });
-
-      const response = await Axios({
-        ...SummaryApi.CashOnDeliveryOrder,
-        data: {
-          list_items: cartItemsList,
-          totalAmount: totalPrice + deliveryCharge, // Include delivery charge in total
-          addressId: selectedAddress._id,
-          subTotalAmt: totalPrice,
-          deliveryCharge: deliveryCharge, // Add delivery charge to order data
-          quantity: totalQty,
-        },
-      });
-
-      const { data: responseData } = response;
-      console.log(responseData);
-
-      // Dismiss the loading toast
-      toast.dismiss("order-processing");
-
-      if (responseData.success) {
-        toast.success("Order placed successfully");
-        fetchCartItems();
-        handleOrder();
-        navigate("/order-success", {
-          state: {
-            text: "Order",
-          },
-        });
-      }
-    } catch (error) {
-      toast.dismiss("order-processing");
-      AxiosTostError(error);
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  // Add functions to fetch countries, states and cities
-  const fetchCountries = async () => {
-    setIsLoadingCountries(true);
-    try {
-      const response = await fetch("https://countriesnow.space/api/v0.1/countries/positions");
-      const data = await response.json();
-      if (data.data && Array.isArray(data.data)) {
-        setCountries(data.data.map((c) => ({ name: c.name, code: c.iso2 || "" })));
-      }
-    } catch (error) {
-      console.error("Error fetching countries:", error);
-    } finally {
-      setIsLoadingCountries(false);
-    }
-  };
-
-  const fetchStates = async (country) => {
-    if (!country) return;
-
-    setIsLoadingStates(true);
-    setStates([]);
-    setCities([]);
-
-    try {
-      const response = await fetch("https://countriesnow.space/api/v0.1/countries/states", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ country }),
-      });
-
-      const data = await response.json();
-      if (data.data && data.data.states) {
-        setStates(data.data.states);
-      }
-    } catch (error) {
-      console.error("Error fetching states:", error);
-    } finally {
-      setIsLoadingStates(false);
-    }
-  };
-
-  const fetchCities = async (country, state) => {
-    if (!country || !state) return;
-
-    setIsLoadingCities(true);
-    setCities([]);
-
-    try {
-      const response = await fetch("https://countriesnow.space/api/v0.1/countries/state/cities", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ country, state }),
-      });
-
-      const data = await response.json();
-      if (data.data) {
-        setCities(data.data);
-      }
-    } catch (error) {
-      console.error("Error fetching cities:", error);
-    } finally {
-      setIsLoadingCities(false);
-    }
-  };
-
-  // Fetch countries on component mount
-  useEffect(() => {
-    fetchCountries();
-  }, []);
 
   // Function to handle editing an address
   const handleEditAddress = (address) => {
-    setEditAddressData(address);
+    console.log("Setting edit address data:", address);
+    // Make a deep copy to prevent any reference issues
+    setEditAddressData({...address});
     setOpenEditAddress(true);
-  };
-
-  // Safe access helper function for accessing product properties
-  // This helps avoid "Cannot read property of undefined" errors
-  const getProductProperty = (item, propertyPath, fallback = "") => {
-    try {
-      if (!item) return fallback;
-      
-      // Handle different potential structures
-      const paths = [
-        // If product is directly on the item
-        `product.${propertyPath}`,
-        // If product is in productId field
-        `productId.${propertyPath}`,
-        // Direct property on the item
-        propertyPath
-      ];
-      
-      for (const path of paths) {
-        const value = path.split('.').reduce((obj, key) => {
-          // Handle array index notation like "image[0]"
-          if (key.includes('[') && key.includes(']')) {
-            const arrayKey = key.substring(0, key.indexOf('['));
-            const indexMatch = key.match(/\[(\d+)\]/);
-            if (indexMatch && obj && obj[arrayKey] && Array.isArray(obj[arrayKey])) {
-              const index = parseInt(indexMatch[1]);
-              return obj[arrayKey][index];
-            }
-            return undefined;
-          }
-          return obj && obj[key] !== undefined ? obj[key] : undefined;
-        }, item);
-        
-        if (value !== undefined) return value;
-      }
-      
-      return fallback;
-    } catch (error) {
-      console.log(`Error accessing ${propertyPath}:`, error);
-      return fallback;
-    }
   };
 
   // Calculate estimated delivery dates for products
@@ -508,6 +411,7 @@ const CheckoutPage = () => {
       }
     } catch (error) {
       console.error("Error calculating delivery dates:", error);
+      
       // Set fallback dates in case of error
       const fallbackDate = new Date();
       fallbackDate.setDate(fallbackDate.getDate() + 5); // Default 5-day delivery
@@ -522,21 +426,50 @@ const CheckoutPage = () => {
     }
   }, [cartItemsList]);
 
+  const handleContinueToPayment = () => {
+    // Check if there's a valid selected address
+    if (selectedAddressIndex === null) {
+      toast.error("Please select an address");
+      return;
+    }
+    
+    // Verify that the selected address exists in the address list
+    if (!addressList || !addressList[selectedAddressIndex]) {
+      toast.error("Selected address is no longer available. Please select another address.");
+      setSelectedAddressIndex(null);
+      return;
+    }
+    
+    // Continue to payment with the selected address
+    navigate('/checkout/payment', { 
+      state: { 
+        selectedAddressId: addressList[selectedAddressIndex]._id,
+        deliveryCharge 
+      } 
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header Section with stepper */}
-      <div className="bg-white shadow-sm border-b">
+      <div className="bg-black shadow-sm border-b text-white">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="w-24">
-              <img src={Logo} alt="DarkCart Logo" className="h-10" />
+              <Link to="/">
+                <img src={Logo} alt="DarkCart Logo" className="h-10" />
+              </Link>
             </div>
             <div className="flex items-center space-x-2">
-              <div className="text-xs uppercase tracking-wide text-gray-500">BAG</div>
-              <div className="w-8 h-px bg-gray-300"></div>
-              <div className="text-xs uppercase tracking-wide text-teal-500 font-medium">ADDRESS</div>
-              <div className="w-8 h-px bg-gray-300"></div>
-              <div className="text-xs uppercase tracking-wide text-gray-500">PAYMENT</div>
+              <div className="text-xs uppercase tracking-wide text-gray-300">
+                <Link to="/checkout/bag" className="hover:text-white">BAG</Link>
+              </div>
+              <div className="w-8 h-px bg-gray-600"></div>
+              <div className="text-xs uppercase tracking-wide text-teal-400 font-medium">ADDRESS</div>
+              <div className="w-8 h-px bg-gray-600"></div>
+              <div className="text-xs uppercase tracking-wide text-gray-300">
+                <span className="cursor-not-allowed">PAYMENT</span>
+              </div>
             </div>
             <div className="w-24">
               {/* Placeholder for balance */}
@@ -565,7 +498,7 @@ const CheckoutPage = () => {
                     <div 
                       key={address._id}
                       className={`relative border rounded p-4 ${
-                        selectedAddressIndex === index ? 'border-teal-500' : 'border-gray-200'
+                        selectedAddressIndex === index ? 'border-teal-500 bg-teal-50' : 'border-gray-200'
                       }`}
                     >
                       <div className="flex items-start">
@@ -584,7 +517,7 @@ const CheckoutPage = () => {
                         <div className="flex-1">
                           <div className="flex items-center space-x-2">
                             <span className="font-medium">{address.address_line}</span>
-                            {selectedAddressIndex === index && (
+                            {address.addressType === 'HOME' && (
                               <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-teal-50 text-teal-700 border border-teal-100">
                                 HOME
                               </span>
@@ -601,15 +534,19 @@ const CheckoutPage = () => {
                           
                           <div className="mt-3 space-x-4">
                             <button
-                              onClick={() => handleEditAddress(address)}
-                              className="text-sm text-gray-700 font-medium"
+                              onClick={() => {
+                                console.log("Edit button clicked for address:", address);
+                                handleEditAddress({...address});  // Pass a deep copy of the address
+                              }}
+                              className="text-sm text-teal-600 font-medium border border-teal-300 rounded-md px-4 py-1 hover:bg-teal-50"
                             >
                               EDIT
                             </button>
                             
                             <button
                               onClick={() => handleDeleteAddress(address._id)}
-                              className="text-sm text-gray-700 font-medium"
+                              type="button"
+                              className="text-sm text-gray-700 font-medium border rounded-md px-4 py-1 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors"
                             >
                               REMOVE
                             </button>
@@ -629,12 +566,12 @@ const CheckoutPage = () => {
                   
                   {/* Add New Address Button */}
                   <div 
-                    onClick={() => setOpenAddress(true)}
-                    className="flex items-center justify-center p-4 border border-dashed border-gray-300 rounded cursor-pointer hover:border-gray-400"
+                    onClick={() => setOpenAddAddress(true)}
+                    className="flex items-center justify-center p-4 border border-dashed border-teal-300 rounded cursor-pointer hover:border-teal-500 hover:bg-teal-50 transition-colors"
                   >
                     <div className="text-center">
-                      <div className="text-red-500 mb-1">+</div>
-                      <div className="text-sm font-medium">Add New Address</div>
+                      <div className="text-teal-500 mb-1 text-xl">+</div>
+                      <div className="text-sm font-medium text-teal-700">Add New Address</div>
                     </div>
                   </div>
                 </div>
@@ -645,58 +582,59 @@ const CheckoutPage = () => {
             <div className="bg-white rounded shadow">
               <div className="p-4 border-b">
                 <h2 className="text-lg font-medium">DELIVERY ESTIMATES</h2>
-              </div>                <div className="p-4">
-                {cartItemsList.map((item, index) => {
-                  // Use our safe access helper to get all needed properties
-                  const itemId = getProductProperty(item, '_id', `item-${index}`);
-                  const deliveryInfo = deliveryDates.find(d => d.productId === itemId);
-                  
-                  // Get image source safely
-                  const imageSrc = getProductProperty(item, 'image[0]') || 
-                                  getProductProperty(item, 'primaryImage') ||
-                                  "https://via.placeholder.com/100?text=Product";
-                  
-                  // Get product title/name safely
-                  const productTitle = getProductProperty(item, 'name', 'Product') || 
-                                      getProductProperty(item, 'title', 'Product');
-                                      
-                  // Get size and quantity safely
-                  const size = getProductProperty(item, 'size', 'Standard');
-                  const quantity = getProductProperty(item, 'quantity', 1);
-                  
-                  return (
-                    <div key={`checkout-item-${itemId}-${index}`} className="flex border-b last:border-b-0 py-4">
-                      <div className="w-20 h-24 flex-shrink-0">
-                        <img 
-                          src={imageSrc} 
-                          alt={productTitle}
-                          className="w-full h-full object-cover rounded"
-                          onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.src = "https://via.placeholder.com/100?text=Product";
-                          }}
-                        />
-                      </div>
-                      
-                      <div className="ml-4 flex-1">
-                        <h3 className="font-medium">{productTitle}</h3>
-                        <p className="text-sm text-gray-500 mt-1">
-                          Size: {size} • Qty: {quantity}
-                        </p>
+              </div>
+              <div className="p-4">
+                <div className="space-y-4">
+                  {cartItemsList.map((item, index) => {
+                    // Use our safe access helper to get all needed properties
+                    const itemId = getProductProperty(item, '_id', `item-${index}`);
+                    const deliveryInfo = deliveryDates.find(d => d.productId === itemId);
+                    
+                    // Get image source safely
+                    const imageSrc = getProductProperty(item, 'image[0]') || 
+                                    getProductProperty(item, 'primaryImage') ||
+                                    "https://via.placeholder.com/100?text=Product";
+                    
+                    // Get product title/name safely
+                    const productTitle = getProductProperty(item, 'name', 'Product') || 
+                                        getProductProperty(item, 'title', 'Product');
+                    const size = getProductProperty(item, 'size', 'Standard');
+                    const quantity = getProductProperty(item, 'quantity', 1);
+                    
+                    return (
+                      <div key={`checkout-item-${itemId}-${index}`} className="flex border-b last:border-b-0 py-4">
+                        <div className="w-20 h-24 flex-shrink-0">
+                          <img 
+                            src={imageSrc} 
+                            alt={productTitle}
+                            className="w-full h-full object-cover rounded"
+                            onError={(e) => {
+                              e.target.onerror = null;
+                              e.target.src = "https://via.placeholder.com/100?text=Product";
+                            }}
+                          />
+                        </div>
                         
-                        <div className="flex items-center mt-3">
-                          <div className="text-sm">
-                            <span className="text-gray-700 font-medium">
-                              Estimated delivery by {
-                                deliveryInfo?.formattedDate || 'Next Week'
-                              }
-                            </span>
+                        <div className="ml-4 flex-1">
+                          <h3 className="font-medium">{productTitle}</h3>
+                          <p className="text-sm text-gray-500 mt-1">
+                            Size: {size} • Qty: {quantity}
+                          </p>
+                          
+                          <div className="flex items-center mt-3">
+                            <div className="text-sm">
+                              <span className="text-gray-700 font-medium">
+                                Estimated delivery by {
+                                  deliveryInfo?.formattedDate || 'Next Week'
+                                }
+                              </span>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
             </div>
           </div>
@@ -775,7 +713,7 @@ const CheckoutPage = () => {
                           </div>
                           
                           <div className="mt-1">
-                            <span className="text-xs text-teal-700 font-medium">
+                            <span className="text-xs text-teal-600 font-medium">
                               Delivery by {deliveryInfo?.formattedDate || 'Next Week'}
                             </span>
                           </div>
@@ -831,42 +769,25 @@ const CheckoutPage = () => {
                 </div>
                 
                 <button
-                  onClick={handleCashOnDelivery}
-                  disabled={isProcessing || selectedAddressIndex === null}
-                  className="w-full bg-red-500 hover:bg-red-600 text-white py-3 mt-6 font-medium disabled:bg-gray-300 disabled:cursor-not-allowed"
+                  onClick={handleContinueToPayment}
+                  disabled={selectedAddressIndex === null}
+                  className="w-full bg-black hover:bg-gray-800 text-white py-3 mt-6 font-medium disabled:bg-gray-300 disabled:cursor-not-allowed border-b-4 border-teal-500"
                 >
-                  {isProcessing ? "PROCESSING..." : "CONTINUE"}
+                  CONTINUE
                 </button>
-                    <div className="mt-6 text-xs text-center text-gray-600">
-                <p>Safe and Secure Payments. Easy returns.</p>
-                <p>100% Authentic products.</p>
                 
-                {/* Debug button only visible in development */}
-                {import.meta.env.DEV && (
-                  <div className="mt-4 pt-4 border-t border-gray-200">
-                    <button
-                      onClick={() => {
-                        console.log("Cart Items Structure:", cartItemsList);
-                        toast.success("Cart structure logged to console for debugging");
-                      }}
-                      className="text-xs px-2 py-1 bg-gray-200 text-gray-700 rounded"
-                    >
-                      Debug Cart Structure
-                    </button>
-                  </div>
-                )}
-              </div>
+                <div className="mt-6 text-xs text-center text-gray-600">
+                  <p>Safe and Secure Payments. Easy returns.</p>
+                  <p>100% Authentic products.</p>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
       
-      {/* Payment Methods */}
-   
-
       {/* Modals */}
-      {OpenAddress && <AddAddress close={() => setOpenAddress(false)} />}
+      {openAddAddress && <AddAddress close={() => setOpenAddAddress(false)} />}
       {openEditAddress && editAddressData && (
         <EditAddressData
           close={() => {
@@ -881,10 +802,10 @@ const CheckoutPage = () => {
 };
 
 // Wrap with ErrorBoundary for better error handling
-const CheckoutPageWithErrorBoundary = () => (
+const AddressPageWithErrorBoundary = () => (
   <ErrorBoundary>
-    <CheckoutPage />
+    <AddressPage />
   </ErrorBoundary>
 );
 
-export default CheckoutPageWithErrorBoundary;
+export default AddressPageWithErrorBoundary;

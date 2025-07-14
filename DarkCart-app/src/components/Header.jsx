@@ -254,18 +254,7 @@ function Header() {
                     <div className="px-4 py-2">
                       <h3 className="text-sm font-semibold text-gray-800 border-b border-gray-100 pb-2 mb-2">More Offers</h3>
                     </div>
-                    <Link to="/flash-sale" className="flex items-center px-4 py-2.5 text-gray-700 hover:bg-gray-50/80 hover:text-black text-sm transition-all duration-200 group">
-                      <span className="w-8 h-8 mr-3 flex-shrink-0 bg-gray-100 rounded-full flex items-center justify-center text-black shadow-sm group-hover:shadow-md transition-shadow duration-200 group-hover:scale-105 transform">
-                        <FaFire size={16} />
-                      </span>
-                      <span className="group-hover:translate-x-0.5 transition-transform duration-200">Flash Sale</span>
-                    </Link>
-                    <Link to="/clearance" className="flex items-center px-4 py-2.5 text-gray-700 hover:bg-gray-50/80 hover:text-black text-sm transition-all duration-200 group">
-                      <span className="w-8 h-8 mr-3 flex-shrink-0 bg-gray-100 rounded-full flex items-center justify-center text-black shadow-sm group-hover:shadow-md transition-shadow duration-200 group-hover:scale-105 transform">
-                        <FaPercentage size={16} />
-                      </span>
-                      <span className="group-hover:translate-x-0.5 transition-transform duration-200">Clearance</span>
-                    </Link>
+
                     <Link to="/bundle-offers" className="flex items-center px-4 py-2.5 text-gray-700 hover:bg-gray-50/80 hover:text-black text-sm transition-all duration-200 group">
                       <span className="w-8 h-8 mr-3 flex-shrink-0 bg-gray-100 rounded-full flex items-center justify-center text-black shadow-sm group-hover:shadow-md transition-shadow duration-200 group-hover:scale-105 transform">
                         <FaGift size={16} />
@@ -491,22 +480,7 @@ function Header() {
                           : 'max-h-0 opacity-0'
                         }`}
                       >
-                        <Link
-                          to="/flash-sale"
-                          className="flex items-center text-gray-600 hover:text-black hover:bg-gray-50 pl-10 pr-5 py-2.5 text-sm transition-colors"
-                          onClick={() => setTimeout(() => setMobileMenuOpen(false), 200)}
-                        >
-                          <FaFire className="mr-2 text-black" size={14} />
-                          Flash Sale
-                        </Link>
-                        <Link
-                          to="/clearance"
-                          className="flex items-center text-gray-600 hover:text-black hover:bg-gray-50 pl-10 pr-5 py-2.5 text-sm transition-colors"
-                          onClick={() => setTimeout(() => setMobileMenuOpen(false), 200)}
-                        >
-                          <FaPercentage className="mr-2 text-black" size={14} />
-                          Clearance
-                        </Link>
+
                         <Link
                           to="/bundle-offers"
                           className="flex items-center text-gray-600 hover:text-black hover:bg-gray-50 pl-10 pr-5 py-2.5 text-sm transition-colors"
