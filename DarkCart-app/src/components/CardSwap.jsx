@@ -11,99 +11,41 @@ import React, {
 import gsap from "gsap";
 
 export const Card = forwardRef(
-  ({ customClass, title, description, ...rest }, ref) => {
-    const getCardDimensions = () => {
-      const screenWidth = window.innerWidth;
-      
-      if (screenWidth <= 320) {
-        return { width: '200px', height: '260px', minWidth: '180px', minHeight: '240px' };
-      } else if (screenWidth <= 480) {
-        return { width: '240px', height: '300px', minWidth: '220px', minHeight: '280px' };
-      } else if (screenWidth <= 768) {
-        return { width: '280px', height: '350px', minWidth: '260px', minHeight: '330px' };
-      } else if (screenWidth <= 1024) {
-        return { width: '340px', height: '430px', minWidth: '320px', minHeight: '400px' };
-      } else if (screenWidth <= 1200) {
-        return { width: '380px', height: '480px', minWidth: '360px', minHeight: '450px' };
-      } else {
-        return { width: '420px', height: '530px', minWidth: '400px', minHeight: '500px' };
-      }
-    };
-
-    const cardDimensions = getCardDimensions();
-
-    return (
-      <div
-        ref={ref}
-        {...rest}
-        className={`absolute top-1/2 left-1/2 rounded-xl border border-white bg-gradient-to-br from-gray-900 to-black shadow-2xl [transform-style:preserve-3d] [will-change:transform] [backface-visibility:hidden] overflow-hidden cursor-pointer card-carousel-card ${customClass ?? ""} ${rest.className ?? ""}`.trim()}
-        style={{
-          transform: 'translate(-50%, -50%)',
-          width: cardDimensions.width,
-          height: cardDimensions.height,
-          minWidth: cardDimensions.minWidth,
-          minHeight: cardDimensions.minHeight,
-          ...rest.style
-        }}
-      >
+  ({ customClass, title, description, ...rest }, ref) => (
+    <div
+      ref={ref}
+      {...rest}
+      className={`absolute top-1/2 left-1/2 rounded-xl border border-white bg-gradient-to-br from-gray-900 to-black shadow-2xl [transform-style:preserve-3d] [will-change:transform] [backface-visibility:hidden] overflow-hidden cursor-pointer card-carousel-card ${customClass ?? ""} ${rest.className ?? ""}`.trim()}
+    >
       {rest.children}
       {(title || description) && (
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/95 via-black/80 to-transparent p-2 sm:p-3 md:p-4 lg:p-6 text-white transition-all duration-300">
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/95 via-black/80 to-transparent p-3 sm:p-4 md:p-6 text-white transition-all duration-300">
           {title && (
-            <h3 className="text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl font-bold mb-1 md:mb-2 text-white leading-tight drop-shadow-lg line-clamp-2">
-              {title}
-            </h3>
+            <h3 className="text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl font-bold mb-1 md:mb-2 text-white leading-tight drop-shadow-lg">{title}</h3>
           )}
           {description && (
-            <p className="text-[10px] sm:text-xs md:text-sm lg:text-base text-gray-200 leading-tight sm:leading-relaxed line-clamp-2 md:line-clamp-3 drop-shadow-md">
+            <p className="text-xs sm:text-sm md:text-base lg:text-lg text-gray-200 leading-tight sm:leading-relaxed line-clamp-2 md:line-clamp-3 drop-shadow-md">
               {description}
             </p>
           )}
         </div>
       )}
     </div>
-  );
-});
+  )
+);
 Card.displayName = "Card";
 
 const makeSlot = (
   i,
   distX,
   distY,
-  total,
-  screenWidth = 1200
-) => {
-  // Adjust multiplier based on screen size for better distribution
-  let multiplier = 1.8;
-  let zDepthFactor = 0.6;
-  
-  if (screenWidth <= 320) {
-    multiplier = 0.6; // Much tighter spacing for very small screens
-    zDepthFactor = 0.2;
-  } else if (screenWidth <= 480) {
-    multiplier = 0.8; // Tighter spacing for mobile
-    zDepthFactor = 0.3;
-  } else if (screenWidth <= 768) {
-    multiplier = 1.0; // Moderate spacing for tablets
-    zDepthFactor = 0.4;
-  } else if (screenWidth <= 1024) {
-    multiplier = 1.3;
-    zDepthFactor = 0.5;
-  } else if (screenWidth <= 1200) {
-    multiplier = 1.6;
-    zDepthFactor = 0.55;
-  } else {
-    multiplier = 1.8;
-    zDepthFactor = 0.6;
-  }
-  
-  return {
-    x: (i - (total - 1) / 2) * distX * multiplier,
-    y: -i * distY * 0.8, // Reduce vertical spacing
-    z: -i * distX * zDepthFactor,
-    zIndex: total - i,
-  };
-};
+  total
+) => ({
+  x: i * distX * 2.0, // Further increased multiplier for maximum spread
+  y: -i * distY,
+  z: -i * distX * 1.0, // Reduced z-depth to keep cards more visible
+  zIndex: total - i,
+});
 
 const placeNow = (el, slot, skew) =>
   gsap.set(el, {
@@ -116,8 +58,6 @@ const placeNow = (el, slot, skew) =>
     transformOrigin: "center center",
     zIndex: slot.zIndex,
     force3D: true,
-    left: "50%",
-    top: "50%",
   });
 
 const CardSwap = ({
@@ -190,77 +130,40 @@ const CardSwap = ({
     }
   }, []);
 
-  // Responsive calculations for all devices
+  // Responsive calculations for full screen coverage
   const getResponsiveValues = () => {
     if (!responsive) return { width, height, cardDistance, verticalDistance };
     
     const screenWidth = windowSize.width;
     const screenHeight = windowSize.height;
     
-    // Use container dimensions instead of viewport
-    const baseWidth = width || screenWidth;
-    const baseHeight = height || screenHeight;
-    
-    // Extra small devices (phones, 320px and up)
-    if (screenWidth <= 320) {
+    if (screenWidth <= 480) {
       return {
-        width: baseWidth,
-        height: baseHeight, 
-        cardDistance: cardDistance * 0.3, // Much smaller distance for tiny screens
-        verticalDistance: verticalDistance * 0.3, 
+        width: screenWidth * 1.4, // Further increased to eliminate gaps
+        height: screenHeight * 0.9, 
+        cardDistance: cardDistance * 0.9, 
+        verticalDistance: verticalDistance * 0.8, 
       };
-    }
-    // Small devices (phones, 480px and up)
-    else if (screenWidth <= 480) {
+    } else if (screenWidth <= 768) {
       return {
-        width: baseWidth,
-        height: baseHeight, 
-        cardDistance: cardDistance * 0.4, // Smaller distance for mobile
-        verticalDistance: verticalDistance * 0.4, 
+        width: screenWidth * 1.3, // Further increased to eliminate gaps
+        height: screenHeight * 0.9, 
+        cardDistance: cardDistance * 1.0, 
+        verticalDistance: verticalDistance * 0.85, 
       };
-    }
-    // Medium devices (tablets, 768px and up)
-    else if (screenWidth <= 768) {
+    } else if (screenWidth <= 1024) {
       return {
-        width: baseWidth,
-        height: baseHeight, 
-        cardDistance: cardDistance * 0.6, 
-        verticalDistance: verticalDistance * 0.5, 
+        width: screenWidth * 1.2, // Further increased for full coverage
+        height: screenHeight * 0.95, 
+        cardDistance: cardDistance * 1.1, 
+        verticalDistance: verticalDistance * 0.9, 
       };
-    }
-    // Large devices (small laptops, 1024px and up)
-    else if (screenWidth <= 1024) {
+    } else {
+      // Large screens - extend beyond viewport to eliminate all gaps
       return {
-        width: baseWidth,
-        height: baseHeight, 
-        cardDistance: cardDistance * 0.8, 
-        verticalDistance: verticalDistance * 0.6, 
-      };
-    }
-    // Extra large devices (large laptops and desktops, 1200px and up)
-    else if (screenWidth <= 1200) {
-      return {
-        width: baseWidth,
-        height: baseHeight,
-        cardDistance: cardDistance * 1.2,
-        verticalDistance: verticalDistance * 0.8,
-      };
-    }
-    // XXL devices (large desktops, 1400px and up)
-    else if (screenWidth <= 1400) {
-      return {
-        width: baseWidth,
-        height: baseHeight,
-        cardDistance: cardDistance * 1.4,
-        verticalDistance: verticalDistance * 0.9,
-      };
-    }
-    // Ultra wide screens (1920px and up)
-    else {
-      return {
-        width: baseWidth,
-        height: baseHeight,
-        cardDistance: cardDistance * 1.6,
+        width: screenWidth * 1.1, // Increased to cover entire width plus some
+        height: screenHeight * 1.0,
+        cardDistance: cardDistance * 1.3, // Increased spacing for better spread
         verticalDistance: verticalDistance * 1.0,
       };
     }
@@ -271,12 +174,11 @@ const CardSwap = ({
   useEffect(() => {
     const total = refs.length;
     const { cardDistance: respCardDistance, verticalDistance: respVerticalDistance } = responsiveValues;
-    const screenWidth = windowSize.width;
     
     refs.forEach((r, i) =>
       placeNow(
         r.current,
-        makeSlot(i, respCardDistance, respVerticalDistance, total, screenWidth),
+        makeSlot(i, respCardDistance, respVerticalDistance, total),
         skewAmount
       )
     );
@@ -298,7 +200,7 @@ const CardSwap = ({
       tl.addLabel("promote", `-=${config.durDrop * config.promoteOverlap}`);
       rest.forEach((idx, i) => {
         const el = refs[idx].current;
-        const slot = makeSlot(i, respCardDistance, respVerticalDistance, refs.length, screenWidth);
+        const slot = makeSlot(i, respCardDistance, respVerticalDistance, refs.length);
         tl.set(el, { zIndex: slot.zIndex }, "promote");
         tl.to(
           el,
@@ -317,8 +219,7 @@ const CardSwap = ({
         refs.length - 1,
         respCardDistance,
         respVerticalDistance,
-        refs.length,
-        screenWidth
+        refs.length
       );
       tl.addLabel("return", `promote+=${config.durMove * config.returnDelay}`);
       tl.call(
@@ -389,28 +290,32 @@ const CardSwap = ({
   return (
     <div
       ref={container}
-      className="w-full h-full overflow-hidden perspective-[1000px] relative
-                 /* Perfect centering for all devices */
-                 flex items-center justify-center
-                 /* Ensure no translations that could offset position */
-                 translate-x-0 translate-y-0"
-      style={{ 
-        width: '100%', 
-        height: '100%',
-        minWidth: '100%',
-        minHeight: '100%',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
-      }}
+      className="w-full h-full overflow-hidden perspective-[1000px]
+                 
+                 /* Positioning to fill container properly */
+                 translate-x-[-20%] translate-y-[0%]
+                 
+                 /* Mobile positioning */
+                 max-[480px]:translate-x-[-25%] max-[480px]:translate-y-[0%] max-[480px]:scale-110
+                 
+                 /* Tablet positioning */
+                 max-[768px]:translate-x-[-20%] max-[768px]:translate-y-[0%] max-[768px]:scale-105
+                 
+                 /* Desktop positioning */
+                 min-[769px]:translate-x-[-15%] min-[769px]:translate-y-[0%]
+                 
+                 /* Large desktop positioning */
+                 min-[1024px]:translate-x-[-10%] min-[1024px]:translate-y-[0%]
+                 min-[1280px]:translate-x-[-5%] min-[1280px]:translate-y-[0%]"
+      style={{ width: responsiveValues.width, height: responsiveValues.height }}
     >
-      <div className="relative w-full h-full flex items-center justify-center">
+      <div className="absolute inset-0 flex items-center justify-center">
         {rendered}
       </div>
       
       {/* Responsive pause indicator */}
       {pauseOnHover && (
-        <div className="absolute top-4 left-4 text-xs text-white bg-black/50 px-3 py-1 rounded-full backdrop-blur-sm opacity-75 max-[768px]:text-[10px] max-[480px]:hidden z-20">
+        <div className="absolute -top-8 left-0 text-xs text-white bg-black/50 px-3 py-1 rounded-full backdrop-blur-sm opacity-75 max-[768px]:text-[10px] max-[480px]:hidden z-20">
           Hover to pause
         </div>
       )}
