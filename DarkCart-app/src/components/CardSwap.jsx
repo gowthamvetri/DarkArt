@@ -11,44 +11,99 @@ import React, {
 import gsap from "gsap";
 
 export const Card = forwardRef(
-  ({ customClass, title, description, ...rest }, ref) => (
-    <div
-      ref={ref}
-      {...rest}
-      className={`absolute top-1/2 left-1/2 rounded-xl border border-white bg-gradient-to-br from-gray-900 to-black shadow-2xl [transform-style:preserve-3d] [will-change:transform] [backface-visibility:hidden] overflow-hidden cursor-pointer card-carousel-card ${customClass ?? ""} ${rest.className ?? ""}`.trim()}
-    >
+  ({ customClass, title, description, ...rest }, ref) => {
+    const getCardDimensions = () => {
+      const screenWidth = window.innerWidth;
+      
+      if (screenWidth <= 320) {
+        return { width: '200px', height: '260px', minWidth: '180px', minHeight: '240px' };
+      } else if (screenWidth <= 480) {
+        return { width: '240px', height: '300px', minWidth: '220px', minHeight: '280px' };
+      } else if (screenWidth <= 768) {
+        return { width: '280px', height: '350px', minWidth: '260px', minHeight: '330px' };
+      } else if (screenWidth <= 1024) {
+        return { width: '340px', height: '430px', minWidth: '320px', minHeight: '400px' };
+      } else if (screenWidth <= 1200) {
+        return { width: '380px', height: '480px', minWidth: '360px', minHeight: '450px' };
+      } else {
+        return { width: '420px', height: '530px', minWidth: '400px', minHeight: '500px' };
+      }
+    };
+
+    const cardDimensions = getCardDimensions();
+
+    return (
+      <div
+        ref={ref}
+        {...rest}
+        className={`absolute top-1/2 left-1/2 rounded-xl border border-white bg-gradient-to-br from-gray-900 to-black shadow-2xl [transform-style:preserve-3d] [will-change:transform] [backface-visibility:hidden] overflow-hidden cursor-pointer card-carousel-card ${customClass ?? ""} ${rest.className ?? ""}`.trim()}
+        style={{
+          transform: 'translate(-50%, -50%)',
+          width: cardDimensions.width,
+          height: cardDimensions.height,
+          minWidth: cardDimensions.minWidth,
+          minHeight: cardDimensions.minHeight,
+          ...rest.style
+        }}
+      >
       {rest.children}
       {(title || description) && (
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/95 via-black/80 to-transparent p-2 sm:p-3 md:p-4 text-white transition-all duration-300 hover:from-black/100">
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/95 via-black/80 to-transparent p-2 sm:p-3 md:p-4 lg:p-6 text-white transition-all duration-300">
           {title && (
-            <h3 className="text-xs sm:text-sm md:text-lg font-bold mb-1 md:mb-2 text-white leading-tight">{title}</h3>
+            <h3 className="text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl font-bold mb-1 md:mb-2 text-white leading-tight drop-shadow-lg line-clamp-2">
+              {title}
+            </h3>
           )}
           {description && (
-            <p className="text-[10px] sm:text-xs md:text-sm text-gray-200 leading-tight sm:leading-relaxed line-clamp-2 md:line-clamp-3">
+            <p className="text-[10px] sm:text-xs md:text-sm lg:text-base text-gray-200 leading-tight sm:leading-relaxed line-clamp-2 md:line-clamp-3 drop-shadow-md">
               {description}
             </p>
           )}
         </div>
       )}
-      
-      {/* Hover overlay effect */}
-      <div className="absolute inset-0 bg-black/20 opacity-0 transition-opacity duration-300 hover:opacity-100 pointer-events-none" />
     </div>
-  )
-);
+  );
+});
 Card.displayName = "Card";
 
 const makeSlot = (
   i,
   distX,
   distY,
-  total
-) => ({
-  x: i * distX,
-  y: -i * distY,
-  z: -i * distX * 1.5,
-  zIndex: total - i,
-});
+  total,
+  screenWidth = 1200
+) => {
+  // Adjust multiplier based on screen size for better distribution
+  let multiplier = 1.8;
+  let zDepthFactor = 0.6;
+  
+  if (screenWidth <= 320) {
+    multiplier = 0.6; // Much tighter spacing for very small screens
+    zDepthFactor = 0.2;
+  } else if (screenWidth <= 480) {
+    multiplier = 0.8; // Tighter spacing for mobile
+    zDepthFactor = 0.3;
+  } else if (screenWidth <= 768) {
+    multiplier = 1.0; // Moderate spacing for tablets
+    zDepthFactor = 0.4;
+  } else if (screenWidth <= 1024) {
+    multiplier = 1.3;
+    zDepthFactor = 0.5;
+  } else if (screenWidth <= 1200) {
+    multiplier = 1.6;
+    zDepthFactor = 0.55;
+  } else {
+    multiplier = 1.8;
+    zDepthFactor = 0.6;
+  }
+  
+  return {
+    x: (i - (total - 1) / 2) * distX * multiplier,
+    y: -i * distY * 0.8, // Reduce vertical spacing
+    z: -i * distX * zDepthFactor,
+    zIndex: total - i,
+  };
+};
 
 const placeNow = (el, slot, skew) =>
   gsap.set(el, {
@@ -61,6 +116,8 @@ const placeNow = (el, slot, skew) =>
     transformOrigin: "center center",
     zIndex: slot.zIndex,
     force3D: true,
+    left: "50%",
+    top: "50%",
   });
 
 const CardSwap = ({
@@ -133,37 +190,80 @@ const CardSwap = ({
     }
   }, []);
 
-  // Responsive calculations
+  // Responsive calculations for all devices
   const getResponsiveValues = () => {
     if (!responsive) return { width, height, cardDistance, verticalDistance };
     
     const screenWidth = windowSize.width;
+    const screenHeight = windowSize.height;
     
-    if (screenWidth <= 480) {
+    // Use container dimensions instead of viewport
+    const baseWidth = width || screenWidth;
+    const baseHeight = height || screenHeight;
+    
+    // Extra small devices (phones, 320px and up)
+    if (screenWidth <= 320) {
       return {
-        width: width * 0.75, // Increased from 0.6 to 0.75
-        height: height * 0.75, // Increased from 0.6 to 0.75
-        cardDistance: cardDistance * 0.6, // Increased from 0.5 to 0.6
-        verticalDistance: verticalDistance * 0.6, // Increased from 0.5 to 0.6
-      };
-    } else if (screenWidth <= 768) {
-      return {
-        width: width * 0.85, // Increased from 0.75 to 0.85
-        height: height * 0.85, // Increased from 0.75 to 0.85
-        cardDistance: cardDistance * 0.75, // Increased from 0.7 to 0.75
-        verticalDistance: verticalDistance * 0.75, // Increased from 0.7 to 0.75
-      };
-    } else if (screenWidth >= 1024) {
-      // Large screens - make cards bigger and adjust spacing
-      return {
-        width: width * 1.2,
-        height: height * 1.2,
-        cardDistance: cardDistance * 1.1,
-        verticalDistance: verticalDistance * 1.1,
+        width: baseWidth,
+        height: baseHeight, 
+        cardDistance: cardDistance * 0.3, // Much smaller distance for tiny screens
+        verticalDistance: verticalDistance * 0.3, 
       };
     }
-    
-    return { width, height, cardDistance, verticalDistance };
+    // Small devices (phones, 480px and up)
+    else if (screenWidth <= 480) {
+      return {
+        width: baseWidth,
+        height: baseHeight, 
+        cardDistance: cardDistance * 0.4, // Smaller distance for mobile
+        verticalDistance: verticalDistance * 0.4, 
+      };
+    }
+    // Medium devices (tablets, 768px and up)
+    else if (screenWidth <= 768) {
+      return {
+        width: baseWidth,
+        height: baseHeight, 
+        cardDistance: cardDistance * 0.6, 
+        verticalDistance: verticalDistance * 0.5, 
+      };
+    }
+    // Large devices (small laptops, 1024px and up)
+    else if (screenWidth <= 1024) {
+      return {
+        width: baseWidth,
+        height: baseHeight, 
+        cardDistance: cardDistance * 0.8, 
+        verticalDistance: verticalDistance * 0.6, 
+      };
+    }
+    // Extra large devices (large laptops and desktops, 1200px and up)
+    else if (screenWidth <= 1200) {
+      return {
+        width: baseWidth,
+        height: baseHeight,
+        cardDistance: cardDistance * 1.2,
+        verticalDistance: verticalDistance * 0.8,
+      };
+    }
+    // XXL devices (large desktops, 1400px and up)
+    else if (screenWidth <= 1400) {
+      return {
+        width: baseWidth,
+        height: baseHeight,
+        cardDistance: cardDistance * 1.4,
+        verticalDistance: verticalDistance * 0.9,
+      };
+    }
+    // Ultra wide screens (1920px and up)
+    else {
+      return {
+        width: baseWidth,
+        height: baseHeight,
+        cardDistance: cardDistance * 1.6,
+        verticalDistance: verticalDistance * 1.0,
+      };
+    }
   };
 
   const responsiveValues = getResponsiveValues();
@@ -171,11 +271,12 @@ const CardSwap = ({
   useEffect(() => {
     const total = refs.length;
     const { cardDistance: respCardDistance, verticalDistance: respVerticalDistance } = responsiveValues;
+    const screenWidth = windowSize.width;
     
     refs.forEach((r, i) =>
       placeNow(
         r.current,
-        makeSlot(i, respCardDistance, respVerticalDistance, total),
+        makeSlot(i, respCardDistance, respVerticalDistance, total, screenWidth),
         skewAmount
       )
     );
@@ -197,7 +298,7 @@ const CardSwap = ({
       tl.addLabel("promote", `-=${config.durDrop * config.promoteOverlap}`);
       rest.forEach((idx, i) => {
         const el = refs[idx].current;
-        const slot = makeSlot(i, respCardDistance, respVerticalDistance, refs.length);
+        const slot = makeSlot(i, respCardDistance, respVerticalDistance, refs.length, screenWidth);
         tl.set(el, { zIndex: slot.zIndex }, "promote");
         tl.to(
           el,
@@ -216,7 +317,8 @@ const CardSwap = ({
         refs.length - 1,
         respCardDistance,
         respVerticalDistance,
-        refs.length
+        refs.length,
+        screenWidth
       );
       tl.addLabel("return", `promote+=${config.durMove * config.returnDelay}`);
       tl.call(
@@ -287,25 +389,29 @@ const CardSwap = ({
   return (
     <div
       ref={container}
-      className="z-0 absolute right-0 bottom-0 sm:bottom-6 sm:left-100 md:left-130 md:bottom-40 md:right-30 lg:left-180
-transform origin-bottom-right perspective-[900px] overflow-visible z--1
-
-translate-x-[-10%] translate-y-[20%]
-sm:translate-x-[-15%] sm:translate-y-[18%]
-md:translate-x-[-20%] md:translate-y-[16%]
-lg:translate-x-[-35%] lg:translate-y-[15%]
-xl:translate-x-[-45%] xl:translate-y-[10%]
-2xl:translate-x-[-50%] 2xl:translate-y-[8%]
-
-max-[768px]:translate-x-[5%] max-[768px]:translate-y-[5%] max-[768px]:scale-[0.95]
-max-[480px]:translate-x-[2%] max-[480px]:translate-y-[2%] max-[480px]:scale-[0.85]"
-      style={{ width: responsiveValues.width, height: responsiveValues.height }}
+      className="w-full h-full overflow-hidden perspective-[1000px] relative
+                 /* Perfect centering for all devices */
+                 flex items-center justify-center
+                 /* Ensure no translations that could offset position */
+                 translate-x-0 translate-y-0"
+      style={{ 
+        width: '100%', 
+        height: '100%',
+        minWidth: '100%',
+        minHeight: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}
     >
-      {rendered}
+      <div className="relative w-full h-full flex items-center justify-center">
+        {rendered}
+      </div>
       
       {/* Responsive pause indicator */}
       {pauseOnHover && (
-        <div className="absolute -top-8 left-0 text-xs text-gray-400 opacity-75 max-[768px]:text-[10px] max-[480px]:hidden">
+        <div className="absolute top-4 left-4 text-xs text-white bg-black/50 px-3 py-1 rounded-full backdrop-blur-sm opacity-75 max-[768px]:text-[10px] max-[480px]:hidden z-20">
+          Hover to pause
         </div>
       )}
     </div>
