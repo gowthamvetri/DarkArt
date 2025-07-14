@@ -16,9 +16,20 @@ const ProductAdmin = () => {
   const [limit, setLimit] = useState(10);
   const [loading, setLoading] = useState(false);
   const [totalPageCount, setTotalPageCount] = useState(1);
-  const [search, setSearch] = useState("");
+  const [filters, setFilters] = useState({
+    gender: "",
+    category: "",
+    search: "",
+  });
   const navigate = useNavigate();
-  
+
+  const genderOptions = [
+    { value: "", label: "All Genders" },
+    { value: "Men", label: "Men" },
+    { value: "Women", label: "Women" },
+    { value: "Kids", label: "Kids" },
+  ];
+
   const fetchProductData = async () => {
     try {
       setLoading(true);
@@ -27,41 +38,44 @@ const ProductAdmin = () => {
         data: {
           page: page,
           limit: 10,
-          search: search,
+          search: filters.search,
         },
       });
       const { data: responseData } = response;
-
+      console.log(responseData);
       if (responseData.success) {
         setProductData(responseData.data);
-        setTotalPageCount(responseData.totalNoPage);
+        setTotalPageCount(responseData.totalPages);
       }
+      console.log(page)
     } catch (error) {
       AxiosTostError(error);
     } finally {
       setLoading(false);
     }
   };
-  
+
   useEffect(() => {
     fetchProductData();
   }, [page]);
-  
+
   const handleNext = () => {
     if (page !== totalPageCount) {
       setPage((preve) => preve + 1);
+      // fetchProductData();
     }
   };
-  
+
   const handlePrevious = () => {
     if (page > 1) {
       setPage((preve) => preve - 1);
+      // fetchProductData();
     }
   };
-  
+
   const handleOnChange = (e) => {
     const { value } = e.target;
-    setSearch(value);
+    setFilters((prev) => ({ ...prev, search: value }));
     setPage(1);
   };
 
@@ -76,7 +90,7 @@ const ProductAdmin = () => {
     return () => {
       clearTimeout(interval);
     };
-  }, [search]);
+  }, [filters.search]);
 
   return (
     <section className="min-h-[75vh] max-h-[75vh] overflow-y-auto bg-gray-50">
@@ -88,26 +102,26 @@ const ProductAdmin = () => {
             type="text"
             placeholder="Search products..."
             className="h-full w-full outline-none bg-transparent text-gray-900 placeholder-gray-500"
-            value={search}
+            value={filters.search}
             onChange={handleOnChange}
           />
         </div>
       </div>
-      
+
       {loading && (
         <div className="flex justify-center items-center h-64">
           <Loading />
         </div>
       )}
-      
+
       <div className="p-4 bg-gray-50 grid">
         <div className="min-h-[55vh]">
           <div className="grid grid-cols-2 sm:items-center sm:justify-center md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 p-4">
             {productData.map((p, index) => {
               return (
-                <ProductCardAdmin 
+                <ProductCardAdmin
                   key={p._id || index}
-                  data={p} 
+                  data={p}
                   fetchProductData={fetchProductData}
                 />
               );
@@ -120,25 +134,25 @@ const ProductAdmin = () => {
             onClick={handlePrevious}
             disabled={page === 1}
             className={`border px-4 py-2 rounded-md font-medium transition-colors ${
-              page === 1 
-                ? 'border-gray-300 text-gray-400 bg-gray-100 cursor-not-allowed' 
-                : 'border-gray-300 text-gray-700 bg-white hover:bg-gray-100 hover:text-gray-900'
+              page === 1
+                ? "border-gray-300 text-gray-400 bg-gray-100 cursor-not-allowed"
+                : "border-gray-300 text-gray-700 bg-white hover:bg-gray-100 hover:text-gray-900"
             }`}
           >
             Previous
           </button>
-          
+
           <div className="flex-1 text-center bg-white border border-gray-300 py-2 rounded-md font-medium text-gray-900">
             {page} / {totalPageCount}
           </div>
-          
+
           <button
             onClick={handleNext}
             disabled={page === totalPageCount}
             className={`border px-4 py-2 rounded-md font-medium transition-colors ${
-              page === totalPageCount 
-                ? 'border-gray-300 text-gray-400 bg-gray-100 cursor-not-allowed' 
-                : 'border-gray-300 text-gray-700 bg-white hover:bg-gray-100 hover:text-gray-900'
+              page === totalPageCount
+                ? "border-gray-300 text-gray-400 bg-gray-100 cursor-not-allowed"
+                : "border-gray-300 text-gray-700 bg-white hover:bg-gray-100 hover:text-gray-900"
             }`}
           >
             Next
