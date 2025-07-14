@@ -163,18 +163,18 @@ const AddToCartButton = ({ data }) => {
           )}
 
           {/* Stock Warning for Low Stock */}
-          {data.stock > 0 && data.stock <= 5 && (
+          {/* {data.stock > 0 && data.stock <= 5 && (
             <div className="text-xs text-orange-600 text-center mt-1 font-medium">
               Only {data.stock} left!
             </div>
-          )}
+          )} */}
 
           {/* Stock Status for Normal Stock */}
-          {data.stock > 5 && data.stock <= 20 && (
+          {/* {data.stock > 5 && data.stock <= 20 && (
             <div className="text-xs text-gray-500 text-center mt-1">
               {data.stock} in stock
             </div>
-          )}
+          )} */}
         </>
       )}
     </div>

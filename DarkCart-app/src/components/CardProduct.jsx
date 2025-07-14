@@ -17,7 +17,7 @@ const ProductNameWithHighlight = ({ name, searchTerm }) => {
     <span>
       {parts.map((part, index) => 
         regex.test(part) ? (
-          <mark key={index} className="bg-yellow-200 text-gray-900 font-semibold">
+          <mark key={index} className="bg-yellow-200 text-gray-900 font-semibold rounded px-1">
             {part}
           </mark>
         ) : (
@@ -32,12 +32,12 @@ function CardProduct({ data }) {
   // Early return if data is not available
   if (!data || !data._id) {
     return (
-      <div className="bg-white shadow-sm border border-gray-200 rounded-xl overflow-hidden animate-pulse">
-        <div className="aspect-square bg-gray-200"></div>
-        <div className="p-3 lg:p-4 space-y-3">
+      <div className="bg-white shadow-sm border border-gray-200 rounded-xl overflow-hidden animate-pulse h-[450px] w-full mx-auto">
+        <div className="h-[280px] bg-gray-200"></div>
+        <div className="p-4 space-y-3">
           <div className="h-4 bg-gray-200 rounded"></div>
           <div className="h-3 bg-gray-200 rounded w-3/4"></div>
-          <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+          <div className="h-6 bg-gray-200 rounded w-1/2"></div>
         </div>
       </div>
     );
@@ -46,6 +46,7 @@ function CardProduct({ data }) {
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [showQuickActions, setShowQuickActions] = useState(false);
   const location = useLocation();
   
   // Extract search term from URL params
@@ -80,19 +81,6 @@ function CardProduct({ data }) {
     switch (data.gender) {
       case 'Men':
         return <FaMale className="w-3 h-3 text-blue-600" />;
-      case 'Women':
-        return <FaFemale className="w-3 h-3 text-pink-600" />;
-      case 'Kids':
-        return <FaChild className="w-3 h-3 text-green-600" />;
-      default:
-        return null;
-    }
-  };
-
-  const getGenderBadgeColor = () => {
-    switch (data.gender) {
-      case 'Men':
-        return 'bg-blue-100 text-blue-800 border-blue-200';
       case 'Women':
         return 'bg-pink-100 text-pink-800 border-pink-200';
       case 'Kids':
@@ -129,188 +117,126 @@ function CardProduct({ data }) {
   const createdAt = data.createdAt || new Date();
 
   return (
-    <Link
-      to={url}
-      className="bg-white shadow-sm hover:shadow-xl border border-gray-200 rounded-xl overflow-hidden transition-all duration-300 group flex flex-col h-full relative transform hover:-translate-y-1"
-    >
-      {/* Top Badges Container */}
-      <div className="absolute top-2 left-2 right-2 z-20 flex justify-between items-start">
-        {/* Stock Status Badge */}
-        <span className={`px-2 py-1 text-xs font-medium rounded-full border backdrop-blur-sm ${stockStatus.color}`}>
-          {stockStatus.text}
-        </span>
+    <div className="w-full">
+      <Link
+        to={url}
+        className="bg-white shadow-sm hover:shadow-lg border border-gray-200 rounded-lg overflow-hidden transition-all duration-300 group flex flex-col h-[400px] w-full relative hover:border-gray-300"
+        onMouseEnter={() => setShowQuickActions(true)}
+        onMouseLeave={() => setShowQuickActions(false)}
+      >
+        {/* Product Image Container - Fixed Height */}
+        <div className="relative bg-white h-[240px] overflow-hidden">
+          {/* Top Badges */}
+          <div className="absolute top-2 left-2 right-2 z-20 flex justify-between items-start">
+            {/* Stock Status Badge */}
+            <span className={`px-2 py-1 text-xs font-medium rounded-md border backdrop-blur-sm ${stockStatus.color}`}>
+              {stockStatus.text}
+            </span>
 
-        {/* Wishlist Button */}
-        <button
-          onClick={handleWishlist}
-          className="p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-sm hover:bg-white transition-all duration-300 group-hover:scale-110 hover:shadow-md"
-          title={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
-        >
-          {isWishlisted ? (
-            <FaHeart className="text-red-500 w-4 h-4 animate-pulse" />
-          ) : (
-            <FaRegHeart className="text-gray-600 w-4 h-4 group-hover:text-red-500 transition-colors" />
-          )}
-        </button>
-      </div>
-
-      {/* Gender Badge */}
-      {data.gender && (
-        <div className="absolute top-12 left-2 z-20">
-          <span className={`px-2 py-1 text-xs font-medium rounded-full border backdrop-blur-sm flex items-center gap-1 ${getGenderBadgeColor()}`}>
-            {getGenderIcon()}
-            {data.gender}
-          </span>
-        </div>
-      )}
-
-      {/* Product Image Container */}
-      <div className="relative bg-gradient-to-br from-gray-50 to-gray-100 aspect-square overflow-hidden group-hover:bg-gradient-to-br group-hover:from-gray-100 group-hover:to-gray-200 transition-all duration-300">
-        <div className="w-full h-full flex items-center justify-center p-3 lg:p-4">
-          {productImage && !imageError ? (
-            <>
-              {!imageLoaded && (
-                <div className="w-full h-full bg-gray-200 animate-pulse rounded-lg"></div>
+            {/* Wishlist Button */}
+            <button
+              onClick={handleWishlist}
+              className="p-1.5 bg-white/90 backdrop-blur-sm rounded-md shadow-sm hover:bg-white transition-all duration-300 hover:scale-105"
+              title={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+            >
+              {isWishlisted ? (
+                <FaHeart className="text-red-500 w-3.5 h-3.5" />
+              ) : (
+                <FaRegHeart className="text-gray-600 w-3.5 h-3.5 group-hover:text-red-500 transition-colors" />
               )}
-              <img
-                src={productImage}
-                alt={productName}
-                className={`w-full h-full object-contain transition-all duration-500 group-hover:scale-110 ${
-                  data.stock <= 0 ? 'grayscale opacity-60' : ''
-                } ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
-                onLoad={handleImageLoad}
-                onError={handleImageError}
-              />
-            </>
-          ) : (
-            <div className="w-full h-full bg-gray-200 flex items-center justify-center rounded-lg">
-              <FaShoppingCart className="w-12 h-12 text-gray-400" />
-            </div>
-          )}
-        </div>
-
-        {/* Hover Overlay with Quick Actions */}
-        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center">
-          <button
-            onClick={handleQuickView}
-            className="bg-white/90 backdrop-blur-sm p-3 rounded-full shadow-lg transform scale-0 group-hover:scale-100 transition-all duration-300 hover:bg-white"
-            title="Quick View"
-          >
-            <FaEye className="w-5 h-5 text-gray-700" />
-          </button>
-        </div>
-
-        {/* Price and Discount Tags */}
-        <div className="absolute bottom-2 left-2 flex flex-col gap-1">
-          <div className="bg-black/90 backdrop-blur-sm text-white px-3 py-1.5 w-fit text-xs rounded-full font-semibold transform transition-all duration-300 group-hover:scale-105 shadow-lg">
-            {DisplayPriceInRupees(discountedPrice)}
+            </button>
           </div>
-          {Boolean(discount) && (
-            <div className="text-white bg-gradient-to-r from-red-500 to-red-600 px-3 py-1 w-fit text-xs rounded-full font-semibold transform transition-all duration-300 group-hover:scale-105 shadow-lg">
-              {discount}% OFF
-            </div>
-          )}
-        </div>
 
-        {/* Savings Badge */}
-        {Boolean(discount) && (
-          <div className="absolute bottom-2 right-2">
-            <div className="bg-green-500 text-white px-2 py-1 text-xs rounded-full font-medium shadow-lg">
-              Save {DisplayPriceInRupees(savings)}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Product Info */}
-      <div className="p-3 lg:p-4 space-y-3 relative z-10 flex-grow">
-        {/* Brand/Category */}
-        <div className="flex items-center justify-between">
-          <div className="text-xs text-gray-500 uppercase tracking-wider font-medium transition-colors duration-300 group-hover:text-gray-700">
-            {categoryName}
-          </div>
-          {discount > 0 && (
-            <div className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-medium">
-              SALE
-            </div>
-          )}
-        </div>
-
-        {/* Product Name with Search Highlighting */}
-        <div className="font-medium text-gray-900 text-sm lg:text-base line-clamp-2 leading-tight transition-colors duration-300 group-hover:text-black">
-          <ProductNameWithHighlight name={productName} searchTerm={searchTerm} />
-        </div>
-
-        {/* Product Description (if available) */}
-        {description && (
-          <div className="text-xs text-gray-600 line-clamp-2 leading-relaxed">
-            {description}
-          </div>
-        )}
-
-        {/* Rating and Reviews */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1">
-            <div className="flex text-yellow-400">
-              {[...Array(5)].map((_, i) => (
-                <FaStar key={i} size={10} 
-                  className={`${i < 4 ? "text-yellow-400" : "text-gray-300"} transition-all duration-300`} />
-              ))}
-            </div>
-            <span className="text-xs text-gray-500 transition-colors duration-300 group-hover:text-gray-700">(124)</span>
-          </div>
           
-          {/* Stock Quantity for Low Stock */}
-          {data.stock > 0 && data.stock <= 10 && (
-            <div className="text-xs text-orange-600 font-medium">
-              {data.stock} left
-            </div>
-          )}
-        </div>
 
-        {/* Price and Action Section */}
-        <div className="flex items-center justify-between gap-2 lg:gap-3 text-sm lg:text-base pt-3 border-t border-gray-100 group-hover:border-gray-200 transition-colors duration-300 mt-auto">
-          <div className="flex flex-col">
-            <div className="font-bold text-gray-900 transition-all duration-300 group-hover:text-black group-hover:scale-105 origin-left">
-              {DisplayPriceInRupees(discountedPrice)}
-            </div>
-            {Boolean(discount) && (
-              <div className="flex items-center gap-2">
-                <div className="text-xs text-gray-500 line-through">
-                  {DisplayPriceInRupees(price)}
-                </div>
-                <div className="text-xs text-green-600 font-medium">
-                  You save {DisplayPriceInRupees(savings)}
-                </div>
+          {/* Product Image */}
+          <div className="w-full h-full flex items-center justify-center p-4">
+            {productImage && !imageError ? (
+              <>
+                {!imageLoaded && (
+                  <div className="w-full h-full bg-gray-200 animate-pulse rounded-md"></div>
+                )}
+                <img
+                  src={productImage}
+                  alt={productName}
+                  className={`w-full h-full object-contain transition-all duration-500 group-hover:scale-105 ${
+                    data.stock <= 0 ? 'grayscale opacity-60' : ''
+                  } ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+                  onLoad={handleImageLoad}
+                  onError={handleImageError}
+                />
+              </>
+            ) : (
+              <div className="w-full h-full bg-gray-100 flex items-center justify-center rounded-md">
+                <FaShoppingCart className="w-12 h-12 text-gray-400" />
               </div>
             )}
           </div>
-          <div className="flex-shrink-0">
-            <AddToCartButton data={data} />
-          </div>
+
+          {/* Quick View Overlay */}
+          {/* <div className={`absolute inset-0 bg-black/10 backdrop-blur-[1px] transition-all duration-300 flex items-center justify-center ${
+            showQuickActions ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          }`}>
+            <button
+              onClick={handleQuickView}
+              className={`bg-black text-white px-4 py-2 rounded-md shadow-lg transition-all duration-300 hover:bg-gray-800 flex items-center gap-2 text-sm font-medium ${
+                showQuickActions ? 'scale-100 translate-y-0' : 'scale-90 translate-y-2'
+              }`}
+              title="Quick View"
+            >
+              <FaEye className="w-4 h-4" />
+              Quick View
+            </button>
+          </div> */}
         </div>
 
-        {/* Additional Product Features */}
-        {Object.keys(moreDetails).length > 0 && (
-          <div className="flex flex-wrap gap-1 pt-2">
-            {Object.entries(moreDetails).slice(0, 2).map(([key, value]) => (
-              <span key={key} className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
-                {key}: {value}
-              </span>
-            ))}
-          </div>
-        )}
-      </div>
+        {/* Product Info - Fixed Height */}
+        <div className="p-4 flex flex-col h-[160px] justify-between">
+          {/* Top Section */}
+          <div className="flex-1">
+            {/* Category */}
+            <div>
+            <div className="text-xs text-gray-500 uppercase tracking-wider font-medium mb-2">
+              {categoryName}
+            </div>
 
-      {/* New Badge for Recently Added Products */}
-      {new Date() - new Date(createdAt) < 7 * 24 * 60 * 60 * 1000 && (
-        <div className="absolute top-2 right-12 z-20">
-          <span className="bg-blue-500 text-white px-2 py-1 text-xs font-bold rounded-full animate-pulse">
-            NEW
-          </span>
+            {/* Product Name */}
+            <div className="font-semibold text-gray-900 text-sm leading-tight line-clamp-2 h-5">
+              <ProductNameWithHighlight name={productName} searchTerm={searchTerm} />
+            </div>
+
+            <div className="flex flex-row items-center gap-2 mt-1">
+                <div className="font-bold text-gray-900 text-base">
+                  {DisplayPriceInRupees(discountedPrice)}
+                </div>
+                <div>
+                  {discount > 0 && (
+                    <span className="text-sm text-gray-500 line-through">
+                      {DisplayPriceInRupees(price)}
+                    </span>
+                  )}
+                </div>
+              </div>
+          </div>
+          <div>
+            
+          </div>
+          </div>
+          {/* Bottom Section - Price and Cart */}
+          <div className="border-t border-gray-100 pt-3 mt-auto flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              {/* Price Section */}
+              
+
+              {/* Add to Cart Button */}
+              <div className="flex-shrink-0">
+                <AddToCartButton data={data} />
+              </div>
+            </div>
+          </div>
         </div>
-      )}
-    </Link>
+      </Link>
+    </div>
   );
 }
 

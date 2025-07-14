@@ -90,7 +90,7 @@ function CategoryWiseProductDisplay({ id, name }) {
       {/* Scrollable Product Cards */}
       <div className="relative">
         <div
-          className="flex gap-4 md:gap-6 lg:gap-8 container mx-auto px-4 overflow-x-auto scroll-smooth no-scrollbar py-4"
+          className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4 container mx-auto px-4 overflow-x-auto scroll-smooth no-scrollbar py-4"
           ref={containerRef}
           style={{ scrollBehavior: "smooth" }}
         >
@@ -107,10 +107,10 @@ function CategoryWiseProductDisplay({ id, name }) {
             ))}
 
           {/* Make sure data is valid before rendering */}
-          {data.map((p, index) =>
-            p && p._id ? (
-              <div key={p._id + "CategorywiseProductDisplay" + index}>
-                <CardProduct data={p} />
+          {data.map((product, index) =>
+            product && product._id ? (
+              <div key={product._id + "CategorywiseProductDisplay" + index}>
+                <CardProduct data={product} />
               </div>
             ) : null
           )}
