@@ -40,21 +40,53 @@ export const AddCategoryController = async(request,response)=>{
     }
 }
 
-export const getCategoryController = async(request,response)=>{
+// Get all categories
+export const getCategoryController = async (req, res) => {
     try {
-        const data = await CategoryModel.find().sort({ createdAt : -1 })
+        const categories = await CategoryModel.find({})
+            .sort({ createdAt: -1 });
 
-        return response.json({
-            data : data,
-            error : false,
-            success : true
-        })
+        return res.json({
+            message: "Categories fetched successfully",
+            data: categories,
+            success: true,
+            error: false
+        });
     } catch (error) {
-        return response.status(500).json({
-            message : error.message || error,
-            error : true,
-            success : false
-        })
+        return res.status(500).json({
+            message: error.message || error,
+            error: true,
+            success: false
+        });
+    }
+};
+
+// Get category by ID
+export const getCategoryByIdController = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const category = await CategoryModel.findById(id);
+
+        if (!category) {
+            return res.status(404).json({
+                message: "Category not found",
+                error: true,
+                success: false
+            });
+        }
+
+        return res.json({
+            message: "Category fetched successfully",
+            data: category,
+            success: true,
+            error: false
+        });
+    } catch (error) {
+        return res.status(500).json({
+            message: error.message || error,
+            error: true,
+            success: false
+        });
     }
 }
 
