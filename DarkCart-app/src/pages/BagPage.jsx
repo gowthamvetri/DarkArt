@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { DisplayPriceInRupees } from '../utils/DisplayPriceInRupees';
+import { pricewithDiscount } from '../utils/PriceWithDiscount';
 import { useGlobalContext } from '../provider/GlobalProvider';
 import { FaArrowRight } from 'react-icons/fa';
 import { toast } from 'react-hot-toast';
@@ -62,35 +63,58 @@ const calculateItemPricing = (item) => {
   let isBundle = false;
   let quantity = item.quantity || 1;
   
+  console.log('calculateItemPricing input:', {
+    itemType: item.itemType,
+    hasProductId: !!item.productId,
+    hasBundleId: !!item.bundleId,
+    productIdPrice: item.productId?.price,
+    bundleIdPrice: item.bundleId?.bundlePrice,
+    directPrice: item.price,
+    quantity: quantity
+  });
+  
   if (item.productId && item.productId._id) {
+    // Regular product
     productTitle = item.productId.name || 'Product';
-    originalPrice = item.productId.price || 0;
-    discount = item.productId.discount || 0;
-    finalPrice = discount > 0 ? originalPrice * (1 - discount/100) : originalPrice;
+    originalPrice = Number(item.productId.price) || 0;
+    discount = Number(item.productId.discount) || 0;
+    finalPrice = pricewithDiscount(originalPrice, discount);
     isBundle = false;
   } else if (item.bundleId && item.bundleId._id) {
-    productTitle = item.bundleId.title || 'Bundle';
-    originalPrice = item.bundleId.originalPrice || 0;
-    finalPrice = item.bundleId.bundlePrice || 0;
+    // Bundle product
+    productTitle = item.bundleId.title || item.bundleId.name || 'Bundle';
+    originalPrice = Number(item.bundleId.originalPrice) || Number(item.bundleId.price) || 0;
+    finalPrice = Number(item.bundleId.bundlePrice) || Number(item.bundleId.price) || originalPrice;
+    discount = originalPrice > 0 ? ((originalPrice - finalPrice) / originalPrice) * 100 : 0;
+    isBundle = true;
+  } else if (item.itemType === 'bundle' || item.bundlePrice) {
+    // Direct bundle item
+    productTitle = item.title || item.name || 'Bundle';
+    originalPrice = Number(item.originalPrice) || Number(item.price) || 0;
+    finalPrice = Number(item.bundlePrice) || Number(item.price) || 0;
     discount = 0;
     isBundle = true;
   } else {
-    productTitle = item.title || item.name || 'Item';
-    
-    if (item.bundlePrice || item.title) {
-      isBundle = true;
-      originalPrice = item.originalPrice || 0;
-      finalPrice = item.bundlePrice || item.price || 0;
-      discount = 0;
-    } else {
-      isBundle = false;
-      originalPrice = item.price || 0;
-      discount = item.discount || 0;
-      finalPrice = discount > 0 ? originalPrice * (1 - discount/100) : originalPrice;
-    }
+    // Direct product item or fallback
+    productTitle = item.title || item.name || item.productId?.name || 'Product';
+    originalPrice = Number(item.price) || Number(item.productId?.price) || 0;
+    discount = Number(item.discount) || Number(item.productId?.discount) || 0;
+    finalPrice = pricewithDiscount(originalPrice, discount);
+    isBundle = false;
   }
   
-  return {
+  // Ensure we have valid prices
+  if (originalPrice <= 0) {
+    console.warn('No valid original price found for item:', item);
+    originalPrice = 0;
+  }
+  
+  if (finalPrice <= 0) {
+    console.warn('No valid final price found for item:', item);
+    finalPrice = originalPrice;
+  }
+  
+  const result = {
     productTitle,
     originalPrice,
     finalPrice,
@@ -100,6 +124,10 @@ const calculateItemPricing = (item) => {
     totalPrice: finalPrice * quantity,
     totalOriginalPrice: originalPrice * quantity
   };
+  
+  console.log('calculateItemPricing result:', result);
+  
+  return result;
 };
 
 const BagPage = () => {
@@ -364,6 +392,13 @@ const BagPage = () => {
                     const pricing = calculateItemPricing(item);
                     const isSelected = selectedItems.includes(item._id);
                     
+                    // If we still don't have a valid price, show an error state
+                    const isPriceUnavailable = pricing.finalPrice <= 0 && pricing.originalPrice <= 0;
+                    
+                    if (isPriceUnavailable) {
+                      console.error('Product price unavailable for item:', item);
+                    }
+                    
                     // Get image source safely
                     let imageSrc = noCart;
                     if (item.productId && item.productId._id) {
@@ -421,14 +456,19 @@ const BagPage = () => {
                               Size: {size}
                             </div>
                             
-                            {/* Price Display - NO DISCOUNT SHOWN */}
+                            {/* Price Display */}
                             <div className="flex items-center mt-3">
                               <div className="text-md">
                                 <span className="font-semibold text-lg">
-                                  {pricing.displayPrice > 0 ? DisplayPriceInRupees(pricing.totalPrice) : "Price unavailable"}
+                                  {pricing.finalPrice > 0 ? DisplayPriceInRupees(pricing.totalPrice) : "Price unavailable"}
                                 </span>
+                                {pricing.originalPrice > pricing.finalPrice && pricing.originalPrice > 0 && (
+                                  <span className="text-sm text-gray-500 line-through ml-2">
+                                    {DisplayPriceInRupees(pricing.totalOriginalPrice)}
+                                  </span>
+                                )}
                                 {pricing.quantity > 1 && (
-                                  <span className="text-xs text-gray-500 ml-1">
+                                  <span className="text-xs text-gray-500 ml-1 block">
                                     ({DisplayPriceInRupees(pricing.finalPrice)} each)
                                   </span>
                                 )}

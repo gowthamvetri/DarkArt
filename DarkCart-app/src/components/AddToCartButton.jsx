@@ -9,7 +9,7 @@ import { useSelector } from "react-redux";
 import { FaMinus, FaPlus, FaShoppingBag, FaBan } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
-const AddToCartButton = ({ data, isBundle = false, cartItemId = null, currentQty = null }) => {
+const AddToCartButton = ({ data, isBundle = false, cartItemId = null, currentQty = null, large = false }) => {
   const { fetchCartItems, updateCartItem, deleteCartItem } = useGlobalContext();
   const [loading, setLoading] = useState(false);
   const cartItem = useSelector((state) => state.cartItem.cart) || [];
@@ -196,7 +196,7 @@ const AddToCartButton = ({ data, isBundle = false, cartItemId = null, currentQty
   const shouldDisableIncrement = loading || (!cartItemId && !isBundle && data?.stock !== undefined && qty >= data.stock);
   
   return (
-    <div className="w-full max-w-[150px]">
+    <div className={`w-full ${large ? '' : 'max-w-[150px]'}`}>
       {isOutOfStock ? (
         // Out of Stock Display
         <div className="bg-red-50 border border-red-200 text-red-600 px-3 py-2 rounded-md text-center">
@@ -249,7 +249,9 @@ const AddToCartButton = ({ data, isBundle = false, cartItemId = null, currentQty
             <button
               onClick={handleADDTocart}
               disabled={loading || isOutOfStock}
-              className="bg-black hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed text-white p-2 lg:px-4 lg:py-2 rounded-md transition-colors font-medium tracking-wide flex items-center justify-center gap-1 lg:gap-2 w-full"
+              className={`bg-black hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-md transition-colors font-medium tracking-wide flex items-center justify-center gap-1 lg:gap-2 w-full ${
+                large ? 'py-3 text-lg font-semibold' : 'p-2 lg:px-4 lg:py-2'
+              }`}
             >
               {loading ? (
                 <Loading />

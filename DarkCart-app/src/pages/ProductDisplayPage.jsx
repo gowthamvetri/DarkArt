@@ -791,7 +791,7 @@ const ProductDisplayPage = () => {
                 <div className="mb-6">
                   <button 
                     onClick={handleWishlist}
-                    className="w-full border border-gray-300 hover:border-gray-500 flex items-center justify-center gap-2 py-3 text-gray-700 hover:text-black transition-colors font-semibold"
+                    className="w-full border border-gray-300 hover:border-gray-500 flex items-center justify-center gap-2 py-3 text-gray-700 hover:text-black transition-colors font-semibold text-lg"
                   >
                     {isWishlisted ? (
                       <>

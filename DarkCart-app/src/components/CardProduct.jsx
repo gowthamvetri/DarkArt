@@ -3,9 +3,8 @@ import { DisplayPriceInRupees } from "../utils/DisplayPriceInRupees";
 import { validURLConvert } from "../utils/validURLConvert";
 import { Link, useLocation } from "react-router-dom";
 import { pricewithDiscount } from "../utils/PriceWithDiscount";
-import AddToCartButton from "./AddToCartButton";
 import { useGlobalContext } from "../provider/GlobalProvider";
-import { FaHeart, FaRegHeart, FaStar, FaEye, FaShoppingCart, FaMale, FaFemale, FaChild } from "react-icons/fa";
+import { FaHeart, FaRegHeart, FaShoppingCart } from "react-icons/fa";
 
 // Component to display product name with search highlighting
 const ProductNameWithHighlight = ({ name, searchTerm }) => {
@@ -99,26 +98,13 @@ function CardProduct({ data }) {
   const getStockStatus = () => {
     const stock = data.stock || 0;
     if (stock <= 0) {
-      return { text: "Out of Stock", color: "text-red-600 bg-red-50 border-red-200" };
+      return { text: "Out of Stock", color: "text-gray-600 bg-gray-50" };
     } else if (stock <= 5) {
-      return { text: `Only ${stock} left`, color: "text-orange-600 bg-orange-50 border-orange-200" };
+      return { text: `Only ${stock} left`, color: "text-gray-600 bg-gray-50" };
     } else if (stock <= 10) {
-      return { text: "Limited Stock", color: "text-yellow-600 bg-yellow-50 border-yellow-200" };
+      return { text: "Limited Stock", color: "text-gray-600 bg-gray-50" };
     } else {
-      return { text: "In Stock", color: "text-green-600 bg-green-50 border-green-200" };
-    }
-  };
-
-  const getGenderIcon = () => {
-    switch (data.gender) {
-      case 'Men':
-        return <FaMale className="w-3 h-3 text-blue-600" />;
-      case 'Women':
-        return 'bg-pink-100 text-pink-800 border-pink-200';
-      case 'Kids':
-        return 'bg-green-100 text-green-800 border-green-200';
-      default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+      return { text: "In Stock", color: "text-gray-600 bg-gray-50" };
     }
   };
 
@@ -152,37 +138,28 @@ function CardProduct({ data }) {
     <div className="w-full">
       <Link
         to={url}
-        className="bg-white shadow-sm hover:shadow-lg border border-gray-200 rounded-lg overflow-hidden transition-all duration-300 group flex flex-col h-[400px] w-full relative hover:border-gray-300"
+        className="bg-white rounded-lg overflow-hidden group flex flex-col h-[400px] w-full relative"
         onMouseEnter={() => setShowQuickActions(true)}
         onMouseLeave={() => setShowQuickActions(false)}
       >
         {/* Product Image Container - Fixed Height */}
-        <div className="relative bg-white h-[240px] overflow-hidden">
+        <div className="relative bg-gray-50 h-[240px] overflow-hidden">
           {/* Top Badges */}
-          <div className="absolute top-2 left-2 right-2 z-20 flex justify-between items-start">
+          <div className="absolute top-3 left-3 right-3 z-20 flex justify-between items-start">
             {/* Stock Status Badge */}
-            <span className={`px-2 py-1 text-xs font-medium rounded-md border backdrop-blur-sm ${stockStatus.color}`}>
+            <span className={`px-3 py-1.5 text-xs font-medium rounded-full ${stockStatus.color}`}>
               {stockStatus.text}
             </span>
 
             {/* Wishlist Button */}
-            <button
-              onClick={handleWishlist}
-              className="p-1.5 bg-white/90 backdrop-blur-sm rounded-md shadow-sm hover:bg-white transition-all duration-300 hover:scale-105"
-              title={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
-            >
-              {isWishlisted ? (
-                <FaHeart className="text-red-500 w-3.5 h-3.5" />
-              ) : (
-                <FaRegHeart className="text-gray-600 w-3.5 h-3.5 group-hover:text-red-500 transition-colors" />
-              )}
-            </button>
+          
+           
           </div>
 
           
 
           {/* Product Image */}
-          <div className="w-full h-full flex items-center justify-center p-4">
+          <div className="w-full h-full flex items-center justify-center p-6">
             {productImage && !imageError ? (
               <>
                 {!imageLoaded && (
@@ -191,7 +168,7 @@ function CardProduct({ data }) {
                 <img
                   src={productImage}
                   alt={productName}
-                  className={`w-full h-full object-contain transition-all duration-500 group-hover:scale-105 ${
+                  className={`w-full h-full object-contain group-hover:scale-105 transition-transform duration-300 ${
                     data.stock <= 0 ? 'grayscale opacity-60' : ''
                   } ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
                   onLoad={handleImageLoad}
@@ -200,7 +177,7 @@ function CardProduct({ data }) {
               </>
             ) : (
               <div className="w-full h-full bg-gray-100 flex items-center justify-center rounded-md">
-                <FaShoppingCart className="w-12 h-12 text-gray-400" />
+                <FaShoppingCart className="w-12 h-12 text-gray-300" />
               </div>
             )}
           </div>
@@ -223,48 +200,32 @@ function CardProduct({ data }) {
         </div>
 
         {/* Product Info - Fixed Height */}
-        <div className="p-4 flex flex-col h-[160px] justify-between">
-          {/* Top Section */}
-          <div className="flex-1">
-            {/* Category */}
-            <div>
-            <div className="text-xs text-gray-500 uppercase tracking-wider font-medium mb-2">
-              {categoryName}
-            </div>
-
-            {/* Product Name */}
-            <div className="font-semibold text-gray-900 text-sm leading-tight line-clamp-2 h-5">
-              <ProductNameWithHighlight name={productName} searchTerm={searchTerm} />
-            </div>
-
-            <div className="flex flex-row items-center gap-2 mt-1">
-                <div className="font-bold text-gray-900 text-base">
-                  {DisplayPriceInRupees(discountedPrice)}
-                </div>
-                <div>
-                  {discount > 0 && (
-                    <span className="text-sm text-gray-500 line-through">
-                      {DisplayPriceInRupees(price)}
-                    </span>
-                  )}
-                </div>
-              </div>
+        <div className="p-5 flex flex-col h-[160px] justify-center">
+          {/* Category */}
+          <div className="text-xs text-gray-400 uppercase tracking-wider font-medium mb-3 text-center">
+            {categoryName}
           </div>
-          <div>
-            
-          </div>
-          </div>
-          {/* Bottom Section - Price and Cart */}
-          <div className="border-t border-gray-100 pt-3 mt-auto flex flex-col gap-2">
-            <div className="flex items-center justify-between">
-              {/* Price Section */}
-              
 
-              {/* Add to Cart Button */}
-              <div className="flex-shrink-0">
-                <AddToCartButton data={data} />
-              </div>
+          {/* Product Name */}
+          <div className="font-medium text-gray-900 text-sm leading-tight text-center mb-4 h-10 flex items-center justify-center">
+            <ProductNameWithHighlight name={productName} searchTerm={searchTerm} />
+          </div>
+
+          {/* Price Section */}
+          <div className="flex flex-row items-center justify-center gap-2 flex-wrap">
+            {discount > 0 && (
+              <span className="text-sm text-gray-400 line-through">
+                {DisplayPriceInRupees(price)}
+              </span>
+            )}
+            <div className="font-semibold text-gray-900 text-lg">
+              {DisplayPriceInRupees(discountedPrice)}
             </div>
+            {discount > 0 && (
+              <span className="text-xs text-red-500  px-2 py-1 rounded font-medium">
+                {discount}% OFF
+              </span>
+            )}
           </div>
         </div>
       </Link>

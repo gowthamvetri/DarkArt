@@ -72,25 +72,29 @@ function CategoryWiseProductDisplay({ id, name }) {
   };
 
   return (
-    <div className="relative bg-white py-6 overflow-hidden">
-      <div className="container mx-auto p-4 flex items-center justify-between gap-4">
-        <h3 className="font-bold text-xl md:text-2xl text-gray-900 font-serif relative group">
-          {name}
-          <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-black transition-all duration-300 group-hover:w-full"></span>
-        </h3>
+    <div className="relative bg-gradient-to-br from-gray-50 via-white to-gray-50 py-12 overflow-hidden">
+      {/* Decorative background elements */}
+      <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 opacity-50"></div>
+      
+      <div className="container mx-auto px-6 flex items-center justify-between gap-4 mb-8">
+        <div>
+          <h3 className="font-bold text-2xl md:text-3xl text-gray-800 font-serif tracking-tight mb-2">
+            {name}
+          </h3>
+          <div className="w-20 h-1.5 bg-gradient-to-r from-gray-800 via-gray-600 to-gray-400 rounded-full"></div>
+        </div>
         <Link
           to={`/category/${id}`}
-          className="text-black hover:text-gray-600 font-medium tracking-wide transition-all duration-300 relative group"
+          className="bg-gradient-to-r from-gray-900 to-gray-700 text-white px-8 py-3 rounded-xl font-medium tracking-wide hover:from-gray-800 hover:to-gray-600 shadow-lg"
         >
-          See All
-          <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-black transition-all duration-300 group-hover:w-full"></span>
+          View All
         </Link>
       </div>
 
       {/* Scrollable Product Cards */}
       <div className="relative">
         <div
-          className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4 container mx-auto px-4 overflow-x-auto scroll-smooth no-scrollbar py-4"
+          className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6 md:gap-8 container mx-auto px-6 overflow-x-auto scroll-smooth no-scrollbar py-6"
           ref={containerRef}
           style={{ scrollBehavior: "smooth" }}
         >
@@ -98,9 +102,9 @@ function CategoryWiseProductDisplay({ id, name }) {
             loadingCardNumber.map((_, index) => (
               <div
                 key={"CategorywiseProductDisplay123" + index}
-                className="flex-shrink-0 transition-transform duration-300 hover:scale-[1.02]"
+                className="flex-shrink-0"
               >
-                <div className="w-48 h-80 sm:w-52 sm:h-84 md:w-56 md:h-88 lg:w-64 lg:h-96">
+                <div className="w-full h-80 sm:h-84 md:h-88 lg:h-96 bg-white rounded-2xl shadow-md border border-gray-200 overflow-hidden">
                   <CardLoading />
                 </div>
               </div>
@@ -109,62 +113,79 @@ function CategoryWiseProductDisplay({ id, name }) {
           {/* Make sure data is valid before rendering */}
           {data.map((product, index) =>
             product && product._id ? (
-              <div key={product._id + "CategorywiseProductDisplay" + index}>
-                <CardProduct data={product} />
+              <div key={product._id + "CategorywiseProductDisplay" + index} className="flex-shrink-0">
+                <div className="bg-white rounded-2xl p-3 overflow-hidden">
+                  <CardProduct data={product} />
+                </div>
               </div>
             ) : null
           )}
         </div>
 
         {/* Scroll Buttons */}
-        <div className="absolute inset-0 flex items-center justify-between px-2 pointer-events-none">
+        <div className="absolute inset-0 flex items-center justify-between px-4 pointer-events-none">
           <button
             onClick={handleScrollLeft}
             disabled={scrollPosition <= 0}
-            className={`z-10 bg-white hover:bg-gray-100 shadow-lg text-gray-700 hover:text-black p-3 rounded-full pointer-events-auto hidden lg:block border border-gray-200 transition-all duration-300 ${
+            className={`z-10 bg-white shadow-xl text-gray-700 p-4 rounded-full pointer-events-auto hidden lg:block border-2 border-gray-200 ${
               scrollPosition <= 0
-                ? "opacity-50 cursor-not-allowed"
-                : "hover:shadow-xl hover:scale-105"
+                ? "opacity-30 cursor-not-allowed"
+                : "hover:bg-gray-50 hover:border-gray-300"
             }`}
             aria-label="Scroll left"
           >
-            <FaAngleLeft />
+            <FaAngleLeft size={20} />
           </button>
           <button
             onClick={handleScrollRight}
             disabled={scrollPosition >= maxScroll}
-            className={`z-10 bg-white hover:bg-gray-100 shadow-lg text-gray-700 hover:text-black p-3 rounded-full pointer-events-auto hidden lg:block border border-gray-200 transition-all duration-300 ${
+            className={`z-10 bg-white shadow-xl text-gray-700 p-4 rounded-full pointer-events-auto hidden lg:block border-2 border-gray-200 ${
               scrollPosition >= maxScroll
-                ? "opacity-50 cursor-not-allowed"
-                : "hover:shadow-xl hover:scale-105"
+                ? "opacity-30 cursor-not-allowed"
+                : "hover:bg-gray-50 hover:border-gray-300"
             }`}
             aria-label="Scroll right"
           >
-            <FaAngleRight />
+            <FaAngleRight size={20} />
           </button>
         </div>
       </div>
 
-      {/* Add CSS animation keyframes */}
+      {/* Custom Scrollbar Styling */}
       <style jsx>{`
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
         .no-scrollbar::-webkit-scrollbar {
-          display: none;
+          height: 8px;
         }
-
+        
+        .no-scrollbar::-webkit-scrollbar-track {
+          background: #f1f5f9;
+          border-radius: 10px;
+        }
+        
+        .no-scrollbar::-webkit-scrollbar-thumb {
+          background: #cbd5e1;
+          border-radius: 10px;
+        }
+        
+        .no-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #94a3b8;
+        }
+        
         .no-scrollbar {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
+          -ms-overflow-style: auto;
+          scrollbar-width: thin;
+          scrollbar-color: #cbd5e1 #f1f5f9;
+        }
+        
+        @media (max-width: 768px) {
+          .no-scrollbar::-webkit-scrollbar {
+            display: none;
+          }
+          
+          .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+          }
         }
       `}</style>
     </div>
