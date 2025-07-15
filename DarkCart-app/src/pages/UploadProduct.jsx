@@ -21,6 +21,15 @@ function UploadProduct() {
     price: "",
     discount: "",
     description: "",
+    color: "Black",
+    washCare: "Machine wash",
+    packageContains: "",
+    sizeModel: "32",
+    fabric: "80% cotton, 19% polyester, 1% elastane",
+    marketedBy: "DarkCart Trading (India) Pvt. Ltd.",
+    importedBy: "DarkCart Trading (India) Pvt. Ltd.",
+    countryOfOrigin: "Bangladesh",
+    customerCareAddress: "Tower-B, 7th Floor, DarkCart Office, Knowledge Park, Main Road, Bengaluru, Karnataka - 560029",
     more_details: {},
     publish: true
   });
@@ -308,6 +317,132 @@ function UploadProduct() {
             className='hover:bg-gray-200 bg-white py-1 px-3 w-32 text-center border border-primary-200 rounded cursor-pointer'
           >
             Add Fields
+          </div>
+
+          <div className="mt-8 mb-4">
+            <h3 className="text-lg font-semibold border-b border-gray-200 pb-2">Product Specifications</h3>
+            <p className="text-sm text-gray-500 mt-1">These details will be displayed in a tabular format on the product page</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Color */}
+            <div className='grid gap-2'>
+              <label htmlFor='color' className='font-medium'>Primary Color</label>
+              <input
+                id='color'
+                type='text'
+                placeholder='Primary color'
+                name='color'
+                value={data.color}
+                onChange={handleChange}
+                className='bg-gray-50 border border-gray-300 p-2 rounded focus:outline-none focus:border-primary-200'
+              />
+            </div>
+            
+            {/* Wash Care */}
+            <div className='grid gap-2'>
+              <label htmlFor='washCare' className='font-medium'>Wash Care</label>
+              <input
+                id='washCare'
+                type='text'
+                placeholder='Wash care instructions'
+                name='washCare'
+                value={data.washCare}
+                onChange={handleChange}
+                className='bg-gray-50 border border-gray-300 p-2 rounded focus:outline-none focus:border-primary-200'
+              />
+            </div>
+            
+            {/* Size Model */}
+            <div className='grid gap-2'>
+              <label htmlFor='sizeModel' className='font-medium'>Size worn by Model</label>
+              <input
+                id='sizeModel'
+                type='text'
+                placeholder='Size worn by model'
+                name='sizeModel'
+                value={data.sizeModel}
+                onChange={handleChange}
+                className='bg-gray-50 border border-gray-300 p-2 rounded focus:outline-none focus:border-primary-200'
+              />
+            </div>
+            
+            {/* Fabric */}
+            <div className='grid gap-2'>
+              <label htmlFor='fabric' className='font-medium'>Fabric</label>
+              <input
+                id='fabric'
+                type='text'
+                placeholder='Fabric composition'
+                name='fabric'
+                value={data.fabric}
+                onChange={handleChange}
+                className='bg-gray-50 border border-gray-300 p-2 rounded focus:outline-none focus:border-primary-200'
+              />
+            </div>
+          </div>
+          
+          <div className="mt-8 mb-4">
+            <h3 className="text-lg font-semibold border-b border-gray-200 pb-2">Product Information</h3>
+            <p className="text-sm text-gray-500 mt-1">Regulatory and seller information</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Country of Origin */}
+            <div className='grid gap-2'>
+              <label htmlFor='countryOfOrigin' className='font-medium'>Country of Origin</label>
+              <input
+                id='countryOfOrigin'
+                type='text'
+                placeholder='Country of origin'
+                name='countryOfOrigin'
+                value={data.countryOfOrigin}
+                onChange={handleChange}
+                className='bg-gray-50 border border-gray-300 p-2 rounded focus:outline-none focus:border-primary-200'
+              />
+            </div>
+            
+            {/* Marketed By */}
+            <div className='grid gap-2'>
+              <label htmlFor='marketedBy' className='font-medium'>Marketed By</label>
+              <input
+                id='marketedBy'
+                type='text'
+                placeholder='Company marketing the product'
+                name='marketedBy'
+                value={data.marketedBy}
+                onChange={handleChange}
+                className='bg-gray-50 border border-gray-300 p-2 rounded focus:outline-none focus:border-primary-200'
+              />
+            </div>
+            
+            {/* Imported By */}
+            <div className='grid gap-2'>
+              <label htmlFor='importedBy' className='font-medium'>Imported By</label>
+              <input
+                id='importedBy'
+                type='text'
+                placeholder='Company importing the product'
+                name='importedBy'
+                value={data.importedBy}
+                onChange={handleChange}
+                className='bg-gray-50 border border-gray-300 p-2 rounded focus:outline-none focus:border-primary-200'
+              />
+            </div>
+            
+            {/* Customer Care Address */}
+            <div className='grid gap-2'>
+              <label htmlFor='customerCareAddress' className='font-medium'>Customer Care Address</label>
+              <textarea
+                id='customerCareAddress'
+                placeholder='Customer support address'
+                name='customerCareAddress'
+                value={data.customerCareAddress}
+                onChange={handleChange}
+                rows={2}
+                className='bg-gray-50 border border-gray-300 p-2 rounded focus:outline-none focus:border-primary-200 resize-none'
+              />
+            </div>
           </div>
 
           <button className='bg-black hover:bg-gray-800 text-white py-2 rounded font-semibold'>

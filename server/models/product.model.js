@@ -38,6 +38,42 @@ const productSchema = mongoose.Schema({
         type: Object,
         default: {}
     },
+    color: {
+        type: String,
+        default: "Black"
+    },
+    washCare: {
+        type: String,
+        default: "Machine wash"
+    },
+    packageContains: {
+        type: String,
+        default: ""
+    },
+    sizeModel: {
+        type: String,
+        default: "32"
+    },
+    fabric: {
+        type: String,
+        default: "80% cotton, 19% polyester, 1% elastane"
+    },
+    marketedBy: {
+        type: String,
+        default: "DarkCart Trading (India) Pvt. Ltd."
+    },
+    importedBy: {
+        type: String,
+        default: "DarkCart Trading (India) Pvt. Ltd."
+    },
+    countryOfOrigin: {
+        type: String,
+        default: "Bangladesh"
+    },
+    customerCareAddress: {
+        type: String,
+        default: "Tower-B, 7th Floor, DarkCart Office, Knowledge Park, Main Road, Bengaluru, Karnataka - 560029"
+    },
     publish: {
         type: Boolean,
         default: true

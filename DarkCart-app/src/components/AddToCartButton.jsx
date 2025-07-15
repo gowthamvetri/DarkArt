@@ -89,18 +89,18 @@ const AddToCartButton = ({ data, isBundle = false }) => {
 
     const checkingitem = cartItem.some((item) => {
       if (isBundle) {
-        return item?.bundleId?._id === data._id;
+        return item?.bundleId && item?.bundleId?._id === data._id;
       } else {
-        return item?.productId?._id === data._id;
+        return item?.productId && item?.productId?._id === data._id;
       }
     });
     setIsAvailableCart(checkingitem);
 
     const cartItemData = cartItem.find((item) => {
       if (isBundle) {
-        return item?.bundleId?._id === data._id;
+        return item?.bundleId && item?.bundleId?._id === data._id;
       } else {
-        return item?.productId?._id === data._id;
+        return item?.productId && item?.productId?._id === data._id;
       }
     });
     setQty(cartItemData?.quantity || 0);

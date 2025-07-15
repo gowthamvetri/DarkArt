@@ -71,8 +71,15 @@ const GlobalProvider = ({ children }) => {
 
       const { data: responseData } = response;
       if (responseData.success) {
-        dispatch(handleAddItemCart(responseData.data));
-        console.log(responseData.data);
+        // Filter out any cart items with undefined productId or bundleId to prevent rendering errors
+        const validCartItems = responseData.data.filter(item => 
+          (item.productId && item.productId._id) || (item.bundleId && item.bundleId._id)
+        );
+        if (validCartItems.length !== responseData.data.length) {
+          console.log("Warning: Filtered out", responseData.data.length - validCartItems.length, "invalid cart items");
+        }
+        dispatch(handleAddItemCart(validCartItems));
+        console.log("Valid cart items:", validCartItems);
       }
     } catch (error) {
       console.log(error);
