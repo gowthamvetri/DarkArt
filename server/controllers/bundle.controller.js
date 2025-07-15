@@ -41,6 +41,23 @@ export const createBundleController = async (request, response) => {
         // Calculate discount if not provided
         const calculatedDiscount = discount || Math.round(((originalPrice - bundlePrice) / originalPrice) * 100);
 
+        // Generate unique slug
+        const generateSlug = (title) => {
+            return title
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/(^-|-$)/g, '');
+        };
+
+        let slug = generateSlug(title);
+        let counter = 1;
+        
+        // Check for duplicate slugs and append counter if needed
+        while (await BundleModel.findOne({ slug })) {
+            slug = `${generateSlug(title)}-${counter}`;
+            counter++;
+        }
+
         const bundle = new BundleModel({
             title,
             description,
@@ -55,7 +72,8 @@ export const createBundleController = async (request, response) => {
             stock: stock || 100,
             images: images || [],
             metaTitle,
-            metaDescription
+            metaDescription,
+            slug // Explicitly set the unique slug
         });
 
         const savedBundle = await bundle.save();
@@ -125,15 +143,13 @@ export const getBundlesController = async (request, response) => {
 
         response.status(200).json({
             message: "Bundles retrieved successfully",
-            data: {
-                bundles,
-                pagination: {
-                    currentPage: parseInt(page),
-                    totalPages,
-                    totalBundles,
-                    hasNextPage: parseInt(page) < totalPages,
-                    hasPrevPage: parseInt(page) > 1
-                }
+            data: bundles, // Return bundles directly as expected by frontend
+            pagination: {
+                currentPage: parseInt(page),
+                totalPages,
+                totalBundles,
+                hasNextPage: parseInt(page) < totalPages,
+                hasPrevPage: parseInt(page) > 1
             },
             error: false,
             success: true
@@ -200,6 +216,27 @@ export const updateBundleController = async (request, response) => {
             }
             
             updateData.discount = Math.round(((originalPrice - bundlePrice) / originalPrice) * 100);
+        }
+
+        // If title is being updated, generate new unique slug
+        if (updateData.title) {
+            const generateSlug = (title) => {
+                return title
+                    .toLowerCase()
+                    .replace(/[^a-z0-9]+/g, '-')
+                    .replace(/(^-|-$)/g, '');
+            };
+
+            let slug = generateSlug(updateData.title);
+            let counter = 1;
+            
+            // Check for duplicate slugs (excluding current bundle)
+            while (await BundleModel.findOne({ slug, _id: { $ne: bundleId } })) {
+                slug = `${generateSlug(updateData.title)}-${counter}`;
+                counter++;
+            }
+            
+            updateData.slug = slug;
         }
 
         const updatedBundle = await BundleModel.findByIdAndUpdate(

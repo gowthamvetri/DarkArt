@@ -39,6 +39,9 @@ import OrderSuccessPage from "../pages/OrderSuccessPage";
 import PageNotFound from "../pages/PageNotFound"; // Add this import
 import AdminPermision from "../layout/AdminPermission";
 import DeliveryChargeCalculator from "../pages/test";
+import BundleOffers from "../pages/BundleOffers";
+import SeasonalSale from "../pages/SeasonalSale";
+import BundleAdmin from "../pages/BundleAdmin";
 
 const router = createBrowserRouter([
     {
@@ -136,9 +139,14 @@ const router = createBrowserRouter([
                     element:<AdminPermision><ProductAdmin/></AdminPermision>
                 },
                 {
+                    path:"bundle-admin",
+                    element:<AdminPermision><BundleAdmin/></AdminPermision>
+                },
+                {
                     path:"orders-admin",
                     element:<AdminPermision><AdminOrderDashboard/></AdminPermision>
                 },
+
                 // Add catch-all for dashboard subroutes
                 {
                     path:"*",
@@ -188,6 +196,14 @@ const router = createBrowserRouter([
             {
                 path:"delivery-charge-calculator",
                 element : <DeliveryChargeCalculator/>
+            },
+            {
+                path:"bundle-offers",
+                element : <BundleOffers/>
+            },
+            {
+                path:"seasonal-sale",
+                element : <SeasonalSale/>
             },
             // Add catch-all route for any invalid URLs - THIS MUST BE LAST
             {

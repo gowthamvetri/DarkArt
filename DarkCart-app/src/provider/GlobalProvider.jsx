@@ -171,17 +171,39 @@ const GlobalProvider = ({ children }) => {
     setTotalQty(qty);
 
     const tPrice = cartItem.reduce((preve, curr) => {
-      const priceAfterDiscount = pricewithDiscount(
-        curr?.productId?.price,
-        curr?.productId?.discount
-      );
+      let priceAfterDiscount;
+      
+      if (curr.itemType === 'bundle' && curr?.bundleId) {
+        // Handle bundle pricing
+        priceAfterDiscount = curr?.bundleId?.bundlePrice || 0;
+      } else if (curr?.productId) {
+        // Handle product pricing
+        priceAfterDiscount = pricewithDiscount(
+          curr?.productId?.price,
+          curr?.productId?.discount
+        );
+      } else {
+        priceAfterDiscount = 0;
+      }
 
       return preve + priceAfterDiscount * curr.quantity;
     }, 0);
     setTotalPrice(tPrice);
 
     const notDiscountTotalPrice = cartItem.reduce((preve, curr) => {
-      return preve + curr?.productId?.price * curr.quantity;
+      let originalPrice;
+      
+      if (curr.itemType === 'bundle' && curr?.bundleId) {
+        // Handle bundle original pricing
+        originalPrice = curr?.bundleId?.originalPrice || curr?.bundleId?.bundlePrice || 0;
+      } else if (curr?.productId) {
+        // Handle product original pricing
+        originalPrice = curr?.productId?.price || 0;
+      } else {
+        originalPrice = 0;
+      }
+      
+      return preve + originalPrice * curr.quantity;
     }, 0);
     setNotDiscountTotalPrice(notDiscountTotalPrice);
   }, [cartItem]);

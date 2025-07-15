@@ -83,18 +83,30 @@ const DisplayCartItem = ({close}) => {
                                                     <div key={item?._id+"cartItemDisplay"} className='flex w-full gap-3 sm:gap-4 pb-4 border-b border-gray-100 last:border-b-0'>
                                                         <div className='w-14 h-14 sm:w-16 sm:h-16 min-h-14 min-w-14 sm:min-h-16 sm:min-w-16 bg-gray-50 border border-gray-200 rounded-md overflow-hidden flex-shrink-0'>
                                                             <img
-                                                                src={item?.productId?.image[0]}
+                                                                src={item?.itemType === 'bundle' ? item?.bundleId?.image : item?.productId?.image[0]}
                                                                 className='object-cover w-full h-full'
-                                                                alt={item?.productId?.name}
+                                                                alt={item?.itemType === 'bundle' ? item?.bundleId?.title : item?.productId?.name}
                                                             />
                                                         </div>
                                                         <div className='flex-grow min-w-0 text-xs'>
-                                                            <p className='text-xs sm:text-sm text-ellipsis line-clamp-2 text-gray-900 font-medium'>{item?.productId?.name}</p>
-                                                            <p className='text-gray-500 text-xs'>{item?.productId?.unit}</p>
-                                                            <p className='font-semibold text-black mt-1'>{DisplayPriceInRupees(pricewithDiscount(item?.productId?.price,item?.productId?.discount))}</p>
+                                                            <p className='text-xs sm:text-sm text-ellipsis line-clamp-2 text-gray-900 font-medium'>
+                                                                {item?.itemType === 'bundle' ? item?.bundleId?.title : item?.productId?.name}
+                                                            </p>
+                                                            <p className='text-gray-500 text-xs'>
+                                                                {item?.itemType === 'bundle' ? 'Bundle Offer' : item?.productId?.unit}
+                                                            </p>
+                                                            <p className='font-semibold text-black mt-1'>
+                                                                {item?.itemType === 'bundle' 
+                                                                    ? DisplayPriceInRupees(item?.bundleId?.bundlePrice)
+                                                                    : DisplayPriceInRupees(pricewithDiscount(item?.productId?.price,item?.productId?.discount))
+                                                                }
+                                                            </p>
                                                         </div>
                                                         <div className='flex-shrink-0'>
-                                                            <AddToCartButton data={item?.productId}/>
+                                                            {item?.itemType === 'bundle' 
+                                                                ? <AddToCartButton data={item?.bundleId} isBundle={true}/>
+                                                                : <AddToCartButton data={item?.productId}/>
+                                                            }
                                                         </div>
                                                     </div>
                                                 )

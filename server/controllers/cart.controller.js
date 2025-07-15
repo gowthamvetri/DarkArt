@@ -64,7 +64,9 @@ export const addToCartItemController = async (req, res) => {
 export const getCartItemController = async (req, res) => {
     try {
         const userId = req?.userId;
-        const cartItems = await CartProductModel.find({ userId: userId }).populate("productId");
+        const cartItems = await CartProductModel.find({ userId: userId })
+            .populate("productId")
+            .populate("bundleId");
 
         return res.json({
             message: "Cart items fetched successfully",
@@ -143,5 +145,66 @@ export const deleteCartItemQtyController = async(request,response)=>{
             error : true,
             success : false
         })
+    }
+}
+
+export const addBundleToCartController = async (req, res) => {
+    try {
+        const userId = req?.userId;
+        const { bundleId } = req?.body;
+
+        if(!bundleId){
+            return res.status(400).json({
+                message: "Bundle ID is required",
+                error: true,
+                success: false,
+            });
+        }
+
+        const checkBundleInCart = await CartProductModel.findOne({
+            userId: userId,
+            bundleId: bundleId,
+            itemType: 'bundle'
+        });
+
+        if(checkBundleInCart) {
+            return res.status(400).json({
+                message: "Bundle already exists in cart",
+                error: true,
+                success: false,
+            });
+        }
+
+        const cartItem = new CartProductModel({
+            quantity: 1,
+            userId: userId,
+            bundleId: bundleId,
+            itemType: 'bundle'
+        });
+
+        const save = await cartItem.save();
+
+        const updateCartUser = await UserModel.findByIdAndUpdate(
+            {_id:userId},
+            {
+                $push: {
+                    shopping_cart : bundleId
+                },
+            },
+            { new: true }
+        );
+
+        return res.json({
+            message: "Bundle added to cart successfully",
+            error: false,
+            success: true,
+            data: save,
+        });
+    } catch (error) {
+        return res.status(500).json({
+            message: "Internal server error",
+            error: true,
+            success: false,
+        });
     }
 }

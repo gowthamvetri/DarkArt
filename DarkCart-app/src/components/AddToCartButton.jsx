@@ -9,21 +9,38 @@ import { useSelector } from "react-redux";
 import { FaMinus, FaPlus, FaShoppingBag, FaBan } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
-const AddToCartButton = ({ data }) => {
+const AddToCartButton = ({ data, isBundle = false }) => {
   const { fetchCartItems, updateCartItem, deleteCartItem } = useGlobalContext();
   const [loading, setLoading] = useState(false);
-  const cartItem = useSelector((state) => state.cartItem.cart);
+  const cartItem = useSelector((state) => state.cartItem.cart) || [];
   const [isAvailableCart, setIsAvailableCart] = useState(false);
   const [qty, setQty] = useState(0);
   const [cartItemDetails, setCartItemsDetails] = useState();
   const navigate = useNavigate();
 
+  // Early return if data is not provided
+  if (!data) {
+    return (
+      <div className="w-full max-w-[150px]">
+        <div className="bg-gray-100 text-gray-500 px-3 py-2 rounded-md text-center">
+          <span className="text-xs">No product data</span>
+        </div>
+      </div>
+    );
+  }
+
   const handleADDTocart = async (e) => {
     e.preventDefault();
     e.stopPropagation();
 
-    // Check stock availability
-    if (data.stock <= 0) {
+    // Add null check for data
+    if (!data || !data._id) {
+      toast.error("Invalid product data");
+      return;
+    }
+
+    // Check stock availability for products (bundles don't have stock field)
+    if (!isBundle && data.stock <= 0) {
       toast.error("Product is out of stock");
       return;
     }
@@ -31,11 +48,14 @@ const AddToCartButton = ({ data }) => {
     try {
       setLoading(true);
 
+      const apiEndpoint = isBundle ? SummaryApi.addBundleToCart : SummaryApi.addToCart;
+      const requestData = isBundle 
+        ? { bundleId: data._id }
+        : { productId: data._id };
+
       const response = await Axios({
-        ...SummaryApi.addToCart,
-        data: {
-          productId: data?._id,
-        },
+        ...apiEndpoint,
+        data: requestData,
       });
 
       const { data: responseData } = response;
@@ -59,27 +79,51 @@ const AddToCartButton = ({ data }) => {
 
   //checking this item in cart or not
   useEffect(() => {
-    const checkingitem = cartItem.some(
-      (item) => item.productId._id === data._id
-    );
+    // Add null checks to prevent errors
+    if (!data || !data._id || !Array.isArray(cartItem)) {
+      setIsAvailableCart(false);
+      setQty(0);
+      setCartItemsDetails(null);
+      return;
+    }
+
+    const checkingitem = cartItem.some((item) => {
+      if (isBundle) {
+        return item?.bundleId?._id === data._id;
+      } else {
+        return item?.productId?._id === data._id;
+      }
+    });
     setIsAvailableCart(checkingitem);
 
-    const product = cartItem.find((item) => item.productId._id === data._id);
-    setQty(product?.quantity || 0);
-    setCartItemsDetails(product);
-  }, [data, cartItem]);
+    const cartItemData = cartItem.find((item) => {
+      if (isBundle) {
+        return item?.bundleId?._id === data._id;
+      } else {
+        return item?.productId?._id === data._id;
+      }
+    });
+    setQty(cartItemData?.quantity || 0);
+    setCartItemsDetails(cartItemData);
+  }, [data, cartItem, isBundle]);
 
   const increaseQty = async (e) => {
     e.preventDefault();
     e.stopPropagation();
 
-    // Check if increasing quantity would exceed stock
-    if (qty + 1 > data.stock) {
+    // Add null checks
+    if (!data || !cartItemDetails) {
+      toast.error("Invalid product or cart data");
+      return;
+    }
+
+    // Check if increasing quantity would exceed stock (only for products)
+    if (!isBundle && qty + 1 > data.stock) {
       toast.error(`Only ${data.stock} items available in stock`);
       return;
     }
 
-    const response = await updateCartItem(cartItemDetails?._id, qty + 1);
+    const response = await updateCartItem(cartItemDetails._id, qty + 1);
 
     if (response.success) {
       toast.success("Item added");
@@ -89,22 +133,28 @@ const AddToCartButton = ({ data }) => {
   const decreaseQty = async (e) => {
     e.preventDefault();
     e.stopPropagation();
+
+    // Add null checks
+    if (!cartItemDetails) {
+      toast.error("Invalid cart data");
+      return;
+    }
   
     if (qty <= 1) {
-      const response = await deleteCartItem(cartItemDetails?._id);
+      const response = await deleteCartItem(cartItemDetails._id);
       if (response.success) {
         toast.success("Item removed");
       }
     } else {
-      const response = await updateCartItem(cartItemDetails?._id, qty - 1);
+      const response = await updateCartItem(cartItemDetails._id, qty - 1);
       if (response.success) {
         toast.success("Quantity decreased");
       }
     }
   };
 
-  // Check if product is out of stock
-  const isOutOfStock = data.stock <= 0;
+  // Check if product is out of stock - add null check (only for products)
+  const isOutOfStock = !isBundle && data && data.stock <= 0;
   
   return (
     <div className="w-full max-w-[150px]">
@@ -134,9 +184,9 @@ const AddToCartButton = ({ data }) => {
 
               <button
                 onClick={increaseQty}
-                disabled={qty >= data.stock}
+                disabled={!isBundle && qty >= (data?.stock || 0)}
                 className={`flex-1 w-full p-2 flex items-center justify-center transition-colors border-l border-gray-200 ${
-                  qty >= data.stock 
+                  (!isBundle && qty >= (data?.stock || 0)) 
                     ? 'bg-gray-200 text-gray-400 cursor-not-allowed' 
                     : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
                 }`}

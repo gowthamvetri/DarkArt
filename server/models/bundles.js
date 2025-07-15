@@ -102,7 +102,7 @@ const bundleSchema = new mongoose.Schema({
     timestamps: true
 });
 
-// Generate slug before saving
+// Generate slug before saving (only if not provided)
 bundleSchema.pre('save', function(next) {
     if (this.isModified('title') && !this.slug) {
         this.slug = this.title

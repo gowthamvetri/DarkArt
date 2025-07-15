@@ -11,17 +11,35 @@ const orderSchema = mongoose.Schema({
         required: true,
         unique: true
     },
-    // Updated to support multiple items in single order
+    // Updated to support multiple items in single order (both products and bundles)
     items: [{
+        // For products
         productId: {
             type: mongoose.Schema.ObjectId,
-            ref: 'product', // Make sure this matches your product model name
-            required: true
+            ref: 'product',
+            required: function() { return this.itemType === 'product'; }
         },
         productDetails: {
             name: String,
             image: Array,
             price: Number
+        },
+        // For bundles
+        bundleId: {
+            type: mongoose.Schema.ObjectId,
+            ref: 'bundle', // Fixed: should be 'bundle' not 'bundles'
+            required: function() { return this.itemType === 'bundle'; }
+        },
+        bundleDetails: {
+            title: String,
+            image: String,
+            bundlePrice: Number
+        },
+        // Item type to distinguish between product and bundle
+        itemType: {
+            type: String,
+            enum: ['product', 'bundle'],
+            default: 'product'
         },
         quantity: {
             type: Number,

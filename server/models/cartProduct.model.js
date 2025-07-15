@@ -4,7 +4,10 @@ const cartProductSchema = new mongoose.Schema({
     productId : {
         type:mongoose.Schema.ObjectId,
         ref: 'product'
-
+    },
+    bundleId : {
+        type:mongoose.Schema.ObjectId,
+        ref: 'bundle'
     },
     quantity : {
         type:Number,
@@ -14,7 +17,12 @@ const cartProductSchema = new mongoose.Schema({
         type: mongoose.Schema.ObjectId,
         ref : 'users'
     },
-
+    itemType: {
+        type: String,
+        enum: ['product', 'bundle'],
+        required: true,
+        default: 'product'
+    }
 },{
     timestamps:true
 })

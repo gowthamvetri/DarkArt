@@ -97,6 +97,10 @@ const SummaryApi = {
         url : '/api/cart/create',
         method : 'post'
     },
+    addBundleToCart : {
+        url : '/api/cart/add-bundle',
+        method : 'post'
+    },
     getCart : {
         url : '/api/cart/get',
         method : 'get'

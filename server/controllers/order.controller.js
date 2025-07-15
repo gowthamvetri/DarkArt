@@ -2,7 +2,8 @@ import mongoose from "mongoose";
 import orderModel from "../models/order.model.js";
 import UserModel from "../models/users.model.js";
 import CartProductModel from "../models/cartProduct.model.js";
-import ProductModel from "../models/product.model.js"; // Add this import
+import ProductModel from "../models/product.model.js";
+import BundleModel from "../models/bundles.js"; // Add bundle model import
 import sendEmail from "../config/sendEmail.js";
 
 export const cashOnDeliveryOrderController = async (req, res) => {
@@ -10,14 +11,11 @@ export const cashOnDeliveryOrderController = async (req, res) => {
     const userId = req.userId;
     const { list_items, totalAmount, addressId, subTotalAmt, quantity } = req.body;
 
-    console.log("Received data:", {
-      userId,
-      list_items,
-      totalAmount,
-      addressId,
-      subTotalAmt,
-      quantity
-    });
+    console.log("=== ORDER DEBUG START ===");
+    console.log("User ID:", userId);
+    console.log("Request body:", req.body);
+    console.log("List items:", JSON.stringify(list_items, null, 2));
+    console.log("=== ORDER DEBUG END ===");
 
     // Get user details for email
     const user = await UserModel.findById(userId);
@@ -31,20 +29,56 @@ export const cashOnDeliveryOrderController = async (req, res) => {
 
     // Validate stock availability before processing order
     for (const item of list_items) {
-      const product = await ProductModel.findById(item.productId._id);
-      if (!product) {
-        return res.status(404).json({
-          success: false,
-          error: true,
-          message: `Product ${item.productId.name} not found`
-        });
-      }
+      // Determine if this is a bundle or product item
+      const isBundle = item.bundleId && item.bundleId._id;
+      const isProduct = item.productId && item.productId._id;
       
-      if (product.stock < item.quantity) {
+      console.log(`Processing item - isBundle: ${isBundle}, isProduct: ${isProduct}`, item);
+      
+      if (isBundle) {
+        // Validate bundle exists
+        const bundleId = typeof item.bundleId === 'object' ? item.bundleId._id : item.bundleId;
+        const bundle = await BundleModel.findById(bundleId);
+        if (!bundle) {
+          return res.status(404).json({
+            success: false,
+            error: true,
+            message: `Bundle ${item.bundleId.title || 'Unknown'} not found`
+          });
+        }
+        
+        // Check if bundle is active
+        if (!bundle.isActive) {
+          return res.status(400).json({
+            success: false,
+            error: true,
+            message: `Bundle ${bundle.title} is currently not available`
+          });
+        }
+      } else if (isProduct) {
+        // Validate product exists and has sufficient stock
+        const productId = typeof item.productId === 'object' ? item.productId._id : item.productId;
+        const product = await ProductModel.findById(productId);
+        if (!product) {
+          return res.status(404).json({
+            success: false,
+            error: true,
+            message: `Product ${item.productId.name || 'Unknown'} not found`
+          });
+        }
+        
+        if (product.stock < item.quantity) {
+          return res.status(400).json({
+            success: false,
+            error: true,
+            message: `Insufficient stock for ${product.name}. Available: ${product.stock}, Requested: ${item.quantity}`
+          });
+        }
+      } else {
         return res.status(400).json({
           success: false,
           error: true,
-          message: `Insufficient stock for ${product.name}. Available: ${product.stock}, Requested: ${item.quantity}`
+          message: `Invalid item: neither product nor bundle`
         });
       }
     }
@@ -55,16 +89,35 @@ export const cashOnDeliveryOrderController = async (req, res) => {
     const payload = {
       userId: userId,
       orderId: orderId,
-      items: list_items.map(item => ({
-        productId: item.productId._id,
-        productDetails: {
-          name: item.productId.name,
-          image: item.productId.image,
-          price: item.productId.price
-        },
-        quantity: item.quantity,
-        itemTotal: item.productId.price * item.quantity
-      })),
+      items: list_items.map(item => {
+        const isBundle = item.bundleId && item.bundleId._id;
+        
+        if (isBundle) {
+          return {
+            bundleId: typeof item.bundleId === 'object' ? item.bundleId._id : item.bundleId,
+            itemType: 'bundle',
+            bundleDetails: {
+              title: item.bundleId.title,
+              image: item.bundleId.image,
+              bundlePrice: item.bundleId.bundlePrice
+            },
+            quantity: item.quantity,
+            itemTotal: item.bundleId.bundlePrice * item.quantity
+          };
+        } else {
+          return {
+            productId: typeof item.productId === 'object' ? item.productId._id : item.productId,
+            itemType: 'product',
+            productDetails: {
+              name: item.productId.name,
+              image: item.productId.image,
+              price: item.productId.price
+            },
+            quantity: item.quantity,
+            itemTotal: item.productId.price * item.quantity
+          };
+        }
+      }),
       paymentId: "",
       totalQuantity: quantity, // Total quantity of all items
       orderDate: new Date(),
@@ -85,15 +138,21 @@ export const cashOnDeliveryOrderController = async (req, res) => {
       // Create single order
       const generatedOrder = await orderModel.create([payload], { session });
 
-      // Update stock for each product
+      // Update stock for each product (bundles don't have stock management)
       for (const item of list_items) {
-        await ProductModel.findByIdAndUpdate(
-          item.productId._id,
-          { 
-            $inc: { stock: -item.quantity } // Decrease stock by ordered quantity
-          },
-          { session, new: true }
-        );
+        const isProduct = item.productId && item.productId._id;
+        
+        if (isProduct) {
+          const productId = typeof item.productId === 'object' ? item.productId._id : item.productId;
+          await ProductModel.findByIdAndUpdate(
+            productId,
+            { 
+              $inc: { stock: -item.quantity } // Decrease stock by ordered quantity
+            },
+            { session, new: true }
+          );
+        }
+        // Skip stock update for bundles as they don't have stock management
       }
 
       // Clear user's cart
@@ -129,9 +188,9 @@ export const cashOnDeliveryOrderController = async (req, res) => {
                 <h4>Items Ordered:</h4>
                 ${payload.items.map(item => `
                   <div style="border-bottom: 1px solid #eee; padding: 10px 0;">
-                    <p><strong>Product:</strong> ${item.productDetails.name}</p>
+                    <p><strong>${item.itemType === 'bundle' ? 'Bundle' : 'Product'}:</strong> ${item.itemType === 'bundle' ? item.bundleDetails.title : item.productDetails.name}</p>
                     <p><strong>Quantity:</strong> ${item.quantity}</p>
-                    <p><strong>Price:</strong> ₹${item.productDetails.price}</p>
+                    <p><strong>Price:</strong> ₹${item.itemType === 'bundle' ? item.bundleDetails.bundlePrice : item.productDetails.price}</p>
                     <p><strong>Item Total:</strong> ₹${item.itemTotal}</p>
                   </div>
                 `).join('')}
@@ -161,6 +220,7 @@ export const cashOnDeliveryOrderController = async (req, res) => {
 
     } catch (transactionError) {
       // Abort transaction on error
+      console.error("Transaction error:", transactionError);
       await session.abortTransaction();
       throw transactionError;
     } finally {
@@ -168,6 +228,12 @@ export const cashOnDeliveryOrderController = async (req, res) => {
     }
 
   } catch (error) {
+    console.error("=== ORDER ERROR START ===");
+    console.error("Error details:", error);
+    console.error("Error message:", error.message);
+    console.error("Error stack:", error.stack);
+    console.error("=== ORDER ERROR END ===");
+    
     return res.status(500).json({
       success: false,
       error: true,

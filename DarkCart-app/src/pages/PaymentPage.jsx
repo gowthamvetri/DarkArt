@@ -8,6 +8,7 @@ import SummaryApi from "../common/SummaryApi";
 import toast from "react-hot-toast";
 import AxiosTostError from "../utils/AxiosTostError";
 import Logo from "../assets/logo.png";
+import noCart from "../assets/noCart.jpg"; // Import fallback image
 import ErrorBoundary from "../components/ErrorBoundary";
 
 // Import payment icons
@@ -21,17 +22,19 @@ import {
   FaCcAmex,
 } from "react-icons/fa";
 
-// Helper function to safely access product properties
+// Helper function to safely access product and bundle properties
 const getProductProperty = (item, propertyPath, fallback = "") => {
   try {
     if (!item) return fallback;
     
-    // Handle different potential structures
+    // Handle different potential structures for both products and bundles
     const paths = [
       // If product is directly on the item
       `product.${propertyPath}`,
       // If product is in productId field
       `productId.${propertyPath}`,
+      // If bundle is in bundleId field
+      `bundleId.${propertyPath}`,
       // Direct property on the item
       propertyPath
     ];
@@ -388,19 +391,26 @@ const PaymentPage = () => {
                     const itemId = getProductProperty(item, '_id', `item-${index}`);
                     const deliveryInfo = deliveryDates.find(d => d.productId === itemId);
                     
-                    // Get image source safely
+                    // Get image source safely for both products and bundles
                     const imageSrc = getProductProperty(item, 'image[0]') || 
+                                    getProductProperty(item, 'image') || // Bundle image is a string, not array
                                     getProductProperty(item, 'primaryImage') ||
-                                    "https://via.placeholder.com/100?text=Product";
+                                    noCart; // Use local fallback image
                     
-                    // Get product details safely
-                    const productTitle = getProductProperty(item, 'name', 'Product') || 
-                                        getProductProperty(item, 'title', 'Product');
+                    // Get item details safely (handling both products and bundles)
+                    const isBundle = item.itemType === 'bundle' || !!item.bundleId;
+                    const itemTitle = isBundle 
+                                    ? (getProductProperty(item, 'title', 'Bundle') || getProductProperty(item, 'name', 'Bundle'))
+                                    : (getProductProperty(item, 'name', 'Product') || getProductProperty(item, 'title', 'Product'));
                     const size = getProductProperty(item, 'size', 'Standard');
                     const quantity = getProductProperty(item, 'quantity', 1);
-                    const price = getProductProperty(item, 'price', 0);
-                    const discount = getProductProperty(item, 'discount', 0);
-                    const finalPrice = price * (1 - discount/100) || 0;
+                    
+                    // Handle pricing for both products and bundles
+                    const price = isBundle 
+                                ? getProductProperty(item, 'bundlePrice', 0)
+                                : getProductProperty(item, 'price', 0);
+                    const discount = isBundle ? 0 : getProductProperty(item, 'discount', 0); // Bundles don't use discount
+                    const finalPrice = isBundle ? price : (price * (1 - discount/100) || 0);
                     
                     return (
                       <div 
@@ -411,23 +421,24 @@ const PaymentPage = () => {
                         <div className="w-16 h-16 flex-shrink-0 bg-gray-50 border border-gray-200 rounded overflow-hidden">
                           <img 
                             src={imageSrc}
-                            alt={productTitle}
+                            alt={itemTitle}
                             className="w-full h-full object-cover"
                             onError={(e) => {
                               e.target.onerror = null;
-                              e.target.src = "https://via.placeholder.com/100?text=Product";
+                              e.target.src = noCart; // Use local fallback image
                             }}
                           />
                         </div>
                         
-                        {/* Product Details */}
+                        {/* Item Details */}
                         <div className="ml-3 flex-1">
-                          <h3 className="text-sm font-medium line-clamp-1" title={productTitle}>
-                            {productTitle}
+                          <h3 className="text-sm font-medium line-clamp-1" title={itemTitle}>
+                            {itemTitle}
                           </h3>
                           
                           <div className="flex flex-wrap text-xs text-gray-500 mt-1">
-                            <span className="mr-2">Size: {size}</span>
+                            {!isBundle && <span className="mr-2">Size: {size}</span>}
+                            {isBundle && <span className="mr-2 text-blue-600 font-medium">Bundle Offer</span>}
                             <span>Qty: {quantity}</span>
                           </div>
                           

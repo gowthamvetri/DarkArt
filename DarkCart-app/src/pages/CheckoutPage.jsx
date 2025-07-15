@@ -6,6 +6,7 @@ import AddAddress from "../components/AddAddress";
 import AxiosTostError from "../utils/AxiosTostError";
 import Axios from "../utils/Axios";
 import SummaryApi from "../common/SummaryApi";
+import noCart from "../assets/noCart.jpg"; // Import fallback image
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import EditAddressData from "../components/EditAddressData";
@@ -654,7 +655,7 @@ const CheckoutPage = () => {
                   // Get image source safely
                   const imageSrc = getProductProperty(item, 'image[0]') || 
                                   getProductProperty(item, 'primaryImage') ||
-                                  "https://via.placeholder.com/100?text=Product";
+                                  noCart; // Use local fallback image
                   
                   // Get product title/name safely
                   const productTitle = getProductProperty(item, 'name', 'Product') || 
@@ -673,7 +674,7 @@ const CheckoutPage = () => {
                           className="w-full h-full object-cover rounded"
                           onError={(e) => {
                             e.target.onerror = null;
-                            e.target.src = "https://via.placeholder.com/100?text=Product";
+                            e.target.src = noCart; // Use local fallback image
                           }}
                         />
                       </div>
@@ -718,7 +719,7 @@ const CheckoutPage = () => {
                     // Get image source safely
                     const imageSrc = getProductProperty(item, 'image[0]') || 
                                     getProductProperty(item, 'primaryImage') ||
-                                    "https://via.placeholder.com/100?text=Product";
+                                    noCart; // Use local fallback image
                     
                     // Get product details safely
                     const productTitle = getProductProperty(item, 'name', 'Product') || 
@@ -742,7 +743,7 @@ const CheckoutPage = () => {
                             className="w-full h-full object-cover"
                             onError={(e) => {
                               e.target.onerror = null;
-                              e.target.src = "https://via.placeholder.com/100?text=Product";
+                              e.target.src = noCart; // Use local fallback image
                             }}
                           />
                         </div>
