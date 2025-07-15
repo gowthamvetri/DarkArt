@@ -7,6 +7,7 @@ import SummaryApi from '../common/SummaryApi';
 import Axios from '../utils/Axios';
 import OrderTimeline from '../components/OrderTimeline';
 import { useGlobalContext } from '../provider/GlobalProvider';
+import { setOrders } from '../store/orderSlice';
 
 function MyOrders() {
   // Get all orders from Redux store
@@ -20,22 +21,61 @@ function MyOrders() {
   const [userOrders, setUserOrders] = useState([]);
   const { fetchOrders, refreshingOrders } = useGlobalContext();
   
+  // Function to fetch current user's orders specifically (not all orders for admin)
+  const fetchCurrentUserOrders = async () => {
+    try {
+      const response = await Axios({
+        url: SummaryApi.getOrderList.url,
+        method: SummaryApi.getOrderList.method
+      });
+      
+      if (response.data.success) {
+        console.log('Fetched current user orders:', response.data.data.length);
+        dispatch(setOrders(response.data.data));
+      }
+    } catch (error) {
+      console.error("Error fetching current user orders:", error);
+    }
+  };
+  
   // Filter orders to only show the current user's orders, even for admin
   useEffect(() => {
     if (allOrders && allOrders.length > 0 && user && user._id) {
-      const filteredOrders = allOrders.filter(order => 
-        order.userId?._id === user._id || order.userId === user._id
-      );
+      const filteredOrders = allOrders.filter(order => {
+        const orderUserId = order.userId?._id || order.userId;
+        const currentUserId = user._id;
+        const isMatch = orderUserId === currentUserId;
+        
+        // More detailed debugging
+        if (!isMatch) {
+          console.log('Order does not match user:', {
+            orderUserId,
+            currentUserId,
+            orderUserIdType: typeof orderUserId,
+            currentUserIdType: typeof currentUserId,
+            order: order
+          });
+        }
+        
+        return isMatch;
+      });
       
       console.log('Filtered orders for user:', {
         userId: user._id,
         totalOrders: allOrders.length,
         userOrders: filteredOrders.length,
-        isAdmin: user.role?.toUpperCase() === 'ADMIN'
+        isAdmin: user.role?.toUpperCase() === 'ADMIN',
+        firstOrderUserId: allOrders[0]?.userId?._id || allOrders[0]?.userId,
+        currentUserId: user._id
       });
       
       setUserOrders(filteredOrders);
     } else {
+      console.log('No orders or user data:', {
+        allOrdersLength: allOrders?.length || 0,
+        userId: user?._id,
+        hasUser: !!user
+      });
       setUserOrders([]);
     }
   }, [allOrders, user]);
@@ -47,14 +87,14 @@ function MyOrders() {
 
   // Use the fetchOrders from GlobalContext instead of local implementation
   const refreshOrders = () => {
-    // Always use fetchOrders (not fetchAllOrders) to get the user's own orders
-    fetchOrders();
+    // For MyOrders page, always fetch only current user's orders (not all orders even for admin)
+    fetchCurrentUserOrders();
     toast.success('Refreshing order status...');
   };
   
-  // Fetch orders when component mounts
+  // Fetch orders when component mounts - always user's own orders
   useEffect(() => {
-    fetchOrders();
+    fetchCurrentUserOrders();
   }, []);
 
   const { updateOrderStatus } = useGlobalContext();
@@ -71,7 +111,7 @@ function MyOrders() {
       if (success) {
         toast.success('Order cancelled successfully!');
         // Refresh orders to get the updated status
-        fetchOrders();
+        fetchCurrentUserOrders();
       } else {
         toast.error('Failed to cancel order. Please try again.');
       }
@@ -190,14 +230,23 @@ function MyOrders() {
 
               <div className='flex flex-col xl:flex-row gap-3 sm:gap-4 md:gap-6 items-start relative z-10'>
                 
-                {/* Product Image - Responsive */}
+                {/* Product/Bundle Image - Responsive */}
                 <div className='flex-shrink-0 order-1 xl:order-2 w-full xl:w-auto flex justify-center xl:justify-start'>
                   <div className={`w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 xl:w-36 xl:h-36 rounded-lg overflow-hidden border-2 relative ${
                     isCancelled ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-gray-50'
                   }`}>
+                    {/* Display first item image - handle both bundles and products */}
                     <img
-                      src={order?.items[0]?.productDetails?.image[0]}
-                      alt={order?.items[0]?.productDetails}
+                      src={
+                        order?.items[0]?.itemType === 'bundle' 
+                          ? order?.items[0]?.bundleDetails?.image 
+                          : order?.items[0]?.productDetails?.image[0]
+                      }
+                      alt={
+                        order?.items[0]?.itemType === 'bundle' 
+                          ? order?.items[0]?.bundleDetails?.title 
+                          : order?.items[0]?.productDetails?.name
+                      }
                       className={`w-full h-full object-cover transition-all duration-300 ${
                         isCancelled ? 'grayscale opacity-60' : ''
                       }`}
@@ -248,14 +297,98 @@ function MyOrders() {
                     </div>
                   </div>
 
-                  {/* Product Name - Responsive */}
+                  {/* Product/Bundle Name and Items - Responsive */}
                   <div>
-                    <h3 className={`text-base sm:text-lg md:text-xl font-bold mb-1 sm:mb-2 leading-tight ${
-                      isCancelled ? 'text-red-800 line-through' : 'text-black'
+                    {/* Display all items in the order */}
+                    <div className="space-y-2 sm:space-y-3">
+                      {order?.items?.map((item, itemIndex) => (
+                        <div key={`${order._id}-item-${itemIndex}`} className={`rounded-lg p-2 sm:p-3 border ${
+                          isCancelled ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'
+                        }`}>
+                          <div className="flex items-start gap-2 sm:gap-3">
+                            {/* Item image */}
+                            <div className={`w-12 h-12 sm:w-16 sm:h-16 rounded-md overflow-hidden border flex-shrink-0 ${
+                              isCancelled ? 'border-red-300' : 'border-gray-200'
+                            }`}>
+                              <img
+                                src={
+                                  item?.itemType === 'bundle' 
+                                    ? item?.bundleDetails?.image 
+                                    : item?.productDetails?.image?.[0]
+                                }
+                                alt={
+                                  item?.itemType === 'bundle' 
+                                    ? item?.bundleDetails?.title 
+                                    : item?.productDetails?.name
+                                }
+                                className={`w-full h-full object-cover ${
+                                  isCancelled ? 'grayscale opacity-60' : ''
+                                }`}
+                              />
+                            </div>
+                            
+                            {/* Item details */}
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="flex-1 min-w-0">
+                                  <h4 className={`font-bold text-sm sm:text-base leading-tight truncate ${
+                                    isCancelled ? 'text-red-800 line-through' : 'text-black'
+                                  }`}>
+                                    {item?.itemType === 'bundle' ? item?.bundleDetails?.title : item?.productDetails?.name}
+                                  </h4>
+                                  <div className="flex items-center gap-2 mt-1">
+                                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                                      item?.itemType === 'bundle' 
+                                        ? (isCancelled ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-800')
+                                        : (isCancelled ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-800')
+                                    }`}>
+                                      {item?.itemType === 'bundle' ? '📦 Bundle' : '🏷️ Product'}
+                                    </span>
+                                    <span className={`text-xs font-medium ${
+                                      isCancelled ? 'text-red-600' : 'text-gray-600'
+                                    }`}>
+                                      Qty: {item?.quantity}
+                                    </span>
+                                  </div>
+                                </div>
+                                <div className="text-right">
+                                  <div className={`font-bold text-sm sm:text-base ${
+                                    isCancelled ? 'text-red-800 line-through' : 'text-black'
+                                  }`}>
+                                    ₹{item?.itemType === 'bundle' ? item?.bundleDetails?.bundlePrice : item?.productDetails?.price}
+                                  </div>
+                                  <div className={`text-xs ${
+                                    isCancelled ? 'text-red-600' : 'text-gray-500'
+                                  }`}>
+                                    Total: ₹{item?.itemTotal}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {/* Order Summary */}
+                    <div className={`mt-3 p-2 sm:p-3 rounded-lg border ${
+                      isCancelled ? 'bg-red-50 border-red-200' : 'bg-gray-100 border-gray-200'
                     }`}>
-                      {order?.productDetails?.name}
-                    </h3>
-                    <div className={`h-0.5 w-12 sm:w-16 md:w-20 rounded-full ${
+                      <div className="flex justify-between items-center">
+                        <span className={`font-semibold text-sm sm:text-base ${
+                          isCancelled ? 'text-red-800' : 'text-black'
+                        }`}>
+                          Order Total ({order?.totalQuantity} {order?.totalQuantity === 1 ? 'item' : 'items'})
+                        </span>
+                        <span className={`font-bold text-lg sm:text-xl ${
+                          isCancelled ? 'text-red-800 line-through' : 'text-black'
+                        }`}>
+                          ₹{order?.totalAmt}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div className={`h-0.5 w-12 sm:w-16 md:w-20 rounded-full mt-2 ${
                       isCancelled ? 'bg-red-400' : 'bg-black'
                     }`}></div>
                   </div>
@@ -466,9 +599,18 @@ function MyOrders() {
               <p className="text-sm text-gray-700">
                 <span className="font-medium">Order:</span> {orderToCancel?.orderId}
               </p>
-              <p className="text-sm text-gray-700">
-                <span className="font-medium">Product:</span> {orderToCancel?.productDetails?.name}
-              </p>
+              <div className="text-sm text-gray-700 mt-1">
+                <span className="font-medium">Items:</span>
+                <div className="ml-2 mt-1 space-y-1">
+                  {orderToCancel?.items?.map((item, index) => (
+                    <div key={index} className="text-xs">
+                      • {item?.itemType === 'bundle' ? item?.bundleDetails?.title : item?.productDetails?.name}
+                      {item?.itemType === 'bundle' && <span className="text-blue-600"> (Bundle)</span>}
+                      <span className="text-gray-500"> - Qty: {item?.quantity}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
             
             <div className="flex gap-3 justify-end">

@@ -65,24 +65,48 @@ const GlobalProvider = ({ children }) => {
 
   const fetchCartItems = async () => {
     try {
+      console.log('=== GLOBAL PROVIDER: Fetching cart items ===');
       const response = await Axios({
         ...SummaryApi.getCart,
       });
 
+      console.log('Cart API Response:', response);
       const { data: responseData } = response;
+      console.log('Cart Response Data:', responseData);
+      
       if (responseData.success) {
-        // Filter out any cart items with undefined productId or bundleId to prevent rendering errors
+        console.log('Raw cart items from API:', responseData.data);
+        responseData.data.forEach((item, index) => {
+          console.log(`API Cart Item ${index}:`, {
+            _id: item._id,
+            itemType: item.itemType,
+            quantity: item.quantity,
+            hasProductId: !!item.productId,
+            hasBundleId: !!item.bundleId,
+            productData: item.productId,
+            bundleData: item.bundleId,
+            fullItem: item
+          });
+        });
+        
+        // The backend now cleans up invalid items, but add a safety check
         const validCartItems = responseData.data.filter(item => 
           (item.productId && item.productId._id) || (item.bundleId && item.bundleId._id)
         );
+        
+        console.log('Valid cart items after filtering:', validCartItems);
+        
+        // Only log warning if there are actually invalid items (should be rare now)
         if (validCartItems.length !== responseData.data.length) {
-          console.log("Warning: Filtered out", responseData.data.length - validCartItems.length, "invalid cart items");
+          console.warn(`Removed ${responseData.data.length - validCartItems.length} invalid cart items from frontend`);
         }
+        
         dispatch(handleAddItemCart(validCartItems));
-        console.log("Valid cart items:", validCartItems);
+      } else {
+        console.error('Cart API returned error:', responseData);
       }
     } catch (error) {
-      console.log(error);
+      console.error('Error fetching cart items:', error);
     }
   };
   const updateCartItem = async (id, qty) => {

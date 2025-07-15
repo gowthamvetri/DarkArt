@@ -7,12 +7,20 @@ import BundleModel from "../models/bundles.js"; // Add bundle model import
 import sendEmail from "../config/sendEmail.js";
 
 export const cashOnDeliveryOrderController = async (req, res) => {
+  console.log("🚀 ORDER CONTROLLER CALLED");
+  console.log("Method:", req.method);
+  console.log("URL:", req.url);
+  console.log("Headers:", req.headers);
+  
   try {
     const userId = req.userId;
     const { list_items, totalAmount, addressId, subTotalAmt, quantity } = req.body;
 
     console.log("=== ORDER DEBUG START ===");
     console.log("User ID:", userId);
+    console.log("Request body exists:", !!req.body);
+    console.log("List items exists:", !!list_items);
+    console.log("List items length:", list_items?.length);
     console.log("Request body:", req.body);
     console.log("List items:", JSON.stringify(list_items, null, 2));
     console.log("=== ORDER DEBUG END ===");
@@ -28,22 +36,61 @@ export const cashOnDeliveryOrderController = async (req, res) => {
     }
 
     // Validate stock availability before processing order
-    for (const item of list_items) {
-      // Determine if this is a bundle or product item
-      const isBundle = item.bundleId && item.bundleId._id;
-      const isProduct = item.productId && item.productId._id;
-      
-      console.log(`Processing item - isBundle: ${isBundle}, isProduct: ${isProduct}`, item);
+    try {
+      for (const item of list_items) {
+        console.log("=== VALIDATING ITEM START ===");
+        console.log("Item keys:", Object.keys(item || {}));
+        console.log("Item bundleId:", item?.bundleId);
+        console.log("Item bundleId type:", typeof item?.bundleId);
+        console.log("Item productId:", item?.productId);
+        console.log("Item productId type:", typeof item?.productId);
+        console.log("Full item:", JSON.stringify(item, null, 2));
+        console.log("=== VALIDATING ITEM END ===");
+
+        // Add null check for item itself
+        if (!item) {
+          console.log("ERROR: Item is null or undefined");
+          return res.status(400).json({
+            success: false,
+            error: true,
+            message: "Invalid item: item is null or undefined"
+          });
+        }
+
+        // Determine if this is a bundle or product item - more robust checking
+        const isBundle = !!(item.bundleId && (
+          (typeof item.bundleId === 'object' && item.bundleId && item.bundleId._id) || 
+          (typeof item.bundleId === 'string' && item.bundleId.length > 0)
+        ));
+        
+        const isProduct = !!(item.productId && (
+          (typeof item.productId === 'object' && item.productId && item.productId._id) || 
+          (typeof item.productId === 'string' && item.productId.length > 0)
+        ));
+        
+        console.log(`Processing item - isBundle: ${isBundle}, isProduct: ${isProduct}`);
       
       if (isBundle) {
         // Validate bundle exists
-        const bundleId = typeof item.bundleId === 'object' ? item.bundleId._id : item.bundleId;
+        let bundleId;
+        try {
+          bundleId = (typeof item.bundleId === 'object' && item.bundleId && item.bundleId._id) ? item.bundleId._id : item.bundleId;
+          console.log("Extracted bundleId:", bundleId);
+        } catch (bundleIdError) {
+          console.log("Error extracting bundleId:", bundleIdError.message);
+          return res.status(400).json({
+            success: false,
+            error: true,
+            message: "Error extracting bundle ID from item"
+          });
+        }
+
         const bundle = await BundleModel.findById(bundleId);
         if (!bundle) {
           return res.status(404).json({
             success: false,
             error: true,
-            message: `Bundle ${item.bundleId.title || 'Unknown'} not found`
+            message: `Bundle ${item.bundleId?.title || bundleId || 'Unknown'} not found`
           });
         }
         
@@ -57,13 +104,25 @@ export const cashOnDeliveryOrderController = async (req, res) => {
         }
       } else if (isProduct) {
         // Validate product exists and has sufficient stock
-        const productId = typeof item.productId === 'object' ? item.productId._id : item.productId;
+        let productId;
+        try {
+          productId = (typeof item.productId === 'object' && item.productId && item.productId._id) ? item.productId._id : item.productId;
+          console.log("Extracted productId:", productId);
+        } catch (productIdError) {
+          console.log("Error extracting productId:", productIdError.message);
+          return res.status(400).json({
+            success: false,
+            error: true,
+            message: "Error extracting product ID from item"
+          });
+        }
+
         const product = await ProductModel.findById(productId);
         if (!product) {
           return res.status(404).json({
             success: false,
             error: true,
-            message: `Product ${item.productId.name || 'Unknown'} not found`
+            message: `Product ${item.productId?.name || productId || 'Unknown'} not found`
           });
         }
         
@@ -75,12 +134,29 @@ export const cashOnDeliveryOrderController = async (req, res) => {
           });
         }
       } else {
+        console.log('Invalid item - neither product nor bundle:', JSON.stringify(item, null, 2));
         return res.status(400).json({
           success: false,
           error: true,
-          message: `Invalid item: neither product nor bundle`
+          message: `Invalid item: neither product nor bundle - received: ${JSON.stringify({
+            hasProductId: !!item.productId,
+            hasBundleId: !!item.bundleId,
+            productIdType: typeof item.productId,
+            bundleIdType: typeof item.bundleId,
+            productIdValue: item.productId,
+            bundleIdValue: item.bundleId
+          })}`
         });
       }
+    }
+    } catch (validationError) {
+      console.error("Error validating stock availability:", validationError);
+      return res.status(500).json({
+        success: false,
+        error: true,
+        message: "Error validating stock availability",
+        details: validationError.message
+      });
     }
 
     // Create single order payload with all items
@@ -90,31 +166,36 @@ export const cashOnDeliveryOrderController = async (req, res) => {
       userId: userId,
       orderId: orderId,
       items: list_items.map(item => {
-        const isBundle = item.bundleId && item.bundleId._id;
+        const isBundle = !!(item.bundleId && (
+          (typeof item.bundleId === 'object' && item.bundleId._id) || 
+          (typeof item.bundleId === 'string')
+        ));
         
         if (isBundle) {
+          const bundleId = (typeof item.bundleId === 'object' && item.bundleId._id) ? item.bundleId._id : item.bundleId;
           return {
-            bundleId: typeof item.bundleId === 'object' ? item.bundleId._id : item.bundleId,
+            bundleId: bundleId,
             itemType: 'bundle',
             bundleDetails: {
-              title: item.bundleId.title,
-              image: item.bundleId.image,
-              bundlePrice: item.bundleId.bundlePrice
+              title: item.bundleId?.title || 'Bundle',
+              image: item.bundleId?.image || '',
+              bundlePrice: item.bundleId?.bundlePrice || 0
             },
             quantity: item.quantity,
-            itemTotal: item.bundleId.bundlePrice * item.quantity
+            itemTotal: (item.bundleId?.bundlePrice || 0) * item.quantity
           };
         } else {
+          const productId = (typeof item.productId === 'object' && item.productId._id) ? item.productId._id : item.productId;
           return {
-            productId: typeof item.productId === 'object' ? item.productId._id : item.productId,
+            productId: productId,
             itemType: 'product',
             productDetails: {
-              name: item.productId.name,
-              image: item.productId.image,
-              price: item.productId.price
+              name: item.productId?.name || 'Product',
+              image: item.productId?.image || [],
+              price: item.productId?.price || 0
             },
             quantity: item.quantity,
-            itemTotal: item.productId.price * item.quantity
+            itemTotal: (item.productId?.price || 0) * item.quantity
           };
         }
       }),
@@ -140,10 +221,13 @@ export const cashOnDeliveryOrderController = async (req, res) => {
 
       // Update stock for each product (bundles don't have stock management)
       for (const item of list_items) {
-        const isProduct = item.productId && item.productId._id;
+        const isProduct = !!(item.productId && (
+          (typeof item.productId === 'object' && item.productId._id) || 
+          (typeof item.productId === 'string')
+        ));
         
         if (isProduct) {
-          const productId = typeof item.productId === 'object' ? item.productId._id : item.productId;
+          const productId = (typeof item.productId === 'object' && item.productId._id) ? item.productId._id : item.productId;
           await ProductModel.findByIdAndUpdate(
             productId,
             { 

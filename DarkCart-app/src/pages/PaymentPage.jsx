@@ -157,6 +157,13 @@ const PaymentPage = () => {
     setIsProcessing(true);
 
     try {
+      // Debug log the cart items before sending
+      console.log("=== ORDER DEBUG START ===");
+      console.log("Cart items being sent:", cartItemsList);
+      console.log("Total amount:", totalPrice + deliveryCharge);
+      console.log("Address ID:", selectedAddressId);
+      console.log("=== ORDER DEBUG END ===");
+
       // Show a loading toast
       toast.loading("Processing your order...", {
         id: "order-processing",
@@ -188,8 +195,12 @@ const PaymentPage = () => {
             text: "Order",
           },
         });
+      } else {
+        toast.error(responseData.message || "Failed to place order");
       }
     } catch (error) {
+      console.error("Order placement error:", error);
+      console.error("Error response:", error?.response?.data);
       toast.dismiss("order-processing");
       AxiosTostError(error);
     } finally {

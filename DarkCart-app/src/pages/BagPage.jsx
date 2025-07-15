@@ -56,6 +56,23 @@ const BagPage = () => {
   const cartItemsList = useSelector((state) => state.cartItem.cart);
   const navigate = useNavigate();
   
+  // Inspect the cart on component mount
+  React.useEffect(() => {
+    if (cartItemsList && cartItemsList.length > 0) {
+      console.log("BagPage: Initial cart inspection");
+      cartItemsList.forEach((item, index) => {
+        // Log price extraction paths for debugging
+        console.log(`Item ${index} price check:`, {
+          itemType: item.itemType,
+          productId_price: item.productId?.price,
+          bundleId_bundlePrice: item.bundleId?.bundlePrice,
+          directPrice: item.price,
+          quantity: item.quantity
+        });
+      });
+    }
+  }, [cartItemsList]);
+  
   const updateCartItem = async (itemId, quantity) => {
     try {
       const response = await Axios({
@@ -229,7 +246,18 @@ const BagPage = () => {
                     onClick={() => {
                       console.log("Cart items structure:", cartItemsList);
                       if (cartItemsList && cartItemsList.length > 0) {
-                        console.log("First item structure:", cartItemsList[0]);
+                        console.log("First item structure:", JSON.stringify(cartItemsList[0], null, 2));
+                        
+                        // Log price extraction paths for debugging
+                        const item = cartItemsList[0];
+                        console.log("Price extraction paths:");
+                        console.log("- item.productId?.price:", item.productId?.price);
+                        console.log("- item.bundleId?.bundlePrice:", item.bundleId?.bundlePrice);
+                        console.log("- item.product?.price:", item.product?.price);
+                        console.log("- item.price:", item.price);
+                        
+                        // Check what getProductProperty returns for price
+                        console.log("getProductProperty('price'):", getProductProperty(item, 'price', 0));
                       }
                       toast.success("Cart structure logged to console for debugging");
                     }}
@@ -251,9 +279,45 @@ const BagPage = () => {
                                         getProductProperty(item, 'title', 'Product');
                     const size = getProductProperty(item, 'size', 'Standard');
                     const quantity = getProductProperty(item, 'quantity', 1);
-                    const price = getProductProperty(item, 'price', 0);
-                    const discount = getProductProperty(item, 'discount', 0);
-                    const finalPrice = price * (1 - discount/100) || 0;
+                    
+                    // Enhanced price extraction with more paths and debug logging
+                    let price = 0;
+                    let priceSource = 'unknown';
+                    
+                    if (item.productId && item.productId.price) {
+                      price = item.productId.price;
+                      priceSource = 'productId.price';
+                    } else if (item.bundleId && item.bundleId.bundlePrice) {
+                      price = item.bundleId.bundlePrice;
+                      priceSource = 'bundleId.bundlePrice';
+                    } else if (item.product && item.product.price) {
+                      price = item.product.price;
+                      priceSource = 'product.price';
+                    } else if (item.price) {
+                      price = item.price;
+                      priceSource = 'item.price';
+                    } else {
+                      // Log debug info for this item if price is missing
+                      console.log(`Price missing for item (index: ${index}):`, item);
+                      console.log('Attempting to access via getProductProperty:', getProductProperty(item, 'price', 0));
+                    }
+                    
+                    console.log(`Item ${index} price: ${price} (source: ${priceSource})`);
+                    
+                    // Enhanced discount extraction
+                    let discount = 0;
+                    if (item.productId && item.productId.discount) {
+                      discount = item.productId.discount;
+                    } else if (item.bundleId && item.bundleId.discount) {
+                      discount = item.bundleId.discount;
+                    } else if (item.product && item.product.discount) {
+                      discount = item.product.discount;
+                    } else if (item.discount) {
+                      discount = item.discount;
+                    }
+                    
+                    // Calculate final price with fallback
+                    const finalPrice = price > 0 ? (price * (1 - discount/100)) : 0;
                     const brand = getProductProperty(item, 'brand', '');
                     
                     return (
@@ -296,9 +360,9 @@ const BagPage = () => {
                             <div className="flex items-center mt-3">
                               <div className="text-md">
                                 <span className="font-semibold">
-                                  {DisplayPriceInRupees(finalPrice)}
+                                  {price > 0 ? DisplayPriceInRupees(finalPrice) : "Price unavailable"}
                                 </span>
-                                {discount > 0 && (
+                                {discount > 0 && price > 0 && (
                                   <>
                                     <span className="ml-2 text-sm line-through text-gray-500">
                                       {DisplayPriceInRupees(price)}

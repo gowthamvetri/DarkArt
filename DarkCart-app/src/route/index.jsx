@@ -40,6 +40,8 @@ import PageNotFound from "../pages/PageNotFound"; // Add this import
 import AdminPermision from "../layout/AdminPermission";
 import DeliveryChargeCalculator from "../pages/test";
 import BundleOffers from "../pages/BundleOffers";
+import BundleList from "../pages/BundleList";
+import BundleDetail from "../pages/BundleDetail";
 import SeasonalSale from "../pages/SeasonalSale";
 import BundleAdmin from "../pages/BundleAdmin";
 
@@ -200,6 +202,14 @@ const router = createBrowserRouter([
             {
                 path:"bundle-offers",
                 element : <BundleOffers/>
+            },
+            {
+                path:"bundle-list",
+                element : <BundleList/>
+            },
+            {
+                path:"bundle/:bundleId",
+                element : <BundleDetail/>
             },
             {
                 path:"seasonal-sale",
