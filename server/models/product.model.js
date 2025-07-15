@@ -38,10 +38,6 @@ const productSchema = mongoose.Schema({
         type: Object,
         default: {}
     },
-    color: {
-        type: String,
-        default: "Black"
-    },
     washCare: {
         type: String,
         default: "Machine wash"

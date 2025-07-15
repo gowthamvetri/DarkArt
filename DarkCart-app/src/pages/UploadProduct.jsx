@@ -21,17 +21,15 @@ function UploadProduct() {
     price: "",
     discount: "",
     description: "",
-    color: "Black",
-    washCare: "Machine wash",
-    packageContains: "",
-    sizeModel: "32",
-    fabric: "80% cotton, 19% polyester, 1% elastane",
-    marketedBy: "DarkCart Trading (India) Pvt. Ltd.",
-    importedBy: "DarkCart Trading (India) Pvt. Ltd.",
-    countryOfOrigin: "Bangladesh",
-    customerCareAddress: "Tower-B, 7th Floor, DarkCart Office, Knowledge Park, Main Road, Bengaluru, Karnataka - 560029",
     more_details: {},
-    publish: true
+    washCare: "",
+    packageContains: "",
+    sizeModel: "",
+    fabric: "",
+    marketedBy: "",
+    importedBy: "",
+    countryOfOrigin: "",
+    customerCareAddress: ""
   });
   const [ViewImageURL, setViewImageURL] = useState("");
   const [selectCategory, setSelectCategory] = useState("");
@@ -325,20 +323,6 @@ function UploadProduct() {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Color */}
-            <div className='grid gap-2'>
-              <label htmlFor='color' className='font-medium'>Primary Color</label>
-              <input
-                id='color'
-                type='text'
-                placeholder='Primary color'
-                name='color'
-                value={data.color}
-                onChange={handleChange}
-                className='bg-gray-50 border border-gray-300 p-2 rounded focus:outline-none focus:border-primary-200'
-              />
-            </div>
-            
             {/* Wash Care */}
             <div className='grid gap-2'>
               <label htmlFor='washCare' className='font-medium'>Wash Care</label>

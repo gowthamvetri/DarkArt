@@ -509,103 +509,104 @@ const ProductDisplayPage = () => {
   }, [data.image]) // Re-run when images change
 
   // Create a component for product details to avoid duplication
-  const ProductDetails = ({ className }) => (
-    <div className={`my-4 grid gap-3 ${className}`}>
-      <div className="flex gap-4 mb-4 border-b border-gray-200">
-        <h2 className="pb-2 px-1 font-medium text-lg text-black border-b-2 border-black">
-          Product Details
-        </h2>
-      </div>
-      
-      <div className="animate-fadeIn">
-        {/* Detailed product information in tabular format */}
-        <div className="border-t border-gray-200">
-          <div className="grid grid-cols-2 border-b border-gray-200">
-            <div className="py-3 px-4 font-medium text-gray-700 bg-gray-50 border-r border-gray-200">Primary Color</div>
-            <div className="py-3 px-4 text-gray-800">{data.color || 'Black'}</div>
-          </div>
-          
-          <div className="grid grid-cols-2 border-b border-gray-200">
-            <div className="py-3 px-4 font-medium text-gray-700 bg-gray-50 border-r border-gray-200">Wash Care</div>
-            <div className="py-3 px-4 text-gray-800">{data.washCare || 'Machine wash'}</div>
-          </div>
-          
-          <div className="grid grid-cols-2 border-b border-gray-200">
-            <div className="py-3 px-4 font-medium text-gray-700 bg-gray-50 border-r border-gray-200">Package Contains</div>
-            <div className="py-3 px-4 text-gray-800">Package contains: 1 {data.name}</div>
-          </div>
-          
-          <div className="grid grid-cols-2 border-b border-gray-200">
-            <div className="py-3 px-4 font-medium text-gray-700 bg-gray-50 border-r border-gray-200">Size worn by Model</div>
-            <div className="py-3 px-4 text-gray-800">{data.sizeModel || '32'}</div>
-          </div>
-          
-          <div className="grid grid-cols-2 border-b border-gray-200">
-            <div className="py-3 px-4 font-medium text-gray-700 bg-gray-50 border-r border-gray-200">Fabric</div>
-            <div className="py-3 px-4 text-gray-800">{data.fabric || '80% cotton, 19% polyester, 1% elastane'}</div>
-          </div>
+  const ProductDetails = ({ className = "" }) => {
+    return (
+      <div className={`bg-white rounded-lg shadow-sm border border-gray-200 p-6 ${className}`}>
+        <div className="flex items-center gap-2 mb-4">
+          {/* ... existing code ... */}
         </div>
         
-        {/* Product description */}
-        {data.description && (
+        <div className="animate-fadeIn">
+          <div className="border-t border-gray-200">
+            {/* Remove Primary Color row:
+            <div className="grid grid-cols-2 border-b border-gray-200">
+              <div className="py-3 px-4 font-medium text-gray-700 bg-gray-50 border-r border-gray-200">Primary Color</div>
+              <div className="py-3 px-4 text-gray-800">{data.color || 'Black'}</div>
+            </div>
+            */}
+            
+            <div className="grid grid-cols-2 border-b border-gray-200">
+              <div className="py-3 px-4 font-medium text-gray-700 bg-gray-50 border-r border-gray-200">Wash Care</div>
+              <div className="py-3 px-4 text-gray-800">{data.washCare || 'Machine wash'}</div>
+            </div>
+            
+            <div className="grid grid-cols-2 border-b border-gray-200">
+              <div className="py-3 px-4 font-medium text-gray-700 bg-gray-50 border-r border-gray-200">Package Contains</div>
+              <div className="py-3 px-4 text-gray-800">Package contains: 1 {data.name}</div>
+            </div>
+            
+            <div className="grid grid-cols-2 border-b border-gray-200">
+              <div className="py-3 px-4 font-medium text-gray-700 bg-gray-50 border-r border-gray-200">Size worn by Model</div>
+              <div className="py-3 px-4 text-gray-800">{data.sizeModel || '32'}</div>
+            </div>
+            
+            <div className="grid grid-cols-2 border-b border-gray-200">
+              <div className="py-3 px-4 font-medium text-gray-700 bg-gray-50 border-r border-gray-200">Fabric</div>
+              <div className="py-3 px-4 text-gray-800">{data.fabric || '80% cotton, 19% polyester, 1% elastane'}</div>
+            </div>
+          </div>
+          
+          {/* Product description */}
+          {data.description && (
+            <div className="mt-6">
+              <h3 className="font-medium text-gray-900 mb-3">Description</h3>
+              <p className='text-base text-gray-600 leading-relaxed'>{data.description}</p>
+            </div>
+          )}
+          
+          {/* Additional pricing and contact information */}
           <div className="mt-6">
-            <h3 className="font-medium text-gray-900 mb-3">Description</h3>
-            <p className='text-base text-gray-600 leading-relaxed'>{data.description}</p>
-          </div>
-        )}
+            <div className="space-y-4 border-t border-gray-200 pt-4">
+              <div className="flex">
         
-        {/* Additional pricing and contact information */}
-        <div className="mt-6">
-          <div className="space-y-4 border-t border-gray-200 pt-4">
-            <div className="flex">
-        
-            </div>
-            
-            <div className="flex">
-              <div className="font-medium text-gray-600 w-32">Marketed By</div>
-              <div className="text-gray-800">
-                : {data.marketedBy || "Casual Clothings (India) Pvt. Ltd."}
               </div>
-            </div>
-            
-           
-            
-            <div className="flex">
-              <div className="font-medium text-gray-600 w-32">Imported By</div>
-              <div className="text-gray-800">
-                : {data.importedBy || "DarkCart Trading (India) Pvt. Ltd."}
+              
+              <div className="flex">
+                <div className="font-medium text-gray-600 w-32">Marketed By</div>
+                <div className="text-gray-800">
+                  : {data.marketedBy || "Casual Clothings (India) Pvt. Ltd."}
+                </div>
               </div>
-            </div>
-            
-            <div className="flex">
-              <div className="font-medium text-gray-600 w-32">Country of Origin</div>
-              <div className="text-gray-800">: {data.countryOfOrigin || "India"}</div>
-            </div>
-            
-            <div className="flex">
-              <div className="font-medium text-gray-600 w-32">Customer Care Address</div>
-              <div className="text-gray-800">
-                : Tower-B, 7th Floor, DarkCart Office, Knowledge Park, Main Road, Bengaluru, Karnataka - 560029
+              
+             
+              
+              <div className="flex">
+                <div className="font-medium text-gray-600 w-32">Imported By</div>
+                <div className="text-gray-800">
+                  : {data.importedBy || "DarkCart Trading (India) Pvt. Ltd."}
+                </div>
+              </div>
+              
+              <div className="flex">
+                <div className="font-medium text-gray-600 w-32">Country of Origin</div>
+                <div className="text-gray-800">: {data.countryOfOrigin || "India"}</div>
+              </div>
+              
+              <div className="flex">
+                <div className="font-medium text-gray-600 w-32">Customer Care Address</div>
+                <div className="text-gray-800">
+                  : Tower-B, 7th Floor, DarkCart Office, Knowledge Park, Main Road, Bengaluru, Karnataka - 560029
+                </div>
               </div>
             </div>
           </div>
+          
+          {/* Display more details if available */}
+          {data?.more_details && Object.keys(data?.more_details).length > 0 && (
+            <div className="mt-4 grid gap-2">
+              <h3 className="font-medium text-gray-900 mb-2">Additional Details</h3>
+              {Object.keys(data?.more_details).map((element, index) => (
+                <div key={`details-${element}-${index}`} className="flex py-2 border-b border-gray-100">
+                  <p className='font-medium text-gray-900 w-1/3'>{element}</p>
+                  <p className='text-base text-gray-600 w-2/3'>{data?.more_details[element]}</p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
-        
-        {/* Display more details if available */}
-        {data?.more_details && Object.keys(data?.more_details).length > 0 && (
-          <div className="mt-4 grid gap-2">
-            <h3 className="font-medium text-gray-900 mb-2">Additional Details</h3>
-            {Object.keys(data?.more_details).map((element, index) => (
-              <div key={`details-${element}-${index}`} className="flex py-2 border-b border-gray-100">
-                <p className='font-medium text-gray-900 w-1/3'>{element}</p>
-                <p className='text-base text-gray-600 w-2/3'>{data?.more_details[element]}</p>
-              </div>
-            ))}
-          </div>
-        )}
       </div>
-    </div>
-  )
+    );
+  }
 
   return (
     <section className='bg-white min-h-screen py-6'>
@@ -775,15 +776,6 @@ const ProductDisplayPage = () => {
                   </div>
                 </div>
 
-                {/* Color display */}
-                <div className="mb-6">
-                  <h3 className="font-bold mb-2">Color: {data.color || 'Black'}</h3>
-                  <div 
-                    className="w-10 h-10 rounded-full border-2 border-gray-400" 
-                    style={{ backgroundColor: data.color?.toLowerCase() || 'black' }}
-                  ></div>
-                </div>
-                
                 {/* Add to Bag button */}
                 <div className="mb-6">
                   {data.stock === 0 ? (
@@ -895,10 +887,6 @@ const ProductDisplayPage = () => {
               <h2 className="text-xl font-bold text-gray-900 mb-4">Product Details</h2>
               <div className="grid grid-cols-1 gap-6">
                 <div>
-                  <h3 className="font-bold mb-2">Primary Color</h3>
-                  <p>{data.color || 'Black'}</p>
-                </div>
-                <div>
                   <h3 className="font-bold mb-2">Wash Care</h3>
                   <p>{data.washCare || 'Machine wash'}</p>
                 </div>
@@ -909,6 +897,10 @@ const ProductDisplayPage = () => {
                 <div>
                   <h3 className="font-bold mb-2">Package Contains</h3>
                   <p>1 {data.name}</p>
+                </div>
+                <div>
+                  <h3 className="font-bold mb-2">Size worn by Model</h3>
+                  <p>{data.sizeModel || '32'}</p>
                 </div>
               </div>
             </div>
