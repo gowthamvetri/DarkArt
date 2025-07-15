@@ -830,7 +830,8 @@ const ProductDisplayPage = () => {
               
               <div className="flex justify-center mb-4">
                 <Link 
-                  to={`/search?category=${data.category?._id || (Array.isArray(data.category) && data.category[0]?._id) || ''}`}
+                
+                  to={`/category/${data.category?._id || (Array.isArray(data.category) && data.category[0]?._id) || ''}`}
                   className="text-sm text-blue-600 hover:underline"
                 >
                   View all in this category

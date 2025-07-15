@@ -304,19 +304,19 @@ function Header() {
                       <h3 className="text-sm font-semibold text-gray-800 border-b border-gray-100 pb-2 mb-2">Shop by Category</h3>
                     </div>
                     <div className="px-4 py-2 grid grid-cols-3 gap-2">
-                      <Link to="/mens-fashion" className="flex flex-col items-center gap-2 p-2 rounded-lg hover:bg-gray-50 transition-colors group">
+                      <Link to="/search?gender=Men" className="flex flex-col items-center gap-2 p-2 rounded-lg hover:bg-gray-50 transition-colors group">
                         <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-gray-100 group-hover:border-gray-300 transition-colors">
                           <img src="https://images.unsplash.com/photo-1617137968427-85924c800a22?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8M3x8bWVuJTIwZmFzaGlvbnxlbnwwfHwwfHw%3D&w=200&q=80" alt="Men" className="w-full h-full object-cover" />
                         </div>
                         <span className="text-sm font-medium text-gray-700 group-hover:text-black transition-colors">Men</span>
                       </Link>
-                      <Link to="/womens-fashion" className="flex flex-col items-center gap-2 p-2 rounded-lg hover:bg-gray-50 transition-colors group">
+                      <Link to="/search?gender=Women" className="flex flex-col items-center gap-2 p-2 rounded-lg hover:bg-gray-50 transition-colors group">
                         <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-gray-100 group-hover:border-gray-300 transition-colors">
                           <img src="https://images.unsplash.com/photo-1618244972963-dbad64b98bad?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8NXx8d29tZW4lMjBmYXNoaW9ufGVufDB8fDB8fA%3D%3D&w=200&q=80" alt="Women" className="w-full h-full object-cover" />
                         </div>
                         <span className="text-sm font-medium text-gray-700 group-hover:text-black transition-colors">Women</span>
                       </Link>
-                      <Link to="/kids-fashion" className="flex flex-col items-center gap-2 p-2 rounded-lg hover:bg-gray-50 transition-colors group">
+                      <Link to="/search?gender=Kids" className="flex flex-col items-center gap-2 p-2 rounded-lg hover:bg-gray-50 transition-colors group">
                         <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-gray-100 group-hover:border-gray-300 transition-colors">
                           <img src="https://images.unsplash.com/photo-1622290291468-a28f7a7dc6a8?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8M3x8a2lkcyUyMGZhc2hpb258ZW58MHx8MHx8&w=200&q=80" alt="Kids" className="w-full h-full object-cover" />
                         </div>
@@ -534,7 +534,7 @@ function Header() {
                       >
                         <div className="grid grid-cols-3 gap-2 px-5 py-3">
                           <Link
-                            to="/mens-fashion"
+                            to="/search?gender=Men"
                             className="flex flex-col items-center hover:opacity-80 transition-opacity"
                             onClick={() => setTimeout(() => setMobileMenuOpen(false), 200)}
                           >
@@ -544,7 +544,7 @@ function Header() {
                             <span className="text-xs text-gray-700 mt-1">Men</span>
                           </Link>
                           <Link
-                            to="/womens-fashion"
+                            to="/search?gender=Women"
                             className="flex flex-col items-center hover:opacity-80 transition-opacity"
                             onClick={() => setTimeout(() => setMobileMenuOpen(false), 200)}
                           >
@@ -554,7 +554,7 @@ function Header() {
                             <span className="text-xs text-gray-700 mt-1">Women</span>
                           </Link>
                           <Link
-                            to="/kids-fashion"
+                            to="/search?gender=Kids"
                             className="flex flex-col items-center hover:opacity-80 transition-opacity"
                             onClick={() => setTimeout(() => setMobileMenuOpen(false), 200)}
                           >

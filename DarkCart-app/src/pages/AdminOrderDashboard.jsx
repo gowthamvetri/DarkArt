@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
-import { FaSearch, FaRedo, FaSortAmountDown, FaSortAmountUp, FaFilter, FaEllipsisV, FaBoxOpen, FaCheck, FaTruck, FaCog, FaBan, FaEye } from 'react-icons/fa';
+import { FaSearch, FaRedo, FaSortAmountDown,FaBox ,FaSortAmountUp, FaFilter, FaEllipsisV, FaBoxOpen, FaCheck, FaTruck, FaCog, FaBan, FaEye } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import Axios from '../utils/Axios';
 import SummaryApi from '../common/SummaryApi';

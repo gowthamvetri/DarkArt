@@ -318,98 +318,69 @@ export const deleteProductDetails = async (request, response) => {
     }
 };
 
-// Enhanced search product with gender and category filters
+// Enhanced search product with filters
 export const searchProduct = async (request, response) => {
     try {
-        let { search, page = 1, limit = 10, gender, category } = request.body;
+        let { search, page = 1, limit = 12, gender } = request.body;
         
-        // Build query object
-        let query = { publish: true };
+        // Build base query
+        let baseQuery = { publish: true };
 
         // Add gender filter
         if (gender) {
             const validGenders = ['Men', 'Women', 'Kids'];
             if (validGenders.includes(gender)) {
-                query.gender = gender;
+                baseQuery.gender = gender;
             }
         }
 
-        // Add category filter
-        if (category) {
-            query.category = { $in: [category] };
-        }
+        let finalQuery = baseQuery;
 
-        // Fixed search functionality - avoid mixing text search with regex in $or
+        // Handle search with different strategies
         if (search) {
-            if (search.length === 1) {
-                // For single character searches, use only regex (no text search)
-                const regexPattern = new RegExp(search, 'i');
-                query.$or = [
-                    { name: { $regex: regexPattern } },
-                    { description: { $regex: regexPattern } }
-                ];
-            } else if (search.length === 2) {
-                // For two character searches, also use regex for better compatibility
-                const regexPattern = new RegExp(search, 'i');
-                query.$or = [
-                    { name: { $regex: regexPattern } },
-                    { description: { $regex: regexPattern } }
-                ];
+            const searchTerm = search.trim();
+            
+            if (searchTerm.length >= 3) {
+                // For longer terms, use MongoDB text search
+                finalQuery = {
+                    ...baseQuery,
+                    $text: { $search: searchTerm }
+                };
             } else {
-                // For longer searches, try text search first, fallback to regex if needed
-                try {
-                    // First try with text search only
-                    const textQuery = { 
-                        ...query, 
-                        $text: { $search: search } 
-                    };
-                    
-                    const textResults = await ProductModel.find(textQuery)
-                        .sort({ score: { $meta: "textScore" }, createdAt: -1 })
-                        .skip((page - 1) * limit)
-                        .limit(limit)
-                        .populate('category');
-                    
-                    const textCount = await ProductModel.countDocuments(textQuery);
-                    
-                    // If text search returns results, use them
-                    if (textResults.length > 0) {
-                        return response.json({
-                            message: "Search Product data",
-                            error: false,
-                            success: true,
-                            totalCount: textCount,
-                            totalNoPage: Math.ceil(textCount / limit),
-                            data: textResults
-                        });
-                    }
-                } catch (textError) {
-                    console.log('Text search failed, falling back to regex:', textError.message);
-                }
-                
-                // Fallback to regex search if text search fails or returns no results
-                const regexPattern = new RegExp(search, 'i');
-                query.$or = [
-                    { name: { $regex: regexPattern } },
-                    { description: { $regex: regexPattern } }
-                ];
+                // For short terms, use regex search
+                const regexPattern = new RegExp(searchTerm, 'i');
+                finalQuery = {
+                    ...baseQuery,
+                    $or: [
+                        { name: { $regex: regexPattern } },
+                        { description: { $regex: regexPattern } }
+                    ]
+                };
             }
         }
 
-        console.log('Search query:', JSON.stringify(query, null, 2));
+        console.log('Final search query:', JSON.stringify(finalQuery, null, 2));
         
         const skip = (page - 1) * limit;
 
+        // Build sort object
+        let sortOption = { createdAt: -1 };
+        
+        // Add text score sorting if using text search
+        if (search && search.length >= 3) {
+            sortOption = { score: { $meta: "textScore" }, createdAt: -1 };
+        }
+
         const [data, totalCount] = await Promise.all([
-            ProductModel.find(query)
-                .sort({ createdAt: -1 })
+            ProductModel.find(finalQuery)
+                .sort(sortOption)
                 .skip(skip)
                 .limit(limit)
                 .populate('category'),
-            ProductModel.countDocuments(query)
+            ProductModel.countDocuments(finalQuery)
         ]);
 
-        console.log("Search results found:", data.length);
+        console.log(`Search results: ${data.length} products found`);
 
         return response.json({
             message: "Search Product data",
@@ -417,15 +388,66 @@ export const searchProduct = async (request, response) => {
             success: true,
             totalCount: totalCount,
             totalNoPage: Math.ceil(totalCount / limit),
-            data: data
+            data: data,
+            searchTerm: search,
+            searchType: search && search.length >= 3 ? 'text' : 'regex',
+            appliedFilters: {
+                gender: gender || null
+            }
         });
+
     } catch (error) {
         console.error('Search error:', error);
-        return response.status(500).json({
-            message: error.message || error,
-            error: true,
-            success: false
-        });
+        
+        // Fallback to basic search
+        try {
+            let { search, page = 1, limit = 12, gender } = request.body;
+            
+            let fallbackQuery = { publish: true };
+            
+            if (gender) {
+                const validGenders = ['Men', 'Women', 'Kids'];
+                if (validGenders.includes(gender)) {
+                    fallbackQuery.gender = gender;
+                }
+            }
+            
+            if (search) {
+                const regexPattern = new RegExp(search, 'i');
+                fallbackQuery.$or = [
+                    { name: { $regex: regexPattern } },
+                    { description: { $regex: regexPattern } }
+                ];
+            }
+            
+            const skip = (page - 1) * limit;
+            
+            const [data, totalCount] = await Promise.all([
+                ProductModel.find(fallbackQuery)
+                    .sort({ createdAt: -1 })
+                    .skip(skip)
+                    .limit(limit)
+                    .populate('category'),
+                ProductModel.countDocuments(fallbackQuery)
+            ]);
+
+            return response.json({
+                message: "Search Product data (fallback)",
+                error: false,
+                success: true,
+                totalCount: totalCount,
+                totalNoPage: Math.ceil(totalCount / limit),
+                data: data,
+                searchType: 'regex-fallback'
+            });
+            
+        } catch (fallbackError) {
+            return response.status(500).json({
+                message: fallbackError.message || error.message,
+                error: true,
+                success: false
+            });
+        }
     }
 };
 

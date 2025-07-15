@@ -144,7 +144,7 @@ const ProductListPage = () => {
                 <div className="lg:col-span-3">
                     <div className="flex items-center justify-between mb-6">
                         <h1 className="text-2xl font-bold text-gray-900">
-                            {category ? `${category.replace(/-/g, ' ')} Products` : 'All Products'}
+                            {category ? `Products` : 'All Products'}
                             {filters.gender && ` for ${filters.gender}`}
                         </h1>
                         <span className="text-gray-500">
