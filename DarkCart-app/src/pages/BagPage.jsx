@@ -1,34 +1,36 @@
-import React from 'react';
-import { useSelector } from 'react-redux';
+import React, { useState, useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { DisplayPriceInRupees } from '../utils/DisplayPriceInRupees';
 import { useGlobalContext } from '../provider/GlobalProvider';
 import { FaArrowRight } from 'react-icons/fa';
 import { toast } from 'react-hot-toast';
 import Logo from '../assets/logo.png';
-import noCart from '../assets/noCart.jpg'; // Import fallback image
+import noCart from '../assets/noCart.jpg';
 import Axios from '../utils/Axios';
 import SummaryApi from '../common/SummaryApi';
 import ErrorBoundary from '../components/ErrorBoundary';
+import { 
+  toggleItemSelection, 
+  selectAllItems, 
+  deselectAllItems,
+  setSelectedItems 
+} from '../store/cartProduct';
 
 // Helper function to safely access product properties
 const getProductProperty = (item, propertyPath, fallback = "") => {
   try {
     if (!item) return fallback;
     
-    // Handle different potential structures
     const paths = [
-      // If product is directly on the item
       `product.${propertyPath}`,
-      // If product is in productId field
       `productId.${propertyPath}`,
-      // Direct property on the item
+      `bundleId.${propertyPath}`,
       propertyPath
     ];
     
     for (const path of paths) {
       const value = path.split('.').reduce((obj, key) => {
-        // Handle array index notation like "image[0]"
         if (key.includes('[') && key.includes(']')) {
           const arrayKey = key.substring(0, key.indexOf('['));
           const indexMatch = key.match(/\[(\d+)\]/);
@@ -51,27 +53,97 @@ const getProductProperty = (item, propertyPath, fallback = "") => {
   }
 };
 
+// Function to calculate item pricing consistently
+const calculateItemPricing = (item) => {
+  let productTitle = 'Item';
+  let originalPrice = 0;
+  let finalPrice = 0;
+  let discount = 0;
+  let isBundle = false;
+  let quantity = item.quantity || 1;
+  
+  if (item.productId && item.productId._id) {
+    productTitle = item.productId.name || 'Product';
+    originalPrice = item.productId.price || 0;
+    discount = item.productId.discount || 0;
+    finalPrice = discount > 0 ? originalPrice * (1 - discount/100) : originalPrice;
+    isBundle = false;
+  } else if (item.bundleId && item.bundleId._id) {
+    productTitle = item.bundleId.title || 'Bundle';
+    originalPrice = item.bundleId.originalPrice || 0;
+    finalPrice = item.bundleId.bundlePrice || 0;
+    discount = 0;
+    isBundle = true;
+  } else {
+    productTitle = item.title || item.name || 'Item';
+    
+    if (item.bundlePrice || item.title) {
+      isBundle = true;
+      originalPrice = item.originalPrice || 0;
+      finalPrice = item.bundlePrice || item.price || 0;
+      discount = 0;
+    } else {
+      isBundle = false;
+      originalPrice = item.price || 0;
+      discount = item.discount || 0;
+      finalPrice = discount > 0 ? originalPrice * (1 - discount/100) : originalPrice;
+    }
+  }
+  
+  return {
+    productTitle,
+    originalPrice,
+    finalPrice,
+    discount,
+    isBundle,
+    quantity,
+    totalPrice: finalPrice * quantity,
+    totalOriginalPrice: originalPrice * quantity
+  };
+};
+
 const BagPage = () => {
-  const { notDiscountTotalPrice, totalPrice, totalQty, fetchCartItems } = useGlobalContext();
+  const { fetchCartItems } = useGlobalContext();
   const cartItemsList = useSelector((state) => state.cartItem.cart);
+  const selectedItems = useSelector((state) => state.cartItem.selectedItems);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   
+  // Calculate totals for selected items only
+  const selectedCartItems = cartItemsList.filter(item => selectedItems.includes(item._id));
+  
+  const selectedTotals = selectedCartItems.reduce((totals, item) => {
+    const pricing = calculateItemPricing(item);
+    return {
+      totalQty: totals.totalQty + pricing.quantity,
+      totalPrice: totals.totalPrice + pricing.totalPrice,
+      totalOriginalPrice: totals.totalOriginalPrice + pricing.totalOriginalPrice
+    };
+  }, { totalQty: 0, totalPrice: 0, totalOriginalPrice: 0 });
+
+  // Auto-select all items when cart loads initially
+  useEffect(() => {
+    if (cartItemsList.length > 0 && selectedItems.length === 0) {
+      dispatch(selectAllItems());
+    }
+  }, [cartItemsList, selectedItems.length, dispatch]);
+
   // Inspect the cart on component mount
   React.useEffect(() => {
     if (cartItemsList && cartItemsList.length > 0) {
       console.log("BagPage: Initial cart inspection");
       cartItemsList.forEach((item, index) => {
-        // Log price extraction paths for debugging
         console.log(`Item ${index} price check:`, {
           itemType: item.itemType,
           productId_price: item.productId?.price,
           bundleId_bundlePrice: item.bundleId?.bundlePrice,
           directPrice: item.price,
-          quantity: item.quantity
+          quantity: item.quantity,
+          isSelected: selectedItems.includes(item._id)
         });
       });
     }
-  }, [cartItemsList]);
+  }, [cartItemsList, selectedItems]);
   
   const updateCartItem = async (itemId, quantity) => {
     try {
@@ -118,11 +190,8 @@ const BagPage = () => {
 
   const handleQuantityChange = async (item, currentQty, change) => {
     const newQty = currentQty + change;
-    
-    // Get the cart item ID directly from the item object
     const itemId = item._id;
     
-    // If ID not found in the primary location, try to find it elsewhere in the object
     if (!itemId) {
       toast.error("Updating cart item...");
       console.log("Full cart item:", JSON.stringify(item, null, 2));
@@ -130,7 +199,6 @@ const BagPage = () => {
     }
     
     if (newQty <= 0) {
-      // Remove item if quantity becomes 0
       const result = await deleteCartItem(itemId);
       if (result.success) {
         toast.success("Item removed from bag");
@@ -138,7 +206,6 @@ const BagPage = () => {
         toast.error("Failed to remove item");
       }
     } else {
-      // Update quantity
       const result = await updateCartItem(itemId, newQty);
       if (result.success) {
         toast.success(change > 0 ? "Quantity increased" : "Quantity decreased");
@@ -149,7 +216,6 @@ const BagPage = () => {
   };
 
   const handleRemoveItem = async (item) => {
-    // Get the cart item ID - this is the ID of the cart item, not the product
     const itemId = item._id;
     
     if (!itemId) {
@@ -167,16 +233,29 @@ const BagPage = () => {
   };
 
   const handleProceedToCheckout = () => {
-    if (cartItemsList.length === 0) {
-      toast.error("Your bag is empty");
+    if (selectedItems.length === 0) {
+      toast.error("Please select at least one item to checkout");
       return;
     }
+    
+    // Store selected items in sessionStorage for checkout process
+    sessionStorage.setItem('selectedCartItems', JSON.stringify(selectedItems));
     navigate('/checkout/address');
   };
 
-  // Move item to wishlist (placeholder - implement actual functionality as needed)
+  const handleSelectAll = () => {
+    if (selectedItems.length === cartItemsList.length) {
+      dispatch(deselectAllItems());
+    } else {
+      dispatch(selectAllItems());
+    }
+  };
+
+  const handleItemSelection = (itemId) => {
+    dispatch(toggleItemSelection(itemId));
+  };
+
   const moveToWishlist = (item) => {
-    // Get the cart item ID - this is the ID of the cart item, not the product
     const itemId = item._id;
     
     if (!itemId) {
@@ -235,112 +314,90 @@ const BagPage = () => {
                 <div className="p-4 border-b">
                   <div className="flex justify-between items-center">
                     <h2 className="text-lg font-medium">
-                      {totalQty} {totalQty === 1 ? 'ITEM' : 'ITEMS'} SELECTED
+                      {cartItemsList.length} {cartItemsList.length === 1 ? 'ITEM' : 'ITEMS'} IN BAG
                     </h2>
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="selectAll"
+                        checked={selectedItems.length === cartItemsList.length && cartItemsList.length > 0}
+                        onChange={handleSelectAll}
+                        className="h-4 w-4 text-red-500 border-gray-300 rounded focus:ring-red-500"
+                      />
+                      <label htmlFor="selectAll" className="text-sm font-medium cursor-pointer">
+                        Select All ({selectedItems.length}/{cartItemsList.length})
+                      </label>
+                    </div>
                   </div>
                 </div>
                 
                 <div className="p-4">
                   {/* Debug button to check cart structure */}
-                  <button 
-                    onClick={() => {
-                      console.log("Cart items structure:", cartItemsList);
-                      if (cartItemsList && cartItemsList.length > 0) {
-                        console.log("First item structure:", JSON.stringify(cartItemsList[0], null, 2));
-                        
-                        // Log price extraction paths for debugging
-                        const item = cartItemsList[0];
-                        console.log("Price extraction paths:");
-                        console.log("- item.productId?.price:", item.productId?.price);
-                        console.log("- item.bundleId?.bundlePrice:", item.bundleId?.bundlePrice);
-                        console.log("- item.product?.price:", item.product?.price);
-                        console.log("- item.price:", item.price);
-                        
-                        // Check what getProductProperty returns for price
-                        console.log("getProductProperty('price'):", getProductProperty(item, 'price', 0));
-                      }
-                      toast.success("Cart structure logged to console for debugging");
-                    }}
-                    className="mb-4 text-xs px-2 py-1 bg-gray-200 text-gray-700 rounded"
-                  >
-                    Debug Cart Structure
-                  </button>
+                  {import.meta.env.DEV && (
+                    <button 
+                      onClick={() => {
+                        console.log("Cart items structure:", cartItemsList);
+                        console.log("Selected items:", selectedItems);
+                        console.log("Selected totals:", selectedTotals);
+                        if (cartItemsList && cartItemsList.length > 0) {
+                          console.log("First item structure:", JSON.stringify(cartItemsList[0], null, 2));
+                          
+                          const item = cartItemsList[0];
+                          console.log("Price extraction paths:");
+                          console.log("- item.productId?.price:", item.productId?.price);
+                          console.log("- item.bundleId?.bundlePrice:", item.bundleId?.bundlePrice);
+                          console.log("- item.product?.price:", item.product?.price);
+                          console.log("- item.price:", item.price);
+                          
+                          console.log("calculateItemPricing result:", calculateItemPricing(item));
+                        }
+                        toast.success("Cart structure logged to console for debugging");
+                      }}
+                      className="mb-4 text-xs px-2 py-1 bg-gray-200 text-gray-700 rounded"
+                    >
+                      Debug Cart Structure
+                    </button>
+                  )}
                   
                   {cartItemsList.map((item, index) => {
                     const itemId = getProductProperty(item, '_id', `item-${index}`);
+                    const pricing = calculateItemPricing(item);
+                    const isSelected = selectedItems.includes(item._id);
                     
                     // Get image source safely
-                    const imageSrc = getProductProperty(item, 'image[0]') || 
-                                    getProductProperty(item, 'primaryImage') ||
-                                    noCart; // Use local fallback image
-                    
-                    // Get product details safely
-                    const productTitle = getProductProperty(item, 'name', 'Product') || 
-                                        getProductProperty(item, 'title', 'Product');
-                    const size = getProductProperty(item, 'size', 'Standard');
-                    const quantity = getProductProperty(item, 'quantity', 1);
-                    
-                    // Enhanced price extraction with more paths and debug logging
-                    let price = 0;
-                    let priceSource = 'unknown';
-                    
-                    if (item.productId && item.productId.price) {
-                      price = item.productId.price;
-                      priceSource = 'productId.price';
-                    } else if (item.bundleId && item.bundleId.bundlePrice) {
-                      price = item.bundleId.bundlePrice;
-                      priceSource = 'bundleId.bundlePrice';
-                    } else if (item.product && item.product.price) {
-                      price = item.product.price;
-                      priceSource = 'product.price';
-                    } else if (item.price) {
-                      price = item.price;
-                      priceSource = 'item.price';
+                    let imageSrc = noCart;
+                    if (item.productId && item.productId._id) {
+                      imageSrc = item.productId.image?.[0] || item.productId.primaryImage || noCart;
+                    } else if (item.bundleId && item.bundleId._id) {
+                      imageSrc = item.bundleId.images?.[0] || item.bundleId.image || noCart;
                     } else {
-                      // Log debug info for this item if price is missing
-                      console.log(`Price missing for item (index: ${index}):`, item);
-                      console.log('Attempting to access via getProductProperty:', getProductProperty(item, 'price', 0));
+                      imageSrc = item.image?.[0] || item.images?.[0] || item.primaryImage || item.image || noCart;
                     }
                     
-                    console.log(`Item ${index} price: ${price} (source: ${priceSource})`);
-                    
-                    // Enhanced discount extraction
-                    let discount = 0;
-                    if (item.productId && item.productId.discount) {
-                      discount = item.productId.discount;
-                    } else if (item.bundleId && item.bundleId.discount) {
-                      discount = item.bundleId.discount;
-                    } else if (item.product && item.product.discount) {
-                      discount = item.product.discount;
-                    } else if (item.discount) {
-                      discount = item.discount;
-                    }
-                    
-                    // Calculate final price with fallback
-                    const finalPrice = price > 0 ? (price * (1 - discount/100)) : 0;
+                    const size = getProductProperty(item, 'size', 'Standard');
                     const brand = getProductProperty(item, 'brand', '');
                     
                     return (
-                      <div key={`bag-item-${itemId}-${index}`} className="flex border-b last:border-b-0 py-4">
+                      <div key={`bag-item-${itemId}-${index}`} className={`flex border-b last:border-b-0 py-4 ${isSelected ? 'bg-blue-50' : ''}`}>
                         <div className="flex flex-col sm:flex-row items-start w-full">
                           {/* Checkbox and Product Image */}
                           <div className="flex items-start">
                             <div className="mr-3">
                               <input 
                                 type="checkbox" 
-                                checked={true} 
-                                readOnly
+                                checked={isSelected}
+                                onChange={() => handleItemSelection(item._id)}
                                 className="h-5 w-5 text-red-500 border-gray-300 rounded focus:ring-red-500"
                               />
                             </div>
                             <div className="w-20 h-24 flex-shrink-0">
                               <img 
                                 src={imageSrc} 
-                                alt={productTitle}
+                                alt={pricing.productTitle}
                                 className="w-full h-full object-cover rounded"
                                 onError={(e) => {
                                   e.target.onerror = null;
-                                  e.target.src = noCart; // Use local fallback image
+                                  e.target.src = noCart;
                                 }}
                               />
                             </div>
@@ -351,26 +408,29 @@ const BagPage = () => {
                             {brand && (
                               <div className="text-gray-700 font-medium">{brand}</div>
                             )}
-                            <h3 className="font-medium text-lg">{productTitle}</h3>
+                            <h3 className="font-medium text-lg">
+                              {pricing.productTitle}
+                              {pricing.isBundle && (
+                                <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                  Bundle
+                                </span>
+                              )}
+                            </h3>
                             
                             <div className="text-sm text-gray-600 mt-1">
                               Size: {size}
                             </div>
                             
+                            {/* Price Display - NO DISCOUNT SHOWN */}
                             <div className="flex items-center mt-3">
                               <div className="text-md">
-                                <span className="font-semibold">
-                                  {price > 0 ? DisplayPriceInRupees(finalPrice) : "Price unavailable"}
+                                <span className="font-semibold text-lg">
+                                  {pricing.displayPrice > 0 ? DisplayPriceInRupees(pricing.totalPrice) : "Price unavailable"}
                                 </span>
-                                {discount > 0 && price > 0 && (
-                                  <>
-                                    <span className="ml-2 text-sm line-through text-gray-500">
-                                      {DisplayPriceInRupees(price)}
-                                    </span>
-                                    <span className="ml-2 text-sm text-green-600 font-medium">
-                                      {discount}% OFF
-                                    </span>
-                                  </>
+                                {pricing.quantity > 1 && (
+                                  <span className="text-xs text-gray-500 ml-1">
+                                    ({DisplayPriceInRupees(pricing.finalPrice)} each)
+                                  </span>
                                 )}
                               </div>
                             </div>
@@ -378,16 +438,16 @@ const BagPage = () => {
                             <div className="flex items-center justify-between mt-4">
                               <div className="flex items-center border rounded-md">
                                 <button 
-                                  onClick={() => handleQuantityChange(item, quantity, -1)}
+                                  onClick={() => handleQuantityChange(item, pricing.quantity, -1)}
                                   className="px-3 py-1 text-lg font-medium hover:bg-gray-100"
                                 >
                                   -
                                 </button>
                                 <div className="px-3 py-1 text-sm font-medium">
-                                  {quantity}
+                                  {pricing.quantity}
                                 </div>
                                 <button 
-                                  onClick={() => handleQuantityChange(item, quantity, 1)}
+                                  onClick={() => handleQuantityChange(item, pricing.quantity, 1)}
                                   className="px-3 py-1 text-lg font-medium hover:bg-gray-100"
                                 >
                                   +
@@ -418,52 +478,67 @@ const BagPage = () => {
               </div>
             </div>
             
-            {/* Right Column - Price Details */}
+            {/* Right Column - Price Details (Only for selected items) */}
             <div className="lg:col-span-1">
               <div className="bg-white rounded shadow sticky top-4">
                 <div className="p-4 border-b">
-                  <h2 className="text-lg font-medium">PRICE DETAILS ({totalQty} {totalQty === 1 ? 'Item' : 'Items'})</h2>
+                  <h2 className="text-lg font-medium">
+                    PRICE DETAILS ({selectedTotals.totalQty} {selectedTotals.totalQty === 1 ? 'Item' : 'Items'} Selected)
+                  </h2>
                 </div>
                 
                 <div className="p-4">
-                  <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <span className="text-gray-700">Total MRP</span>
-                      <span>₹{notDiscountTotalPrice.toFixed(2)}</span>
+                  {selectedItems.length === 0 ? (
+                    <div className="text-center py-8">
+                      <p className="text-gray-500 mb-4">No items selected for checkout</p>
+                      <p className="text-sm text-gray-400">Select items from your bag to see price details</p>
                     </div>
-                    
-                    <div className="flex justify-between">
-                      <span className="text-gray-700">Discount on MRP</span>
-                      <span className="text-green-600">-₹{(notDiscountTotalPrice - totalPrice).toFixed(2)}</span>
-                    </div>
-                    
-                    <div className="flex justify-between">
-                      <span className="text-gray-700">Platform Fee</span>
-                      <div className="flex items-center">
-                        <span className="line-through text-gray-500 mr-1">₹99</span>
-                        <span className="text-green-600">FREE</span>
+                  ) : (
+                    <div className="space-y-3">
+                      <div className="flex justify-between">
+                        <span className="text-gray-700">Total MRP</span>
+                        <span>₹{selectedTotals.totalOriginalPrice.toFixed(2)}</span>
+                      </div>
+                      
+                      <div className="flex justify-between">
+                        <span className="text-gray-700">Discount on MRP</span>
+                        <span className="text-green-600">-₹{(selectedTotals.totalOriginalPrice - selectedTotals.totalPrice).toFixed(2)}</span>
+                      </div>
+                      
+                      <div className="flex justify-between">
+                        <span className="text-gray-700">Platform Fee</span>
+                        <div className="flex items-center">
+                          <span className="line-through text-gray-500 mr-1">₹99</span>
+                          <span className="text-green-600">FREE</span>
+                        </div>
+                      </div>
+                      
+                      <div className="border-t pt-3 mt-3">
+                        <div className="flex justify-between font-semibold">
+                          <span>Total Amount</span>
+                          <span>₹{selectedTotals.totalPrice.toFixed(2)}</span>
+                        </div>
                       </div>
                     </div>
-                    
-                    <div className="border-t pt-3 mt-3">
-                      <div className="flex justify-between font-semibold">
-                        <span>Total Amount</span>
-                        <span>₹{totalPrice.toFixed(2)}</span>
-                      </div>
-                    </div>
-                  </div>
+                  )}
                   
                   <button
                     onClick={handleProceedToCheckout}
-                    className="w-full bg-red-500 hover:bg-red-600 text-white py-3 mt-6 font-medium flex items-center justify-center"
+                    disabled={selectedItems.length === 0}
+                    className="w-full bg-red-500 hover:bg-red-600 text-white py-3 mt-6 font-medium flex items-center justify-center disabled:bg-gray-300 disabled:cursor-not-allowed"
                   >
-                    <span>PLACE ORDER</span>
+                    <span>PLACE ORDER ({selectedItems.length})</span>
                     <FaArrowRight className="ml-2" />
                   </button>
                   
                   <div className="mt-6 text-xs text-center text-gray-600">
                     <p>Safe and Secure Payments. Easy returns.</p>
                     <p>100% Authentic products.</p>
+                    {selectedItems.length > 0 && (
+                      <p className="mt-2 text-sm font-medium text-blue-600">
+                        {cartItemsList.length - selectedItems.length} items will remain in your bag
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>

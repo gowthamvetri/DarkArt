@@ -53,8 +53,61 @@ const getProductProperty = (item, propertyPath, fallback = "") => {
   }
 };
 
+// Function to calculate item pricing consistently (similar to CheckoutPage)
+const calculateItemPricing = (item) => {
+  let productTitle = 'Item';
+  let originalPrice = 0;
+  let finalPrice = 0;
+  let discount = 0;
+  let isBundle = false;
+  let quantity = item.quantity || 1;
+  
+  if (item.productId && item.productId._id) {
+    // It's a product - discount applies
+    productTitle = item.productId.name || 'Product';
+    originalPrice = item.productId.price || 0;
+    discount = item.productId.discount || 0;
+    finalPrice = discount > 0 ? originalPrice * (1 - discount/100) : originalPrice;
+    isBundle = false;
+  } else if (item.bundleId && item.bundleId._id) {
+    // It's a bundle - NO DISCOUNT
+    productTitle = item.bundleId.title || 'Bundle';
+    originalPrice = item.bundleId.originalPrice || 0;
+    finalPrice = item.bundleId.bundlePrice || 0;
+    discount = 0; // Force discount to 0 for bundles
+    isBundle = true;
+  } else {
+    // Fallback: check if item itself has properties
+    productTitle = item.title || item.name || 'Item';
+    
+    // Check if it's a bundle based on field names
+    if (item.bundlePrice || item.title) {
+      isBundle = true;
+      originalPrice = item.originalPrice || 0;
+      finalPrice = item.bundlePrice || item.price || 0;
+      discount = 0;
+    } else {
+      isBundle = false;
+      originalPrice = item.price || 0;
+      discount = item.discount || 0;
+      finalPrice = discount > 0 ? originalPrice * (1 - discount/100) : originalPrice;
+    }
+  }
+  
+  return {
+    productTitle,
+    originalPrice,
+    finalPrice,
+    discount,
+    isBundle,
+    quantity,
+    totalPrice: finalPrice * quantity,
+    totalOriginalPrice: originalPrice * quantity
+  };
+};
+
 const AddressPage = () => {
-  const { notDiscountTotalPrice, totalPrice, totalQty, fetchCartItems, handleOrder, fetchAddress } = useGlobalContext();
+  const { fetchCartItems, handleOrder, fetchAddress } = useGlobalContext();
   const [openAddAddress, setOpenAddAddress] = useState(false);
   
   // Get addresses from Redux store
@@ -65,7 +118,84 @@ const AddressPage = () => {
   const [selectedAddressIndex, setSelectedAddressIndex] = useState(null);
   const cartItemsList = useSelector((state) => state.cartItem.cart);
   const navigate = useNavigate();
+
+  // Get selected items from sessionStorage (set in BagPage)
+  const [selectedCartItemIds, setSelectedCartItemIds] = useState([]);
+  const [checkoutItems, setCheckoutItems] = useState([]);
+
+  useEffect(() => {
+    const selectedIds = JSON.parse(sessionStorage.getItem('selectedCartItems') || '[]');
+    setSelectedCartItemIds(selectedIds);
+    
+    // Filter cart items to only include selected ones
+    const itemsToCheckout = cartItemsList.filter(item => selectedIds.includes(item._id));
+    setCheckoutItems(itemsToCheckout);
+  }, [cartItemsList]);
   
+  // Function to calculate item pricing consistently
+  const calculateItemPricing = (item) => {
+    let productTitle = 'Item';
+    let originalPrice = 0;
+    let finalPrice = 0;
+    let discount = 0;
+    let isBundle = false;
+    let quantity = item.quantity || 1;
+    
+    if (item.productId && item.productId._id) {
+      productTitle = item.productId.name || 'Product';
+      originalPrice = item.productId.price || 0;
+      discount = item.productId.discount || 0;
+      finalPrice = discount > 0 ? originalPrice * (1 - discount/100) : originalPrice;
+      isBundle = false;
+    } else if (item.bundleId && item.bundleId._id) {
+      productTitle = item.bundleId.title || 'Bundle';
+      originalPrice = item.bundleId.originalPrice || 0;
+      finalPrice = item.bundleId.bundlePrice || 0;
+      discount = 0;
+      isBundle = true;
+    } else {
+      productTitle = item.title || item.name || 'Item';
+      
+      if (item.bundlePrice || item.title) {
+        isBundle = true;
+        originalPrice = item.originalPrice || 0;
+        finalPrice = item.bundlePrice || item.price || 0;
+        discount = 0;
+      } else {
+        isBundle = false;
+        originalPrice = item.price || 0;
+        discount = item.discount || 0;
+        finalPrice = discount > 0 ? originalPrice * (1 - discount/100) : originalPrice;
+      }
+    }
+    
+    return {
+      productTitle,
+      originalPrice,
+      finalPrice,
+      discount,
+      isBundle,
+      quantity,
+      totalPrice: finalPrice * quantity,
+      totalOriginalPrice: originalPrice * quantity
+    };
+  };
+
+  // Calculate totals for selected items only
+  const selectedTotals = checkoutItems.reduce((totals, item) => {
+    const pricing = calculateItemPricing(item);
+    return {
+      totalQty: totals.totalQty + pricing.quantity,
+      totalPrice: totals.totalPrice + pricing.totalPrice,
+      totalOriginalPrice: totals.totalOriginalPrice + pricing.totalOriginalPrice
+    };
+  }, { totalQty: 0, totalPrice: 0, totalOriginalPrice: 0 });
+
+  // Extract values for easier use in JSX
+  const totalQty = selectedTotals.totalQty;
+  const totalPrice = selectedTotals.totalPrice;
+  const notDiscountTotalPrice = selectedTotals.totalOriginalPrice;
+
   // Keep local address list in sync with Redux
   useEffect(() => {
     setLocalAddressList(reduxAddressList);
@@ -384,10 +514,10 @@ const AddressPage = () => {
   // Calculate estimated delivery dates for products
   useEffect(() => {
     try {
-      if (cartItemsList && cartItemsList.length > 0) {
+      if (checkoutItems && checkoutItems.length > 0) {
         // Calculate delivery dates (current date + 3-5 days)
         const today = new Date();
-        const deliveryEstimates = cartItemsList.map((item, idx) => {
+        const deliveryEstimates = checkoutItems.map((item, idx) => {
           // Random delivery estimate between 3-7 days
           const deliveryDays = Math.floor(Math.random() * 5) + 3;
           const deliveryDate = new Date(today);
@@ -417,7 +547,7 @@ const AddressPage = () => {
       const fallbackDate = new Date();
       fallbackDate.setDate(fallbackDate.getDate() + 5); // Default 5-day delivery
       
-      const fallbackEstimates = Array(cartItemsList?.length || 0).fill().map((_, i) => ({
+      const fallbackEstimates = Array(checkoutItems?.length || 0).fill().map((_, i) => ({
         productId: `fallback-${i}`,
         deliveryDate: fallbackDate,
         formattedDate: `${fallbackDate.getDate()} ${fallbackDate.toLocaleString('default', { month: 'short' })} ${fallbackDate.getFullYear()}`
@@ -425,7 +555,7 @@ const AddressPage = () => {
       
       setDeliveryDates(fallbackEstimates);
     }
-  }, [cartItemsList]);
+  }, [checkoutItems]);
 
   const handleContinueToPayment = () => {
     // Check if there's a valid selected address
@@ -586,7 +716,7 @@ const AddressPage = () => {
               </div>
               <div className="p-4">
                 <div className="space-y-4">
-                  {cartItemsList.map((item, index) => {
+                  {checkoutItems.map((item, index) => {
                     // Use our safe access helper to get all needed properties
                     const itemId = getProductProperty(item, '_id', `item-${index}`);
                     const deliveryInfo = deliveryDates.find(d => d.productId === itemId);
@@ -649,24 +779,23 @@ const AddressPage = () => {
               </div>
               <div className="p-4">
                 <div className="space-y-3">
-                  {cartItemsList.map((item, index) => {
+                  {checkoutItems.map((item, index) => {
                     // Use our safe access helper to get all needed properties
                     const itemId = getProductProperty(item, '_id', `item-${index}`);
                     const deliveryInfo = deliveryDates.find(d => d.productId === itemId);
+                    const pricing = calculateItemPricing(item); // Use consistent pricing function
                     
-                    // Get image source safely
-                    const imageSrc = getProductProperty(item, 'image[0]') || 
-                                    getProductProperty(item, 'primaryImage') ||
-                                    noCart; // Use local fallback image
+                    // Get image source safely - handle both products and bundles
+                    let imageSrc = noCart;
+                    if (item.productId && item.productId._id) {
+                      imageSrc = item.productId.image?.[0] || item.productId.primaryImage || noCart;
+                    } else if (item.bundleId && item.bundleId._id) {
+                      imageSrc = item.bundleId.images?.[0] || item.bundleId.image || noCart;
+                    } else {
+                      imageSrc = item.image?.[0] || item.images?.[0] || item.primaryImage || item.image || noCart;
+                    }
                     
-                    // Get product details safely
-                    const productTitle = getProductProperty(item, 'name', 'Product') || 
-                                        getProductProperty(item, 'title', 'Product');
                     const size = getProductProperty(item, 'size', 'Standard');
-                    const quantity = getProductProperty(item, 'quantity', 1);
-                    const price = getProductProperty(item, 'price', 0);
-                    const discount = getProductProperty(item, 'discount', 0);
-                    const finalPrice = price * (1 - discount/100) || 0;
                     
                     return (
                       <div 
@@ -677,37 +806,43 @@ const AddressPage = () => {
                         <div className="w-16 h-16 flex-shrink-0 bg-gray-50 border border-gray-200 rounded overflow-hidden">
                           <img 
                             src={imageSrc}
-                            alt={productTitle}
+                            alt={pricing.productTitle}
                             className="w-full h-full object-cover"
                             onError={(e) => {
                               e.target.onerror = null;
-                              e.target.src = noCart; // Use local fallback image
+                              e.target.src = noCart;
                             }}
                           />
                         </div>
                         
                         {/* Product Details */}
                         <div className="ml-3 flex-1">
-                          <h3 className="text-sm font-medium line-clamp-1" title={productTitle}>
-                            {productTitle}
+                          <h3 className="text-sm font-medium line-clamp-1" title={pricing.productTitle}>
+                            {pricing.productTitle}
+                            {pricing.isBundle && (
+                              <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                Bundle
+                              </span>
+                            )}
                           </h3>
                           
                           <div className="flex flex-wrap text-xs text-gray-500 mt-1">
                             <span className="mr-2">Size: {size}</span>
-                            <span>Qty: {quantity}</span>
+                            <span>Qty: {pricing.quantity}</span>
                           </div>
                           
                           <div className="mt-1 flex items-center">
                             <span className="font-medium text-sm">
-                              {DisplayPriceInRupees(finalPrice)}
+                              {DisplayPriceInRupees(pricing.totalPrice)}
                             </span>
-                            {discount > 0 && (
+                            {/* Only show discount for products, not bundles */}
+                            {!pricing.isBundle && pricing.discount > 0 && (
                               <>
                                 <span className="mx-1 text-xs line-through text-gray-400">
-                                  {DisplayPriceInRupees(price)}
+                                  {DisplayPriceInRupees(pricing.totalOriginalPrice)}
                                 </span>
                                 <span className="text-xs text-green-600">
-                                  {discount}% OFF
+                                  {pricing.discount}% OFF
                                 </span>
                               </>
                             )}

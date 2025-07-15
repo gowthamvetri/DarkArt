@@ -239,11 +239,21 @@ export const cashOnDeliveryOrderController = async (req, res) => {
         // Skip stock update for bundles as they don't have stock management
       }
 
-      // Clear user's cart
-      await CartProductModel.deleteMany({ userId: userId }, { session });
+      // Clear only the ordered items from user's cart
+      const orderedItemIds = list_items.map(item => item._id);
+      await CartProductModel.deleteMany(
+        { 
+          userId: userId, 
+          _id: { $in: orderedItemIds }
+        }, 
+        { session }
+      );
+      
+      // Update user's shopping_cart array to remove only ordered items
+      const remainingCartItems = await CartProductModel.find({ userId: userId }).session(session);
       await UserModel.updateOne(
         { _id: userId },
-        { shopping_cart: [] },
+        { shopping_cart: remainingCartItems.map(item => item._id) },
         { session }
       );
 

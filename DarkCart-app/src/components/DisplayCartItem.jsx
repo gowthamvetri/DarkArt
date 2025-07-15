@@ -101,12 +101,24 @@ const DisplayCartItem = ({close}) => {
                                                                     : DisplayPriceInRupees(pricewithDiscount(item?.productId?.price,item?.productId?.discount))
                                                                 }
                                                             </p>
-                                                        </div>
-                                                        <div className='flex-shrink-0'>
-                                                            {item?.itemType === 'bundle' 
-                                                                ? <AddToCartButton data={item?.bundleId} isBundle={true}/>
-                                                                : <AddToCartButton data={item?.productId}/>
-                                                            }
+                                                            {/* Quantity Controls */}
+                                                            <div className='mt-2 w-full max-w-[120px]'>
+                                                                {item?.itemType === 'bundle' ? (
+                                                                    <AddToCartButton 
+                                                                        data={item?.bundleId} 
+                                                                        isBundle={true}
+                                                                        cartItemId={item?._id}
+                                                                        currentQty={item?.quantity}
+                                                                    />
+                                                                ) : (
+                                                                    <AddToCartButton 
+                                                                        data={item?.productId}
+                                                                        isBundle={false}
+                                                                        cartItemId={item?._id}
+                                                                        currentQty={item?.quantity}
+                                                                    />
+                                                                )}
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 )

@@ -6,7 +6,7 @@ import AddAddress from "../components/AddAddress";
 import AxiosTostError from "../utils/AxiosTostError";
 import Axios from "../utils/Axios";
 import SummaryApi from "../common/SummaryApi";
-import noCart from "../assets/noCart.jpg"; // Import fallback image
+import noCart from "../assets/noCart.jpg";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import EditAddressData from "../components/EditAddressData";
@@ -14,75 +14,88 @@ import Logo from "../assets/logo.png";
 import ErrorBoundary from "../components/ErrorBoundary";
 
 const CheckoutPage = () => {
-  const { notDiscountTotalPrice, totalPrice, totalQty, fetchCartItems, handleOrder, fetchAddress } = useGlobalContext();
+  const { fetchCartItems, handleOrder, fetchAddress } = useGlobalContext();
   const [OpenAddress, setOpenAddress] = useState(false);
   const addressList = useSelector((state) => state.addresses.addressList);
   const [selectedAddressIndex, setSelectedAddressIndex] = useState(null);
   const cartItemsList = useSelector((state) => state.cartItem.cart);
   const navigate = useNavigate();
 
-  // Debug: Log the cart items structure and add test data if needed
-  console.log('=== CHECKOUT DEBUG START ===');
-  console.log('Cart Items List Length:', cartItemsList.length);
-  cartItemsList.forEach((item, index) => {
-    console.log(`Item ${index}:`, {
-      _id: item._id,
-      itemType: item.itemType,
-      quantity: item.quantity,
-      hasProductId: !!item.productId,
-      hasBundleId: !!item.bundleId,
-      productDetails: item.productId ? {
-        _id: item.productId._id,
-        name: item.productId.name,
-        price: item.productId.price,
-        image: item.productId.image
-      } : null,
-      bundleDetails: item.bundleId ? {
-        _id: item.bundleId._id,
-        title: item.bundleId.title,
-        bundlePrice: item.bundleId.bundlePrice,
-        images: item.bundleId.images
-      } : null,
-      fullItem: item
-    });
-  });
-  
-  // TEMPORARY: Add test data if cart items don't have proper product/bundle data
-  const enrichedCartItems = cartItemsList.map((item, index) => {
-    if ((!item.productId || !item.productId._id) && (!item.bundleId || !item.bundleId._id)) {
-      console.log(`Adding test data for item ${index}`);
-      return {
-        ...item,
-        productId: {
-          _id: `test-product-${index}`,
-          name: `Test Product ${index + 1}`,
-          price: 15000 + (index * 5000), // Test prices: 15000, 20000, 25000
-          image: ['/placeholder.jpg']
-        }
-      };
-    }
-    return item;
-  });
-  
-  console.log('Enriched cart items:', enrichedCartItems);
-  console.log('=== CHECKOUT DEBUG END ===');
+  // Get selected items from sessionStorage (set in BagPage)
+  const [selectedCartItemIds, setSelectedCartItemIds] = useState([]);
+  const [checkoutItems, setCheckoutItems] = useState([]);
 
-  // Check for null/undefined data issues
-  if (cartItemsList.length === 0) {
-    console.log('WARNING: Cart is empty');
-  }
+  useEffect(() => {
+    const selectedIds = JSON.parse(sessionStorage.getItem('selectedCartItems') || '[]');
+    setSelectedCartItemIds(selectedIds);
+    
+    // Filter cart items to only include selected ones
+    const itemsToCheckout = cartItemsList.filter(item => selectedIds.includes(item._id));
+    setCheckoutItems(itemsToCheckout);
+  }, [cartItemsList]);
+
+  // Function to calculate item pricing consistently across both sides
+  const calculateItemPricing = (item) => {
+    let productTitle = 'Item';
+    let originalPrice = 0;
+    let finalPrice = 0;
+    let discount = 0;
+    let isBundle = false;
+    let quantity = item.quantity || 1;
+    
+    if (item.productId && item.productId._id) {
+      productTitle = item.productId.name || 'Product';
+      originalPrice = item.productId.price || 0;
+      discount = item.productId.discount || 0;
+      finalPrice = discount > 0 ? originalPrice * (1 - discount/100) : originalPrice;
+      isBundle = false;
+    } else if (item.bundleId && item.bundleId._id) {
+      productTitle = item.bundleId.title || 'Bundle';
+      originalPrice = item.bundleId.originalPrice || 0;
+      finalPrice = item.bundleId.bundlePrice || 0;
+      discount = 0;
+      isBundle = true;
+    } else {
+      productTitle = item.title || item.name || 'Item';
+      
+      if (item.bundlePrice || item.title) {
+        isBundle = true;
+        originalPrice = item.originalPrice || 0;
+        finalPrice = item.bundlePrice || item.price || 0;
+        discount = 0;
+      } else {
+        isBundle = false;
+        originalPrice = item.price || 0;
+        discount = item.discount || 0;
+        finalPrice = discount > 0 ? originalPrice * (1 - discount/100) : originalPrice;
+      }
+    }
+    
+    return {
+      productTitle,
+      originalPrice,
+      finalPrice,
+      discount,
+      isBundle,
+      quantity,
+      totalPrice: finalPrice * quantity,
+      totalOriginalPrice: originalPrice * quantity
+    };
+  };
+
+  // Calculate totals for selected items only
+  const selectedTotals = checkoutItems.reduce((totals, item) => {
+    const pricing = calculateItemPricing(item);
+    return {
+      totalQty: totals.totalQty + pricing.quantity,
+      totalPrice: totals.totalPrice + pricing.totalPrice,
+      totalOriginalPrice: totals.totalOriginalPrice + pricing.totalOriginalPrice
+    };
+  }, { totalQty: 0, totalPrice: 0, totalOriginalPrice: 0 });
 
   // State for edit address functionality
   const [editAddressData, setEditAddressData] = useState(null);
   const [openEditAddress, setOpenEditAddress] = useState(false);
-
-  // Add state for countries, states, cities
-  const [countries, setCountries] = useState([]);
-  const [states, setStates] = useState([]);
-  const [cities, setCities] = useState([]);
-  const [isLoadingCountries, setIsLoadingCountries] = useState(false);
-  const [isLoadingStates, setIsLoadingStates] = useState(false);
-  const [isLoadingCities, setIsLoadingCities] = useState(false);
 
   // Delivery charge calculation states
   const [deliveryCharge, setDeliveryCharge] = useState(0);
@@ -93,39 +106,31 @@ const CheckoutPage = () => {
   const [deliveryDates, setDeliveryDates] = useState([]);
 
   const GEOCODING_API_KEY = "038cafabde4449718e8dc2303a78956f";
-  const SHOP_LOCATION = "Tirupur"; // Your shop location (simplified like test.jsx)
+  const SHOP_LOCATION = "Tirupur";
 
   // Function to extract and normalize city/district names for consistent comparison
   const extractAndNormalizeCity = (address) => {
     if (!address || !address.city) return null;
     
     let cityName = address.city.toString().trim();
-    console.log(`Raw city name from address: "${cityName}"`);
-    
-    // Convert to lowercase for processing
     let normalized = cityName.toLowerCase();
-    console.log(`Lowercase city: "${normalized}"`);
     
-    // Remove common administrative suffixes that refer to the same place
     normalized = normalized
-      .replace(/\s+district$/i, '') // Remove "district" suffix
-      .replace(/\s+taluk$/i, '')    // Remove "taluk" suffix  
-      .replace(/\s+taluka$/i, '')   // Remove "taluka" suffix
-      .replace(/\s+city$/i, '')     // Remove "city" suffix
-      .replace(/\s+municipality$/i, '') // Remove "municipality" suffix
-      .replace(/\s+corporation$/i, '') // Remove "corporation" suffix
-      .replace(/\s+rural$/i, '')    // Remove "rural" suffix
-      .replace(/\s+urban$/i, '')    // Remove "urban" suffix
+      .replace(/\s+district$/i, '')
+      .replace(/\s+taluk$/i, '')
+      .replace(/\s+taluka$/i, '')
+      .replace(/\s+city$/i, '')
+      .replace(/\s+municipality$/i, '')
+      .replace(/\s+corporation$/i, '')
+      .replace(/\s+rural$/i, '')
+      .replace(/\s+urban$/i, '')
       .trim();
     
-    console.log(`After suffix removal: "${normalized}"`);
-    
-    // Handle common variations
     const cityMappings = {
       'tirupur': 'tirupur',
       'thirupur': 'tirupur',
       'tirpur': 'tirupur',
-      'tiruppur': 'tirupur', // Add this mapping for the double 'p' variation
+      'tiruppur': 'tirupur',
       'coimbatore': 'coimbatore',
       'kovai': 'coimbatore',
       'chennai': 'chennai',
@@ -134,27 +139,20 @@ const CheckoutPage = () => {
       'bengaluru': 'bangalore'
     };
     
-    // Apply city mappings
     if (cityMappings[normalized]) {
       normalized = cityMappings[normalized];
-      console.log(`After city mapping: "${normalized}"`);
     }
     
-    // Capitalize first letter of each word for display
     const result = normalized.split(' ')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
     
-    console.log(`Final normalized result: "${result}"`);
     return result;
   };
 
-  console.log(cartItemsList)
-
-  // Delivery charge calculation functions (updated from test.jsx logic)
+  // Delivery charge calculation functions
   const getCoordinates = async (address) => {
     try {
-      // Use OpenCage Geocoding API with your API key (same as test.jsx)
       const url = `https://api.opencagedata.com/geocode/v1/json?q=${encodeURIComponent(address + ', India')}&key=${GEOCODING_API_KEY}&limit=1&countrycode=in&language=en`;
       
       const response = await fetch(url);
@@ -172,7 +170,6 @@ const CheckoutPage = () => {
         throw new Error(`Location not found: ${address}`);
       }
     } catch (err) {
-      // Fallback to Nominatim if OpenCage fails
       console.warn("OpenCage geocoding failed, using Nominatim fallback:", err.message);
       const fallbackUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}, India&limit=1&countrycodes=in&addressdetails=1`;
       const response = await fetch(fallbackUrl);
@@ -183,7 +180,7 @@ const CheckoutPage = () => {
           lat: parseFloat(data[0].lat),
           lon: parseFloat(data[0].lon),
           display_name: data[0].display_name,
-          confidence: 5 // Lower confidence for fallback
+          confidence: 5
         };
       } else {
         throw new Error(`Location not found: ${address}`);
@@ -192,7 +189,7 @@ const CheckoutPage = () => {
   };
 
   const getStraightLineDistance = (lat1, lon1, lat2, lon2) => {
-    const R = 6371; // Earth's radius in km
+    const R = 6371;
     const dLat = (lat2 - lat1) * Math.PI / 180;
     const dLon = (lon2 - lon1) * Math.PI / 180;
     const a =
@@ -205,11 +202,9 @@ const CheckoutPage = () => {
 
   const getRoadDistance = async (fromLocation, toLocation) => {
     try {
-      // Get coordinates using your geocoding API
       const fromCoords = await getCoordinates(fromLocation);
       const toCoords = await getCoordinates(toLocation);
 
-      // Method 1: Use OSRM (Open Source Routing Machine) - most accurate
       const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${fromCoords.lon},${fromCoords.lat};${toCoords.lon},${toCoords.lat}?overview=false&alternatives=false&steps=false`;
       
       try {
@@ -218,30 +213,13 @@ const CheckoutPage = () => {
         
         if (data.routes && data.routes.length > 0) {
           const distanceInMeters = data.routes[0].distance;
-          return distanceInMeters / 1000; // Convert to kilometers
+          return distanceInMeters / 1000;
         }
       } catch (err) {
         console.log("OSRM failed, trying GraphHopper...");
       }
 
-      // Method 2: Try GraphHopper API as fallback
-      const graphHopperUrl = `https://graphhopper.com/api/1/route?point=${fromCoords.lat},${fromCoords.lon}&point=${toCoords.lat},${toCoords.lon}&vehicle=car&locale=en&calc_points=false&key=`;
-      
-      try {
-        const response = await fetch(graphHopperUrl);
-        const data = await response.json();
-        
-        if (data.paths && data.paths.length > 0) {
-          const distanceInMeters = data.paths[0].distance;
-          return distanceInMeters / 1000; // Convert to kilometers
-        }
-      } catch (err) {
-        console.log("GraphHopper failed, using fallback calculation...");
-      }
-
-      // Method 3: Fallback with adjusted straight-line distance
       const straightDistance = getStraightLineDistance(fromCoords.lat, fromCoords.lon, toCoords.lat, toCoords.lon);
-      // Apply a road factor of 1.4 to approximate road distance from straight-line
       return straightDistance * 1.4;
       
     } catch (err) {
@@ -249,15 +227,10 @@ const CheckoutPage = () => {
     }
   };
 
-  // Enhanced delivery charge calculation based on road distance (₹50 for every 80km)
   const getDeliveryChargeFromDistance = (distance) => {
-    // Calculate charge: ₹50 for every 80km (or part thereof)
-    const chargePerSegment = 50; // ₹50
-    const kmPerSegment = 80; // per 80km
-    
-    // Calculate how many 80km segments (round up for partial segments)
+    const chargePerSegment = 50;
+    const kmPerSegment = 80;
     const segments = Math.ceil(distance / kmPerSegment);
-    
     return segments * chargePerSegment;
   };
 
@@ -271,32 +244,21 @@ const CheckoutPage = () => {
     setIsCalculatingDelivery(true);
     
     try {
-      // Extract and normalize the customer city/district name
       const normalizedCustomerCity = extractAndNormalizeCity(customerAddress);
       
       if (!normalizedCustomerCity) {
         throw new Error("Unable to extract city from address");
       }
       
-      console.log(`Extracted city: "${normalizedCustomerCity}" from address:`, customerAddress);
-      
-      // Early return for same city (exactly like test.jsx logic)
-      // Check both normalized names before any API calls
       const shopCity = 'tirupur';
       const customerCity = normalizedCustomerCity.toLowerCase();
       
-      console.log(`Comparing: "${shopCity}" vs "${customerCity}"`);
-      console.log(`Are they equal? ${customerCity === shopCity}`);
-      
       if (customerCity === shopCity) {
-        console.log("✅ Same city delivery detected - charging ₹50 for local delivery");
         setDeliveryDistance('0');
-        setDeliveryCharge(50); // ₹50 for same place delivery
-        return; // Exit early, don't call getRoadDistance
+        setDeliveryCharge(50);
+        return;
       }
       
-      // Only call API if cities are different (same as test.jsx)
-      console.log("Different cities - calculating road distance");
       const roadDistance = await getRoadDistance(SHOP_LOCATION, normalizedCustomerCity);
       const deliveryCharge = getDeliveryChargeFromDistance(roadDistance);
       
@@ -305,7 +267,7 @@ const CheckoutPage = () => {
       
     } catch (error) {
       console.error("Error calculating delivery charge:", error);
-      setDeliveryCharge(0); // Default to free delivery if calculation fails
+      setDeliveryCharge(0);
       setDeliveryDistance(null);
     } finally {
       setIsCalculatingDelivery(false);
@@ -331,8 +293,7 @@ const CheckoutPage = () => {
       const { data: responseData } = response;
       if (responseData.success) {
         toast.success("Address deleted successfully");
-        fetchAddress(); // Refresh the address list
-        // Reset selected address index if the deleted address was selected
+        fetchAddress();
         if (selectedAddressIndex !== null && addressList[selectedAddressIndex]?._id === addressId) {
           setSelectedAddressIndex(null);
         }
@@ -347,31 +308,26 @@ const CheckoutPage = () => {
   const [isProcessing, setIsProcessing] = useState(false);
 
   const handleCashOnDelivery = async () => {
-    // Better validation
     if (selectedAddressIndex === null || selectedAddressIndex === undefined || !addressList[selectedAddressIndex]) {
       toast.error("Please select an address");
       return;
     }
 
-    // Get the selected address
     const selectedAddress = addressList[selectedAddressIndex];
 
-    // Ensure the selected address is valid
-    if (!addressList || addressList.length === 0) {
-      toast.error("No addresses available");
+    if (!selectedAddress || !selectedAddress._id) {
+      toast.error("Invalid address selected");
       return;
     }
 
-    // Additional validation
-    if (!selectedAddress || !selectedAddress._id) {
-      toast.error("Invalid address selected");
+    if (checkoutItems.length === 0) {
+      toast.error("No items selected for checkout");
       return;
     }
 
     setIsProcessing(true);
 
     try {
-      // Show a loading toast
       toast.loading("Processing your order...", {
         id: "order-processing",
       });
@@ -379,24 +335,30 @@ const CheckoutPage = () => {
       const response = await Axios({
         ...SummaryApi.CashOnDeliveryOrder,
         data: {
-          list_items: cartItemsList,
-          totalAmount: totalPrice + deliveryCharge, // Include delivery charge in total
+          list_items: checkoutItems, // Only send selected items
+          totalAmount: selectedTotals.totalPrice + deliveryCharge,
           addressId: selectedAddress._id,
-          subTotalAmt: totalPrice,
-          deliveryCharge: deliveryCharge, // Add delivery charge to order data
-          quantity: totalQty,
+          subTotalAmt: selectedTotals.totalPrice,
+          deliveryCharge: deliveryCharge,
+          quantity: selectedTotals.totalQty,
         },
       });
 
       const { data: responseData } = response;
-      console.log(responseData);
 
-      // Dismiss the loading toast
       toast.dismiss("order-processing");
 
       if (responseData.success) {
         toast.success("Order placed successfully");
-        fetchCartItems();
+        
+        // Clear sessionStorage
+        sessionStorage.removeItem('selectedCartItems');
+        
+        // Refresh cart after a brief delay to ensure backend processing is complete
+        setTimeout(() => {
+          fetchCartItems();
+        }, 1000);
+        
         handleOrder();
         navigate("/order-success", {
           state: {
@@ -412,75 +374,21 @@ const CheckoutPage = () => {
     }
   };
 
-  // Add functions to fetch countries, states and cities
-  const fetchCountries = async () => {
-    setIsLoadingCountries(true);
+  // Function to remove only selected items from cart
+  const removeSelectedItemsFromCart = async () => {
     try {
-      const response = await fetch("https://countriesnow.space/api/v0.1/countries/positions");
-      const data = await response.json();
-      if (data.data && Array.isArray(data.data)) {
-        setCountries(data.data.map((c) => ({ name: c.name, code: c.iso2 || "" })));
-      }
+      const removePromises = checkoutItems.map(item =>
+        Axios({
+          ...SummaryApi.deleteCartItem,
+          data: { _id: item._id },
+        })
+      );
+      
+      await Promise.all(removePromises);
     } catch (error) {
-      console.error("Error fetching countries:", error);
-    } finally {
-      setIsLoadingCountries(false);
+      console.error("Error removing selected items from cart:", error);
     }
   };
-
-  const fetchStates = async (country) => {
-    if (!country) return;
-
-    setIsLoadingStates(true);
-    setStates([]);
-    setCities([]);
-
-    try {
-      const response = await fetch("https://countriesnow.space/api/v0.1/countries/states", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ country }),
-      });
-
-      const data = await response.json();
-      if (data.data && data.data.states) {
-        setStates(data.data.states);
-      }
-    } catch (error) {
-      console.error("Error fetching states:", error);
-    } finally {
-      setIsLoadingStates(false);
-    }
-  };
-
-  const fetchCities = async (country, state) => {
-    if (!country || !state) return;
-
-    setIsLoadingCities(true);
-    setCities([]);
-
-    try {
-      const response = await fetch("https://countriesnow.space/api/v0.1/countries/state/cities", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ country, state }),
-      });
-
-      const data = await response.json();
-      if (data.data) {
-        setCities(data.data);
-      }
-    } catch (error) {
-      console.error("Error fetching cities:", error);
-    } finally {
-      setIsLoadingCities(false);
-    }
-  };
-
-  // Fetch countries on component mount
-  useEffect(() => {
-    fetchCountries();
-  }, []);
 
   // Function to handle editing an address
   const handleEditAddress = (address) => {
@@ -489,26 +397,19 @@ const CheckoutPage = () => {
   };
 
   // Safe access helper function for accessing product properties
-  // This helps avoid "Cannot read property of undefined" errors
   const getProductProperty = (item, propertyPath, fallback = "") => {
     try {
       if (!item) return fallback;
       
-      // Handle different potential structures based on cart item structure
       const paths = [
-        // If product is in productId field (cart structure)
         `productId.${propertyPath}`,
-        // If bundle is in bundleId field (cart structure)  
         `bundleId.${propertyPath}`,
-        // If product is directly on the item
         `product.${propertyPath}`,
-        // Direct property on the item
         propertyPath
       ];
       
       for (const path of paths) {
         const value = path.split('.').reduce((obj, key) => {
-          // Handle array index notation like "image[0]"
           if (key.includes('[') && key.includes(']')) {
             const arrayKey = key.substring(0, key.indexOf('['));
             const indexMatch = key.match(/\[(\d+)\]/);
@@ -534,16 +435,13 @@ const CheckoutPage = () => {
   // Calculate estimated delivery dates for products
   useEffect(() => {
     try {
-      if (cartItemsList && cartItemsList.length > 0) {
-        // Calculate delivery dates (current date + 3-5 days)
+      if (checkoutItems && checkoutItems.length > 0) {
         const today = new Date();
-        const deliveryEstimates = cartItemsList.map((item, idx) => {
-          // Random delivery estimate between 3-7 days
+        const deliveryEstimates = checkoutItems.map((item, idx) => {
           const deliveryDays = Math.floor(Math.random() * 5) + 3;
           const deliveryDate = new Date(today);
           deliveryDate.setDate(today.getDate() + deliveryDays);
           
-          // Get a unique ID for each item
           const itemId = item?._id || 
                         item?.productId?._id || 
                         `temp-${idx}-${Math.random().toString(36).substr(2, 9)}`;
@@ -557,24 +455,20 @@ const CheckoutPage = () => {
         
         setDeliveryDates(deliveryEstimates);
       } else {
-        // Reset delivery dates if no items
         setDeliveryDates([]);
       }
     } catch (error) {
       console.error("Error calculating delivery dates:", error);
-      // Set fallback dates in case of error
-      const fallbackDate = new Date();
-      fallbackDate.setDate(fallbackDate.getDate() + 5); // Default 5-day delivery
-      
-      const fallbackEstimates = Array(cartItemsList?.length || 0).fill().map((_, i) => ({
-        productId: `fallback-${i}`,
-        deliveryDate: fallbackDate,
-        formattedDate: `${fallbackDate.getDate()} ${fallbackDate.toLocaleString('default', { month: 'short' })} ${fallbackDate.getFullYear()}`
-      }));
-      
-      setDeliveryDates(fallbackEstimates);
     }
-  }, [cartItemsList]);
+  }, [checkoutItems]);
+
+  // Redirect if no items selected
+  useEffect(() => {
+    if (selectedCartItemIds.length === 0) {
+      toast.error("No items selected for checkout");
+      navigate('/bag');
+    }
+  }, [selectedCartItemIds, navigate]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -698,12 +592,13 @@ const CheckoutPage = () => {
             {/* Product Display Section with Delivery Estimates */}
             <div className="bg-white rounded shadow">
               <div className="p-4 border-b">
-                <h2 className="text-lg font-medium">DELIVERY ESTIMATES</h2>
-              </div>                <div className="p-4">
-                {enrichedCartItems.map((item, index) => {
-                  // Use our safe access helper to get all needed properties
+                <h2 className="text-lg font-medium">DELIVERY ESTIMATES ({selectedTotals.totalQty} items)</h2>
+              </div>
+              <div className="p-4">
+                {checkoutItems.map((item, index) => {
                   const itemId = getProductProperty(item, '_id', `item-${index}`);
                   const deliveryInfo = deliveryDates.find(d => d.productId === itemId);
+                  const pricing = calculateItemPricing(item);
                   
                   // Get image source safely - handle both products and bundles
                   let imageSrc = noCart;
@@ -712,67 +607,43 @@ const CheckoutPage = () => {
                   } else if (item.bundleId && item.bundleId._id) {
                     imageSrc = item.bundleId.images?.[0] || item.bundleId.image || noCart;
                   } else {
-                    // Fallback: check if item itself has image properties
                     imageSrc = item.image?.[0] || item.images?.[0] || item.primaryImage || item.image || noCart;
                   }
                   
-                  // Get product title/name safely - handle both products and bundles
-                  let productTitle = 'Item';
-                  if (item.productId && item.productId._id) {
-                    productTitle = item.productId.name || 'Product';
-                  } else if (item.bundleId && item.bundleId._id) {
-                    productTitle = item.bundleId.title || 'Bundle';
-                  } else {
-                    // Fallback: check if item itself has title/name properties
-                    productTitle = item.title || item.name || `Item ${index + 1}`;
-                  }
-                                      
-                  // Get size and quantity safely
+                  // Get size safely
                   const size = item.size || getProductProperty(item, 'size', 'Standard');
-                  const quantity = item.quantity || getProductProperty(item, 'quantity', 1);
-                  
-                  // Get price for display - handle both products and bundles
-                  let price = 0;
-                  if (item.productId && item.productId._id) {
-                    price = item.productId.price || 0;
-                  } else if (item.bundleId && item.bundleId._id) {
-                    price = item.bundleId.bundlePrice || 0;
-                  } else {
-                    // Fallback: check if item itself has price properties
-                    price = item.price || item.bundlePrice || 0;
-                  }
-                  
-                  console.log('Left side item processing:', {
-                    index: index,
-                    title: productTitle,
-                    price: price,
-                    quantity: quantity,
-                    hasProduct: !!item.productId,
-                    hasBundle: !!item.bundleId,
-                    itemKeys: Object.keys(item)
-                  });
                   
                   return (
                     <div key={`checkout-item-${itemId}-${index}`} className="flex border-b last:border-b-0 py-4">
                       <div className="w-20 h-24 flex-shrink-0">
                         <img 
                           src={imageSrc} 
-                          alt={productTitle}
+                          alt={pricing.productTitle}
                           className="w-full h-full object-cover rounded"
                           onError={(e) => {
                             e.target.onerror = null;
-                            e.target.src = noCart; // Use local fallback image
+                            e.target.src = noCart;
                           }}
                         />
                       </div>
                       
                       <div className="ml-4 flex-1">
-                        <h3 className="font-medium">{productTitle}</h3>
+                        <h3 className="font-medium">{pricing.productTitle}</h3>
+                        {pricing.isBundle && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 mt-1">
+                            Bundle
+                          </span>
+                        )}
                         <p className="text-sm text-gray-500 mt-1">
-                          Size: {size} • Qty: {quantity}
+                          Size: {size} • Qty: {pricing.quantity}
                         </p>
                         <p className="text-sm font-semibold text-gray-900 mt-1">
-                          {DisplayPriceInRupees(price)}
+                          {DisplayPriceInRupees(pricing.totalPrice)}
+                          {pricing.quantity > 1 && (
+                            <span className="text-xs text-gray-500 ml-1">
+                              ({DisplayPriceInRupees(pricing.finalPrice)} each)
+                            </span>
+                          )}
                         </p>
                         
                         <div className="flex items-center mt-3">
@@ -797,15 +668,14 @@ const CheckoutPage = () => {
             {/* Product Images with Details */}
             <div className="bg-white rounded shadow mb-4">
               <div className="p-4 border-b">
-                <h2 className="text-lg font-medium">Your Items ({totalQty})</h2>
+                <h2 className="text-lg font-medium">Your Items ({selectedTotals.totalQty})</h2>
               </div>
               <div className="p-4">
                 <div className="space-y-3">
-                  {enrichedCartItems.map((item, index) => {
-                    console.log('Rendering item in Your Items section:', item);
-                    // Use our safe access helper to get all needed properties
+                  {checkoutItems.map((item, index) => {
                     const itemId = getProductProperty(item, '_id', `item-${index}`);
                     const deliveryInfo = deliveryDates.find(d => d.productId === itemId);
+                    const pricing = calculateItemPricing(item);
                     
                     // Get image source safely - handle both products and bundles
                     let imageSrc = noCart;
@@ -814,47 +684,10 @@ const CheckoutPage = () => {
                     } else if (item.bundleId && item.bundleId._id) {
                       imageSrc = item.bundleId.images?.[0] || item.bundleId.image || noCart;
                     } else {
-                      // Fallback: check if item itself has image properties
                       imageSrc = item.image?.[0] || item.images?.[0] || item.primaryImage || item.image || noCart;
                     }
                     
-                    // Get product details safely - handle both products and bundles
-                    let productTitle = 'Item';
-                    let price = 0;
-                    let discount = 0;
-                    
-                    if (item.productId && item.productId._id) {
-                      // It's a product
-                      productTitle = item.productId.name || 'Product';
-                      price = item.productId.price || 0;
-                      discount = item.productId.discount || 0;
-                    } else if (item.bundleId && item.bundleId._id) {
-                      // It's a bundle
-                      productTitle = item.bundleId.title || 'Bundle';
-                      price = item.bundleId.bundlePrice || 0;
-                      discount = item.bundleId.discount || 0;
-                    } else {
-                      // Fallback: check if item itself has properties
-                      productTitle = item.title || item.name || `Item ${index + 1}`;
-                      price = item.price || item.bundlePrice || 0;
-                      discount = item.discount || 0;
-                    }
-                    
                     const size = item.size || getProductProperty(item, 'size', 'Standard');
-                    const quantity = item.quantity || getProductProperty(item, 'quantity', 1);
-                    
-                    console.log('Right side item processing:', {
-                      index: index,
-                      title: productTitle,
-                      price: price,
-                      discount: discount,
-                      quantity: quantity,
-                      hasProduct: !!item.productId,
-                      hasBundle: !!item.bundleId,
-                      itemKeys: Object.keys(item)
-                    });
-                    
-                    const finalPrice = discount > 0 ? price * (1 - discount/100) : price;
                     
                     return (
                       <div 
@@ -865,37 +698,54 @@ const CheckoutPage = () => {
                         <div className="w-16 h-16 flex-shrink-0 bg-gray-50 border border-gray-200 rounded overflow-hidden">
                           <img 
                             src={imageSrc}
-                            alt={productTitle}
+                            alt={pricing.productTitle}
                             className="w-full h-full object-cover"
                             onError={(e) => {
                               e.target.onerror = null;
-                              e.target.src = noCart; // Use local fallback image
+                              e.target.src = noCart;
                             }}
                           />
                         </div>
                         
                         {/* Product Details */}
                         <div className="ml-3 flex-1">
-                          <h3 className="text-sm font-medium line-clamp-1" title={productTitle}>
-                            {productTitle}
+                          <h3 className="text-sm font-medium line-clamp-1" title={pricing.productTitle}>
+                            {pricing.productTitle}
+                            {pricing.isBundle && (
+                              <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                Bundle
+                              </span>
+                            )}
                           </h3>
                           
                           <div className="flex flex-wrap text-xs text-gray-500 mt-1">
                             <span className="mr-2">Size: {size}</span>
-                            <span>Qty: {quantity}</span>
+                            <span>Qty: {pricing.quantity}</span>
                           </div>
                           
                           <div className="mt-1 flex items-center">
                             <span className="font-medium text-sm">
-                              {DisplayPriceInRupees(finalPrice)}
+                              {DisplayPriceInRupees(pricing.totalPrice)}
                             </span>
-                            {discount > 0 && (
+                            {/* Only show discount for products, not bundles */}
+                            {!pricing.isBundle && pricing.discount > 0 && (
                               <>
                                 <span className="mx-1 text-xs line-through text-gray-400">
-                                  {DisplayPriceInRupees(price)}
+                                  {DisplayPriceInRupees(pricing.totalOriginalPrice)}
                                 </span>
                                 <span className="text-xs text-green-600">
-                                  {discount}% OFF
+                                  {pricing.discount}% OFF
+                                </span>
+                              </>
+                            )}
+                            {/* For bundles, show savings differently */}
+                            {pricing.isBundle && pricing.originalPrice > pricing.finalPrice && (
+                              <>
+                                <span className="mx-1 text-xs line-through text-gray-400">
+                                  {DisplayPriceInRupees(pricing.totalOriginalPrice)}
+                                </span>
+                                <span className="text-xs text-green-600">
+                                  Bundle Savings
                                 </span>
                               </>
                             )}
@@ -917,19 +767,19 @@ const CheckoutPage = () => {
             {/* Price Details */}
             <div className="bg-white rounded shadow sticky top-4">
               <div className="p-4 border-b">
-                <h2 className="text-lg font-medium">PRICE DETAILS ({totalQty} {totalQty === 1 ? 'Item' : 'Items'})</h2>
+                <h2 className="text-lg font-medium">PRICE DETAILS ({selectedTotals.totalQty} {selectedTotals.totalQty === 1 ? 'Item' : 'Items'})</h2>
               </div>
               
               <div className="p-4">
                 <div className="space-y-3">
                   <div className="flex justify-between">
                     <span className="text-gray-700">Total MRP</span>
-                    <span>₹{notDiscountTotalPrice.toFixed(2)}</span>
+                    <span>₹{selectedTotals.totalOriginalPrice.toFixed(2)}</span>
                   </div>
                   
                   <div className="flex justify-between">
                     <span className="text-gray-700">Discount on MRP</span>
-                    <span className="text-green-600">-₹{(notDiscountTotalPrice - totalPrice).toFixed(2)}</span>
+                    <span className="text-green-600">-₹{(selectedTotals.totalOriginalPrice - selectedTotals.totalPrice).toFixed(2)}</span>
                   </div>
                   
                   <div className="flex justify-between">
@@ -952,7 +802,7 @@ const CheckoutPage = () => {
                   <div className="border-t pt-3 mt-3">
                     <div className="flex justify-between font-semibold">
                       <span>Total Amount</span>
-                      <span>₹{(totalPrice + deliveryCharge).toFixed(2)}</span>
+                      <span>₹{(selectedTotals.totalPrice + deliveryCharge).toFixed(2)}</span>
                     </div>
                   </div>
                 </div>
@@ -964,33 +814,23 @@ const CheckoutPage = () => {
                 >
                   {isProcessing ? "PROCESSING..." : "CONTINUE"}
                 </button>
-                    <div className="mt-6 text-xs text-center text-gray-600">
-                <p>Safe and Secure Payments. Easy returns.</p>
-                <p>100% Authentic products.</p>
-                
-                {/* Debug button only visible in development */}
-                {import.meta.env.DEV && (
-                  <div className="mt-4 pt-4 border-t border-gray-200">
-                    <button
-                      onClick={() => {
-                        console.log("Cart Items Structure:", cartItemsList);
-                        toast.success("Cart structure logged to console for debugging");
-                      }}
-                      className="text-xs px-2 py-1 bg-gray-200 text-gray-700 rounded"
-                    >
-                      Debug Cart Structure
-                    </button>
-                  </div>
-                )}
-              </div>
+
+                <div className="mt-6 text-xs text-center text-gray-600">
+                  <p>Safe and Secure Payments. Easy returns.</p>
+                  <p>100% Authentic products.</p>
+                  
+                  {/* Show remaining items info */}
+                  {cartItemsList.length > checkoutItems.length && (
+                    <p className="mt-2 text-sm font-medium text-blue-600">
+                      {cartItemsList.length - checkoutItems.length} items will remain in your bag
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-      
-      {/* Payment Methods */}
-   
 
       {/* Modals */}
       {OpenAddress && <AddAddress close={() => setOpenAddress(false)} />}

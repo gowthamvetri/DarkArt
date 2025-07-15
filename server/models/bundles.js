@@ -45,12 +45,7 @@ const bundleSchema = new mongoose.Schema({
         required: true,
         min: 0
     },
-    discount: {
-        type: Number,
-        required: true,
-        min: 0,
-        max: 100
-    },
+    // Remove discount field - will be calculated dynamically
     tag: {
         type: String,
         enum: ['Popular', 'Limited', 'Bestseller', 'New', 'Premium', 'Trending', 'Flash Sale']
@@ -118,9 +113,17 @@ bundleSchema.virtual('savings').get(function() {
     return this.originalPrice - this.bundlePrice;
 });
 
-// Calculate savings percentage
+// Calculate discount percentage as virtual field
+bundleSchema.virtual('discount').get(function() {
+    if (this.originalPrice && this.bundlePrice && this.originalPrice > this.bundlePrice) {
+        return Math.round(((this.originalPrice - this.bundlePrice) / this.originalPrice) * 100);
+    }
+    return 0;
+});
+
+// Calculate savings percentage (alias for discount)
 bundleSchema.virtual('savingsPercentage').get(function() {
-    return Math.round(((this.originalPrice - this.bundlePrice) / this.originalPrice) * 100);
+    return this.discount;
 });
 
 // Include virtuals when converting to JSON

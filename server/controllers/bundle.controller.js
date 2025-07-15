@@ -9,7 +9,7 @@ export const createBundleController = async (request, response) => {
             category,
             originalPrice,
             bundlePrice,
-            discount,
+            // Remove discount from destructuring
             tag,
             items,
             isActive,
@@ -38,9 +38,6 @@ export const createBundleController = async (request, response) => {
             });
         }
 
-        // Calculate discount if not provided
-        const calculatedDiscount = discount || Math.round(((originalPrice - bundlePrice) / originalPrice) * 100);
-
         // Generate unique slug
         const generateSlug = (title) => {
             return title
@@ -64,7 +61,7 @@ export const createBundleController = async (request, response) => {
             category,
             originalPrice,
             bundlePrice,
-            discount: calculatedDiscount,
+            // Remove discount field - will be calculated as virtual
             tag,
             items,
             isActive: isActive !== undefined ? isActive : true,
@@ -73,7 +70,7 @@ export const createBundleController = async (request, response) => {
             images: images || [],
             metaTitle,
             metaDescription,
-            slug // Explicitly set the unique slug
+            slug
         });
 
         const savedBundle = await bundle.save();
@@ -94,63 +91,16 @@ export const createBundleController = async (request, response) => {
     }
 };
 
-// Get all bundles with filtering and pagination
+// Get all bundles
 export const getBundlesController = async (request, response) => {
     try {
-        const {
-            page = 1,
-            limit = 10,
-            category,
-            isActive,
-            featured,
-            tag,
-            search,
-            sortBy = 'createdAt',
-            sortOrder = 'desc'
-        } = request.query;
-
-        // Build filter object
-        const filter = {};
-        
-        if (category) filter.category = category;
-        if (isActive !== undefined) filter.isActive = isActive === 'true';
-        if (featured !== undefined) filter.featured = featured === 'true';
-        if (tag) filter.tag = tag;
-        if (search) {
-            filter.$or = [
-                { title: { $regex: search, $options: 'i' } },
-                { description: { $regex: search, $options: 'i' } }
-            ];
-        }
-
-        // Calculate pagination
-        const skip = (parseInt(page) - 1) * parseInt(limit);
-        
-        // Build sort object
-        const sort = {};
-        sort[sortBy] = sortOrder === 'desc' ? -1 : 1;
-
-        // Get bundles with pagination
-        const bundles = await BundleModel
-            .find(filter)
-            .sort(sort)
-            .skip(skip)
-            .limit(parseInt(limit));
-
-        // Get total count for pagination
-        const totalBundles = await BundleModel.countDocuments(filter);
-        const totalPages = Math.ceil(totalBundles / parseInt(limit));
+        const bundles = await BundleModel.find({})
+            .populate('items.productId')
+            .sort({ createdAt: -1 });
 
         response.status(200).json({
             message: "Bundles retrieved successfully",
-            data: bundles, // Return bundles directly as expected by frontend
-            pagination: {
-                currentPage: parseInt(page),
-                totalPages,
-                totalBundles,
-                hasNextPage: parseInt(page) < totalPages,
-                hasPrevPage: parseInt(page) > 1
-            },
+            data: bundles,
             error: false,
             success: true
         });
@@ -168,8 +118,9 @@ export const getBundlesController = async (request, response) => {
 export const getBundleByIdController = async (request, response) => {
     try {
         const { bundleId } = request.params;
-
-        const bundle = await BundleModel.findById(bundleId);
+        
+        const bundle = await BundleModel.findById(bundleId)
+            .populate('items.productId');
 
         if (!bundle) {
             return response.status(404).json({
@@ -201,7 +152,10 @@ export const updateBundleController = async (request, response) => {
         const { bundleId } = request.params;
         const updateData = request.body;
 
-        // If prices are being updated, recalculate discount
+        // Remove discount from update data as it's now calculated
+        delete updateData.discount;
+
+        // If prices are being updated, validate them
         if (updateData.originalPrice || updateData.bundlePrice) {
             const bundle = await BundleModel.findById(bundleId);
             const originalPrice = updateData.originalPrice || bundle.originalPrice;
@@ -214,8 +168,6 @@ export const updateBundleController = async (request, response) => {
                     success: false
                 });
             }
-            
-            updateData.discount = Math.round(((originalPrice - bundlePrice) / originalPrice) * 100);
         }
 
         // If title is being updated, generate new unique slug
@@ -300,13 +252,12 @@ export const deleteBundleController = async (request, response) => {
     }
 };
 
-// Toggle bundle active status
+// Toggle bundle status
 export const toggleBundleStatusController = async (request, response) => {
     try {
         const { bundleId } = request.params;
 
         const bundle = await BundleModel.findById(bundleId);
-
         if (!bundle) {
             return response.status(404).json({
                 message: "Bundle not found",
@@ -319,7 +270,7 @@ export const toggleBundleStatusController = async (request, response) => {
         await bundle.save();
 
         response.status(200).json({
-            message: `Bundle ${bundle.isActive ? 'activated' : 'deactivated'} successfully`,
+            message: "Bundle status updated successfully",
             data: bundle,
             error: false,
             success: true
@@ -337,12 +288,9 @@ export const toggleBundleStatusController = async (request, response) => {
 // Get featured bundles
 export const getFeaturedBundlesController = async (request, response) => {
     try {
-        const { limit = 6 } = request.query;
-
-        const bundles = await BundleModel
-            .find({ featured: true, isActive: true })
-            .sort({ createdAt: -1 })
-            .limit(parseInt(limit));
+        const bundles = await BundleModel.find({ featured: true, isActive: true })
+            .populate('items.productId')
+            .sort({ createdAt: -1 });
 
         response.status(200).json({
             message: "Featured bundles retrieved successfully",
@@ -365,31 +313,22 @@ export const getBundleStatsController = async (request, response) => {
     try {
         const totalBundles = await BundleModel.countDocuments();
         const activeBundles = await BundleModel.countDocuments({ isActive: true });
-        const featuredBundles = await BundleModel.countDocuments({ featured: true });
         
-        const avgDiscount = await BundleModel.aggregate([
-            { $group: { _id: null, avgDiscount: { $avg: "$discount" } } }
-        ]);
-
-        const avgRating = await BundleModel.aggregate([
-            { $group: { _id: null, avgRating: { $avg: "$rating" } } }
-        ]);
-
-        const topCategories = await BundleModel.aggregate([
-            { $group: { _id: "$category", count: { $sum: 1 } } },
-            { $sort: { count: -1 } },
-            { $limit: 5 }
-        ]);
+        // Get all bundles to calculate average discount
+        const allBundles = await BundleModel.find({});
+        const totalDiscount = allBundles.reduce((sum, bundle) => sum + (bundle.discount || 0), 0);
+        const averageDiscount = totalBundles > 0 ? totalDiscount / totalBundles : 0;
+        
+        const totalRating = allBundles.reduce((sum, bundle) => sum + (bundle.rating || 0), 0);
+        const averageRating = totalBundles > 0 ? totalRating / totalBundles : 0;
 
         response.status(200).json({
             message: "Bundle statistics retrieved successfully",
             data: {
                 totalBundles,
                 activeBundles,
-                featuredBundles,
-                averageDiscount: avgDiscount[0]?.avgDiscount || 0,
-                averageRating: avgRating[0]?.avgRating || 0,
-                topCategories
+                averageDiscount: Math.round(averageDiscount),
+                averageRating: parseFloat(averageRating.toFixed(1))
             },
             error: false,
             success: true

@@ -9,7 +9,7 @@ import { useSelector } from "react-redux";
 import { FaMinus, FaPlus, FaShoppingBag, FaBan } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
-const AddToCartButton = ({ data, isBundle = false }) => {
+const AddToCartButton = ({ data, isBundle = false, cartItemId = null, currentQty = null }) => {
   const { fetchCartItems, updateCartItem, deleteCartItem } = useGlobalContext();
   const [loading, setLoading] = useState(false);
   const cartItem = useSelector((state) => state.cartItem.cart) || [];
@@ -86,6 +86,16 @@ const AddToCartButton = ({ data, isBundle = false }) => {
       return;
     }
 
+    // If we have cartItemId and currentQty from props (when used in cart display), use those
+    if (cartItemId && currentQty !== null) {
+      setIsAvailableCart(true);
+      setQty(currentQty);
+      const cartItemData = cartItem.find(item => item._id === cartItemId);
+      setCartItemsDetails(cartItemData);
+      return;
+    }
+
+    // Otherwise, find the cart item by matching product/bundle ID (when used in product display)
     const checkingitem = cartItem.some((item) => {
       if (isBundle) {
         return item?.bundleId && item?.bundleId?._id === data._id;
@@ -104,7 +114,7 @@ const AddToCartButton = ({ data, isBundle = false }) => {
     });
     setQty(cartItemData?.quantity || 0);
     setCartItemsDetails(cartItemData);
-  }, [data, cartItem, isBundle]);
+  }, [data, cartItem, isBundle, cartItemId, currentQty]);
 
   const increaseQty = async (e) => {
     e.preventDefault();
@@ -116,16 +126,27 @@ const AddToCartButton = ({ data, isBundle = false }) => {
       return;
     }
 
-    // Check if increasing quantity would exceed stock (only for products)
-    if (!isBundle && qty + 1 > data.stock) {
+    // Check if increasing quantity would exceed stock (only for products with defined stock)
+    if (!isBundle && data.stock !== undefined && qty + 1 > data.stock) {
       toast.error(`Only ${data.stock} items available in stock`);
       return;
     }
 
-    const response = await updateCartItem(cartItemDetails._id, qty + 1);
+    try {
+      setLoading(true);
+      const response = await updateCartItem(cartItemDetails._id, qty + 1);
 
-    if (response.success) {
-      toast.success("Item added");
+      if (response.success) {
+        setQty(qty + 1); // Update local state immediately for better UX
+        toast.success("Item added");
+        // Fetch cart items to ensure global state is updated
+        setTimeout(() => fetchCartItems(), 100);
+      }
+    } catch (error) {
+      console.error("Error increasing quantity:", error);
+      toast.error("Failed to update quantity");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -138,22 +159,41 @@ const AddToCartButton = ({ data, isBundle = false }) => {
       toast.error("Invalid cart data");
       return;
     }
-  
-    if (qty <= 1) {
-      const response = await deleteCartItem(cartItemDetails._id);
-      if (response.success) {
-        toast.success("Item removed");
+
+    try {
+      setLoading(true);
+      
+      if (qty <= 1) {
+        const response = await deleteCartItem(cartItemDetails._id);
+        if (response.success) {
+          setQty(0);
+          setIsAvailableCart(false);
+          setCartItemsDetails(null);
+          toast.success("Item removed");
+          // Fetch cart items to ensure global state is updated
+          setTimeout(() => fetchCartItems(), 100);
+        }
+      } else {
+        const response = await updateCartItem(cartItemDetails._id, qty - 1);
+        if (response.success) {
+          setQty(qty - 1); // Update local state immediately for better UX
+          toast.success("Quantity decreased");
+          // Fetch cart items to ensure global state is updated
+          setTimeout(() => fetchCartItems(), 100);
+        }
       }
-    } else {
-      const response = await updateCartItem(cartItemDetails._id, qty - 1);
-      if (response.success) {
-        toast.success("Quantity decreased");
-      }
+    } catch (error) {
+      toast.error("Failed to update quantity");
+    } finally {
+      setLoading(false);
     }
   };
 
   // Check if product is out of stock - add null check (only for products)
-  const isOutOfStock = !isBundle && data && data.stock <= 0;
+  const isOutOfStock = !isBundle && data && data.stock !== undefined && data.stock <= 0;
+  
+  // In cart context, be more lenient with stock validation
+  const shouldDisableIncrement = loading || (!cartItemId && !isBundle && data?.stock !== undefined && qty >= data.stock);
   
   return (
     <div className="w-full max-w-[150px]">
@@ -169,28 +209,39 @@ const AddToCartButton = ({ data, isBundle = false }) => {
         <>
           {isAvailableCart ? (
             // Quantity Controls (when item is in cart)
-            <div className="flex w-full h-full border border-gray-300 rounded-md overflow-hidden bg-white">
+            <div className="flex w-full h-8 sm:h-9 border border-gray-300 rounded-md overflow-hidden bg-white shadow-sm">
               <button
                 onClick={decreaseQty}
-                className="bg-gray-100 hover:bg-gray-200 text-gray-700 flex-1 w-full p-2 flex items-center justify-center transition-colors border-r border-gray-200"
+                disabled={loading}
+                className={`bg-red-50 hover:bg-red-100 text-red-600 flex-1 w-full p-1 sm:p-2 flex items-center justify-center transition-colors border-r border-gray-200 min-w-[28px] sm:min-w-[32px] ${
+                  loading ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
               >
-                <FaMinus size={12} />
+                {loading ? (
+                  <div className="w-2 h-2 border border-red-600 border-t-transparent rounded-full animate-spin"></div>
+                ) : (
+                  <FaMinus size={10} className="sm:size-3" />
+                )}
               </button>
 
-              <div className="flex-1 w-full font-semibold px-1 flex items-center justify-center text-gray-900 bg-gray-50 min-w-[40px]">
+              <div className="flex-1 w-full font-semibold px-1 sm:px-2 flex items-center justify-center text-gray-900 bg-gray-50 min-w-[32px] sm:min-w-[40px] text-sm">
                 {qty}
               </div>
 
               <button
                 onClick={increaseQty}
-                disabled={!isBundle && qty >= (data?.stock || 0)}
-                className={`flex-1 w-full p-2 flex items-center justify-center transition-colors border-l border-gray-200 ${
-                  (!isBundle && qty >= (data?.stock || 0)) 
+                disabled={shouldDisableIncrement}
+                className={`flex-1 w-full p-1 sm:p-2 flex items-center justify-center transition-colors border-l border-gray-200 min-w-[28px] sm:min-w-[32px] ${
+                  shouldDisableIncrement 
                     ? 'bg-gray-200 text-gray-400 cursor-not-allowed' 
-                    : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                    : 'bg-green-50 hover:bg-green-100 text-green-600'
                 }`}
               >
-                <FaPlus size={12} />
+                {loading ? (
+                  <div className="w-2 h-2 border border-green-600 border-t-transparent rounded-full animate-spin"></div>
+                ) : (
+                  <FaPlus size={10} className="sm:size-3" />
+                )}
               </button>
             </div>
           ) : (
