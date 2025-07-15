@@ -67,7 +67,6 @@ const AddToCartButton = ({ data, isBundle = false }) => {
         }
       }
     } catch (error) {
-      // AxiosTostError(error);
       if (error.response?.status === 401) {
         toast.error("Please login to add items to cart");
         navigate("/login");
