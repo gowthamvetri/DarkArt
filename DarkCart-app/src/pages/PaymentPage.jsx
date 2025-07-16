@@ -83,6 +83,18 @@ const PaymentPage = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [deliveryDates, setDeliveryDates] = useState([]);
 
+  // Helper function to map payment method codes to backend-expected names
+  const getPaymentMethodName = (methodCode) => {
+    const methodMapping = {
+      'cod': 'Cash on Delivery',
+      'credit_card': 'Credit Card',
+      'debit_card': 'Debit Card',
+      'net_banking': 'Net Banking',
+      'razorpay_wallet': 'Razorpay Wallet'
+    };
+    return methodMapping[methodCode] || 'Cash on Delivery';
+  };
+
   // Get selected items from sessionStorage and filter cart items
   useEffect(() => {
     const selectedIds = JSON.parse(sessionStorage.getItem('selectedCartItems') || '[]');
@@ -263,6 +275,7 @@ const PaymentPage = () => {
           subTotalAmt: totalPrice,
           deliveryCharge: deliveryCharge,
           quantity: totalQty,
+          paymentMethod: getPaymentMethodName(selectedPaymentMethod), // Add payment method
         },
       });
 

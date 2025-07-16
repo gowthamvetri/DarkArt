@@ -67,6 +67,10 @@ const orderSchema = mongoose.Schema({
         type: String,
         default: ""
     },
+    paymentMethod: {
+        type: String,
+        default: "Cash on Delivery"
+    },
     orderStatus: {
         type: String,
         default: "ORDER PLACED"

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import Divider from './Divider'
@@ -7,14 +7,13 @@ import SummaryApi from '../common/SummaryApi'
 import { logout } from '../store/userSlice'
 import toast from 'react-hot-toast'
 import AxiosTostError from '../utils/AxiosTostError'
-import { FiExternalLink, FiUser, FiShoppingBag, FiMapPin, FiSettings, FiLogOut } from "react-icons/fi";
-import { MdDashboard } from "react-icons/md";
 import isAdmin from '../utils/isAdmin'
 
 function UserMenue({close}) {
     const user = useSelector((state)=> state?.user)
     const dispatch = useDispatch()
     const navigate = useNavigate()
+    const [showAdminOptions, setShowAdminOptions] = useState(false)
 
     const handleLogOut = async()=>{
         try {
@@ -55,26 +54,24 @@ function UserMenue({close}) {
                         </span>
                     )}
                 </div>
-                <Link to={"/dashboard/profile"} onClick={handleClose}>
-                    <FiExternalLink size={16} className='text-gray-400 hover:text-black transition-colors'/>
+                <Link to={"/dashboard/profile"} onClick={handleClose} className='text-gray-400 hover:text-black transition-colors'>
+                    View Profile
                 </Link>
             </div>
 
             <Divider/>
 
-            {/* Regular User Menu */}
+            {/* Regular User Menu - Always show for all users */}
             <div className='text-sm grid gap-1'>
                 <Link onClick={handleClose} to="/dashboard/myorders" className='flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors'>
-                    <FiShoppingBag size={16} />
                     <span>My Orders</span>
                 </Link>
                 <Link onClick={handleClose} to="/dashboard/address" className='flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors'>
-                    <FiMapPin size={16} />
                     <span>Saved Addresses</span>
                 </Link>
             </div>
 
-            {/* Admin Section */}
+            {/* Admin Section - Additional option for admin users */}
             {isAdmin(user.role) && (
                 <>
                     <Divider/>
@@ -84,30 +81,58 @@ function UserMenue({close}) {
                         </span>
                     </div>
                     <div className='text-sm grid gap-1'>
-                        <Link onClick={handleClose} to="/dashboard/category" className='flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors'>
-                            <MdDashboard size={16} />
-                            <span>Categories</span>
-                        </Link>
-                        {/* <Link onClick={handleClose} to="/dashboard/subcategory" className='flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors'>
-                            <MdDashboard size={16} />
-                            <span>Sub Categories</span>
-                        </Link> */}
-                        <Link onClick={handleClose} to="/dashboard/product" className='flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors'>
-                            <FiShoppingBag size={16} />
-                            <span>Products</span>
-                        </Link>
-                        <Link onClick={handleClose} to="/dashboard/orders-admin" className='flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors'>
-                            <FiShoppingBag size={16} />
-                            <span>Orders Management</span>
-                        </Link>
-                        <Link onClick={handleClose} to="/dashboard/bundle-admin" className='flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors'>
-                            <FiShoppingBag size={16} />
-                            <span>Bundle Management</span>
-                        </Link>
-                        <Link onClick={handleClose} to="/dashboard/upload-product" className='flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors'>
-                            <FiShoppingBag size={16} />
-                            <span>Upload Product</span>
-                        </Link>
+                        <div className="flex items-center justify-between">
+                            <Link 
+                                onClick={handleClose} 
+                                to="/dashboard/admin" 
+                                className='flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors flex-grow text-left'
+                            >
+                                <span className="font-medium">Admin Dashboard</span>
+                            </Link>
+                            <button 
+                                onClick={() => setShowAdminOptions(!showAdminOptions)} 
+                                className='p-3 hover:bg-gray-50 transition-colors'
+                                aria-label="Toggle admin options"
+                            >
+                                <svg 
+                                    className={`w-4 h-4 transition-transform duration-200 ${showAdminOptions ? 'rotate-180' : ''}`} 
+                                    fill="none" 
+                                    stroke="currentColor" 
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        
+                        {showAdminOptions && (
+                            <div className='ml-4 border-l-2 border-gray-200 pl-3 space-y-1'>
+                                <Link onClick={handleClose} to="/dashboard/category" className='block p-2 hover:bg-gray-50 transition-colors rounded text-gray-600 hover:text-black'>
+                                    Categories
+                                </Link>
+                                <Link onClick={handleClose} to="/dashboard/product" className='block p-2 hover:bg-gray-50 transition-colors rounded text-gray-600 hover:text-black'>
+                                    Products
+                                </Link>
+                                <Link onClick={handleClose} to="/dashboard/upload-product" className='block p-2 hover:bg-gray-50 transition-colors rounded text-gray-600 hover:text-black'>
+                                    Upload Product
+                                </Link>
+                                <Link onClick={handleClose} to="/dashboard/orders-admin" className='block p-2 hover:bg-gray-50 transition-colors rounded text-gray-600 hover:text-black'>
+                                    Orders Management
+                                </Link>
+                                <Link onClick={handleClose} to="/dashboard/bundle-admin" className='block p-2 hover:bg-gray-50 transition-colors rounded text-gray-600 hover:text-black'>
+                                    Bundle Management
+                                </Link>
+                                <Link onClick={handleClose} to="/dashboard/user-management" className='block p-2 hover:bg-gray-50 transition-colors rounded text-gray-600 hover:text-black'>
+                                    User Management
+                                </Link>
+                                <Link onClick={handleClose} to="/dashboard/payment-management" className='block p-2 hover:bg-gray-50 transition-colors rounded text-gray-600 hover:text-black'>
+                                    Payments & Transactions
+                                </Link>
+                                <Link onClick={handleClose} to="/dashboard/cancellation-management" className='block p-2 hover:bg-gray-50 transition-colors rounded text-gray-600 hover:text-black'>
+                                    Cancellation Management
+                                </Link>
+                            </div>
+                        )}
                     </div>
                 </>
             )}
@@ -117,7 +142,6 @@ function UserMenue({close}) {
             {/* Logout Button */}
             <div className="p-2">
                 <button onClick={handleLogOut} className='flex items-center gap-3 w-full p-3 text-red-600 hover:bg-red-50 rounded-md transition-colors'>
-                    <FiLogOut size={16} />
                     <span className="font-medium">Logout</span>
                 </button>
             </div>

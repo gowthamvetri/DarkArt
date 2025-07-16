@@ -44,6 +44,11 @@ import BundleList from "../pages/BundleList";
 import BundleDetail from "../pages/BundleDetail";
 import SeasonalSale from "../pages/SeasonalSale";
 import BundleAdmin from "../pages/BundleAdmin";
+import AdminDashboard from "../pages/AdminDashboard";
+import UserManagement from "../pages/UserManagement";
+import PaymentManagement from "../pages/PaymentManagement";
+import CancellationManagementPage from "../pages/CancellationManagementPage";
+import CancellationPolicyPage from "../pages/CancellationPolicyPage";
 
 const router = createBrowserRouter([
     {
@@ -129,6 +134,10 @@ const router = createBrowserRouter([
                     element:<WishlistPage/>
                 },
                 {
+                    path:"admin",
+                    element:<AdminPermision><AdminDashboard/></AdminPermision>
+                },
+                {
                     path:"category",
                     element:<AdminPermision><CategoryPage/></AdminPermision>
                 },
@@ -147,6 +156,22 @@ const router = createBrowserRouter([
                 {
                     path:"orders-admin",
                     element:<AdminPermision><AdminOrderDashboard/></AdminPermision>
+                },
+                {
+                    path:"user-management",
+                    element:<AdminPermision><UserManagement/></AdminPermision>
+                },
+                {
+                    path:"payment-management",
+                    element:<AdminPermision><PaymentManagement/></AdminPermision>
+                },
+                {
+                    path:"cancellation-management",
+                    element:<AdminPermision><CancellationManagementPage/></AdminPermision>
+                },
+                {
+                    path:"cancellation-policy",
+                    element:<AdminPermision><CancellationPolicyPage/></AdminPermision>
                 },
 
                 // Add catch-all for dashboard subroutes

@@ -166,22 +166,7 @@ function Profile() {
           <div className="mb-8">
             <h2 className="font-medium text-gray-700 mb-4">Quick Links</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-             
-
-              <Link
-                to="/dashboard/wishlist"
-                className="flex items-center p-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                <div className="mr-4 bg-teal-600 rounded-full p-2">
-                  <FaRegUserCircle className="h-5 w-5 text-white" />
-                </div>
-                <div>
-                  <div className="font-medium">My Wishlist</div>
-                  <div className="text-sm text-gray-500">
-                    View your saved items
-                  </div>
-                </div>
-              </Link>
+              {/* Links can be added here in future if needed */}
             </div>
           </div>
         </div>

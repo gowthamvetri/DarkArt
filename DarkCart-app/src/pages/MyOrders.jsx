@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import SummaryApi from '../common/SummaryApi';
 import Axios from '../utils/Axios';
 import OrderTimeline from '../components/OrderTimeline';
+import OrderCancellationModal from '../components/OrderCancellationModal';
 import { useGlobalContext } from '../provider/GlobalProvider';
 import { setOrders } from '../store/orderSlice';
 
@@ -16,9 +17,10 @@ function MyOrders() {
   const user = useSelector((state) => state.user);
   const dispatch = useDispatch();
   const [cancellingOrderId, setCancellingOrderId] = useState(null);
-  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [showCancellationModal, setShowCancellationModal] = useState(false);
   const [orderToCancel, setOrderToCancel] = useState(null);
   const [userOrders, setUserOrders] = useState([]);
+  const [orderCancellationRequests, setOrderCancellationRequests] = useState([]);
   const { fetchOrders, refreshingOrders } = useGlobalContext();
   
   // Function to fetch current user's orders specifically (not all orders for admin)
@@ -38,6 +40,33 @@ function MyOrders() {
     }
   };
   
+  // Function to fetch user's cancellation requests
+  const fetchUserCancellationRequests = async () => {
+    try {
+      const token = localStorage.getItem('accessToken')
+      const response = await Axios({
+        ...SummaryApi.getUserCancellationRequests,
+        headers: {
+          authorization: `Bearer ${token}`
+        }
+      });
+      
+      if (response.data.success) {
+        setOrderCancellationRequests(response.data.data);
+      }
+    } catch (error) {
+      console.error("Error fetching cancellation requests:", error);
+    }
+  };
+
+  // Check if an order has a pending cancellation request
+  const hasPendingCancellationRequest = (orderId) => {
+    return orderCancellationRequests.some(request => 
+      (request.orderId === orderId || request.orderId?._id === orderId) && 
+      request.status === 'PENDING'
+    );
+  };
+
   // Filter orders to only show the current user's orders, even for admin
   useEffect(() => {
     if (allOrders && allOrders.length > 0 && user && user._id) {
@@ -82,7 +111,14 @@ function MyOrders() {
   
   const handleCancelOrder = (orderData) => {
     setOrderToCancel(orderData);
-    setShowCancelModal(true);
+    setShowCancellationModal(true);
+  };
+
+  const handleCancellationRequested = () => {
+    // Refresh orders and cancellation requests after cancellation request is submitted
+    fetchCurrentUserOrders();
+    fetchUserCancellationRequests();
+    setOrderToCancel(null);
   };
 
   // Use the fetchOrders from GlobalContext instead of local implementation
@@ -95,40 +131,28 @@ function MyOrders() {
   // Fetch orders when component mounts - always user's own orders
   useEffect(() => {
     fetchCurrentUserOrders();
-  }, []);
+    if (user && user._id) {
+      fetchUserCancellationRequests();
+    }
+  }, [user]);
 
   const { updateOrderStatus } = useGlobalContext();
 
-  const confirmCancelOrder = async () => {
-    if (!orderToCancel) return;
-    setCancellingOrderId(orderToCancel.orderId);
-    setShowCancelModal(false);
-    
-    try {
-      // Use the updateOrderStatus function from GlobalContext
-      const success = await updateOrderStatus(orderToCancel.orderId, 'CANCELLED');
-      
-      if (success) {
-        toast.success('Order cancelled successfully!');
-        // Refresh orders to get the updated status
-        fetchCurrentUserOrders();
-      } else {
-        toast.error('Failed to cancel order. Please try again.');
-      }
-    } catch (error) {
-      toast.error('Failed to cancel order. Please try again.');
-      console.error('Cancel order error:', error);
-    } finally {
-      setCancellingOrderId(null);
-      setOrderToCancel(null);
-    }
-  };
-
   const canCancelOrder = (orderData) => {
-    const orderDate = new Date(orderData?.orderDate);
-    const now = new Date();
-    const hoursSinceOrder = (now - orderDate) / (1000 * 60 * 60);
-    return hoursSinceOrder < 24 && orderData?.paymentStatus !== 'paid' && orderData?.status !== 'cancelled';
+    // Check if order can be cancelled (not delivered, not already cancelled)
+    const nonCancellableStatuses = ['DELIVERED', 'CANCELLED'];
+    
+    // Don't show cancel button if order status doesn't allow cancellation
+    if (nonCancellableStatuses.includes(orderData?.orderStatus)) {
+      return false;
+    }
+    
+    // Don't show cancel button if there's already a pending cancellation request
+    if (hasPendingCancellationRequest(orderData._id)) {
+      return false;
+    }
+    
+    return true;
   };
 
   const isOrderCancelled = (orderData) => {
@@ -137,6 +161,11 @@ function MyOrders() {
 
   // Helper function to determine payment status display
   const getPaymentStatus = (orderData) => {
+    // Check if there's a pending cancellation request first
+    if (hasPendingCancellationRequest(orderData._id)) {
+      return "CANCELLATION_REQUESTED";
+    }
+    
     // If payment is explicitly set to PAID
     if (orderData?.paymentStatus === "PAID") {
       return "PAID";
@@ -232,9 +261,7 @@ function MyOrders() {
                 
                 {/* Product/Bundle Image - Responsive */}
                 <div className='flex-shrink-0 order-1 xl:order-2 w-full xl:w-auto flex justify-center xl:justify-start'>
-                  <div className={`w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 xl:w-36 xl:h-36 rounded-lg overflow-hidden border-2 relative ${
-                    isCancelled ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-gray-50'
-                  }`}>
+                  <div className={`w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 xl:w-36 xl:h-36 rounded-lg overflow-hidden border-2 relative ${isCancelled ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-gray-50'}`}>
                     {/* Display first item image - handle both bundles and products */}
                     <img
                       src={
@@ -247,9 +274,7 @@ function MyOrders() {
                           ? order?.items[0]?.bundleDetails?.title 
                           : order?.items[0]?.productDetails?.name
                       }
-                      className={`w-full h-full object-cover transition-all duration-300 ${
-                        isCancelled ? 'grayscale opacity-60' : ''
-                      }`}
+                      className={`w-full h-full object-cover transition-all duration-300 ${isCancelled ? 'grayscale opacity-60' : ''}`}
                     />
                     {isCancelled && (
                       <div className="absolute inset-0 flex items-center justify-center bg-black/20">
@@ -287,6 +312,10 @@ function MyOrders() {
                         ) : getPaymentStatus(order) === "CANCELLED" ? (
                           <span className="px-2 sm:px-3 py-1 rounded-full text-xs font-semibold w-fit bg-red-100 text-red-800 border border-red-200">
                             ✗ Cancelled
+                          </span>
+                        ) : getPaymentStatus(order) === "CANCELLATION_REQUESTED" ? (
+                          <span className="px-2 sm:px-3 py-1 rounded-full text-xs font-semibold w-fit bg-orange-100 text-orange-800 border border-orange-200">
+                            📋 Cancellation Requested
                           </span>
                         ) : (
                           <span className="px-2 sm:px-3 py-1 rounded-full text-xs font-semibold w-fit bg-yellow-100 text-yellow-800 border border-yellow-200">
@@ -583,55 +612,16 @@ function MyOrders() {
       }
 
       {/* Cancel Order Confirmation Modal */}
-      {showCancelModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg max-w-md w-full p-6 shadow-xl">
-            <div className="flex items-center gap-3 mb-4">
-              <FaExclamationTriangle className="text-red-500 text-xl" />
-              <h3 className="text-lg font-semibold text-black">Cancel Order</h3>
-            </div>
-            
-            <p className="text-gray-600 mb-6">
-              Are you sure you want to cancel this order? This action cannot be undone.
-            </p>
-            
-            <div className="border border-gray-200 rounded-lg p-3 mb-6 bg-gray-50">
-              <p className="text-sm text-gray-700">
-                <span className="font-medium">Order:</span> {orderToCancel?.orderId}
-              </p>
-              <div className="text-sm text-gray-700 mt-1">
-                <span className="font-medium">Items:</span>
-                <div className="ml-2 mt-1 space-y-1">
-                  {orderToCancel?.items?.map((item, index) => (
-                    <div key={index} className="text-xs">
-                      • {item?.itemType === 'bundle' ? item?.bundleDetails?.title : item?.productDetails?.name}
-                      {item?.itemType === 'bundle' && <span className="text-blue-600"> (Bundle)</span>}
-                      <span className="text-gray-500"> - Qty: {item?.quantity}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-            
-            <div className="flex gap-3 justify-end">
-              <button
-                onClick={() => {
-                  setShowCancelModal(false);
-                  setOrderToCancel(null);
-                }}
-                className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-              >
-                Keep Order
-              </button>
-              <button
-                onClick={confirmCancelOrder}
-                className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
-              >
-                Yes, Cancel Order
-              </button>
-            </div>
-          </div>
-        </div>
+      {/* Order Cancellation Modal */}
+      {showCancellationModal && orderToCancel && (
+        <OrderCancellationModal
+          order={orderToCancel}
+          onClose={() => {
+            setShowCancellationModal(false);
+            setOrderToCancel(null);
+          }}
+          onCancellationRequested={handleCancellationRequested}
+        />
       )}
     </div>
   )

@@ -36,8 +36,8 @@ const UserSchema = mongoose.Schema({
     },
     status : {
         type: String,
-        enum: ["Active","Inactive","Suspended"],
-        default :"Active"
+        enum: ["active","blocked","deleted"],
+        default :"active"
     },
     address_details :[ {
         type : mongoose.Schema.ObjectId,
@@ -61,8 +61,8 @@ const UserSchema = mongoose.Schema({
     },
     role: {
         type: String,
-        enum:["ADMIN","USER"],
-        default : "USER"
+        enum:["ADMIN","SELLER","BUYER"],
+        default : "BUYER"
     },
     google_id: {
         type: String,

@@ -1,4 +1,3 @@
-
 import express, { response } from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
@@ -16,6 +15,10 @@ import orderRouter from './route/order.route.js'
 import contactRouter from './route/contact.route.js'  // Add this import
 import bundleRouter from './route/bundle.route.js'
 import wishlistRouter from './route/wishlist.route.js' // Import wishlist routes
+import userManagementRouter from './route/userManagement.route.js' // Import user management routes
+import paymentRouter from './route/payment.route.js' // Import payment routes
+import orderCancellationRouter from './route/orderCancellation.route.js' // Import order cancellation routes
+import emailRouter from './route/email.route.js' // Import email routes
 
 
 dotenv.config()
@@ -48,7 +51,11 @@ app.use("/api/address",addressRouter)
 app.use("/api/order",orderRouter)
 app.use("/api/contact",contactRouter)  // Add this route
 app.use("/api/bundle",bundleRouter)
-app.use("/api/wishlist", wishlistRouter); // Use wishlist routes
+app.use('/api/wishlist', wishlistRouter) // Use wishlist routes
+app.use('/api/user-management', userManagementRouter) // Use user management routes
+app.use('/api/payment', paymentRouter) // Use payment routes
+app.use('/api/order-cancellation', orderCancellationRouter) // Use order cancellation routes
+app.use('/api/email', emailRouter) // Use email routes
 
 
 connectDB().then(

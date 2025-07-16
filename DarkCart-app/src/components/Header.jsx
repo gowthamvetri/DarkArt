@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import Search from "./Search";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { FaUserCircle, FaGift, FaPercentage, FaFire, FaLeaf, FaTshirt, FaFemale, FaChild, FaGem } from "react-icons/fa";
+import { FaUserCircle, FaGift, FaPercentage, FaFire, FaLeaf, FaTshirt, FaFemale, FaChild, FaGem, FaRegHeart, FaRupeeSign } from "react-icons/fa";
 import useMobile from "../hooks/useMobile";
 import { BsCartCheckFill } from "react-icons/bs";
 import { useSelector } from "react-redux";
@@ -235,7 +235,6 @@ function Header() {
                   aria-haspopup="true"
                 >
                   <span className="flex items-center group-hover:translate-y-[-1px] transition-transform duration-300">
-                    <FaGem className="mr-1.5 text-black group-hover:text-black/80" size={16} />
                     PRIME DEALS
                   </span>
                   <svg className={`w-4 h-4 ml-1 transition-transform duration-200 ${showPrimeDealsDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -256,15 +255,9 @@ function Header() {
                     </div>
 
                     <Link to="/bundle-offers" className="flex items-center px-4 py-2.5 text-gray-700 hover:bg-gray-50/80 hover:text-black text-sm transition-all duration-200 group">
-                      <span className="w-8 h-8 mr-3 flex-shrink-0 bg-gray-100 rounded-full flex items-center justify-center text-black shadow-sm group-hover:shadow-md transition-shadow duration-200 group-hover:scale-105 transform">
-                        <FaGift size={16} />
-                      </span>
                       <span className="group-hover:translate-x-0.5 transition-transform duration-200">Bundle Offers</span>
                     </Link>
                     <Link to="/seasonal-sale" className="flex items-center px-4 py-2.5 text-gray-700 hover:bg-gray-50/80 hover:text-black text-sm transition-all duration-200 group">
-                      <span className="w-8 h-8 mr-3 flex-shrink-0 bg-gray-100 rounded-full flex items-center justify-center text-black shadow-sm group-hover:shadow-md transition-shadow duration-200 group-hover:scale-105 transform">
-                        <FaLeaf size={16} />
-                      </span>
                       <span className="group-hover:translate-x-0.5 transition-transform duration-200">Seasonal Sale</span>
                     </Link>
                   </div>
@@ -284,7 +277,6 @@ function Header() {
                   aria-haspopup="true"
                 >
                   <span className="flex items-center group-hover:translate-y-[-1px] transition-transform duration-300">
-                    <FaTshirt className="mr-1.5 text-black group-hover:text-black/80" size={16} />
                     FASHION
                   </span>
                   <svg className={`w-4 h-4 ml-1 transition-transform duration-200 ${showFashionDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -388,24 +380,6 @@ function Header() {
                     </span>
                   )}
                 </button>
-                
-                {/* User Button - Mobile/Tablet - Icon Only (Always showing default avatar icon) */}
-                <button
-                  className="relative p-2.5 flex items-center justify-center border border-gray-200 hover:border-gray-300 transition-all duration-200 rounded-full overflow-hidden"
-                  onClick={handleLoginNavigate}
-                  aria-label={user?.name ? "My Account" : "Sign In"}
-                >
-                  {user?.name ? (
-                    <div className="bg-gradient-to-br from-gray-500 to-gray-700 flex items-center justify-center w-5 h-5 text-white font-semibold text-xs uppercase">
-                      {user.name.charAt(0)}
-                    </div>
-                  ) : (
-                    <FaUserCircle className="w-5 h-5 text-gray-700" />
-                  )}
-                  {user?._id && (
-                    <span className="absolute -bottom-1 -right-1 w-2.5 h-2.5 bg-green-500 rounded-full border border-white"></span>
-                  )}
-                </button>
 
                 {/* Menu Toggle for Mobile */}
                 <div className="relative">
@@ -447,6 +421,64 @@ function Header() {
                     <div className="py-1.5 px-4 border-b border-gray-100 mb-1">
                       <p className="text-xs text-gray-400 uppercase tracking-wider font-medium">Navigation</p>
                     </div>
+
+                    {/* Profile & Wishlist Section - Mobile */}
+                    <div className="px-2 py-1">
+                      {user?.name ? (
+                        <Link
+                          to="/dashboard/profile"
+                          className="flex items-center text-gray-700 hover:text-black hover:bg-gray-50 px-3 py-3 text-sm font-medium transition-colors rounded-md"
+                          onClick={() => setTimeout(() => setMobileMenuOpen(false), 200)}
+                        >
+                          <div className="flex items-center gap-3">
+                            {user?.avatar ? (
+                              <img 
+                                src={user.avatar} 
+                                alt={user.name} 
+                                className="w-6 h-6 rounded-full object-cover"
+                              />
+                            ) : (
+                              <div className="bg-gradient-to-br from-gray-500 to-gray-700 flex items-center justify-center w-6 h-6 rounded-full">
+                                <span className="text-white font-semibold text-xs uppercase">
+                                  {user.name.charAt(0)}
+                                </span>
+                              </div>
+                            )}
+                            <div className="flex flex-col">
+                              <span className="font-medium">{user.name}</span>
+                              <span className="text-xs text-gray-500">My Profile</span>
+                            </div>
+                          </div>
+                        </Link>
+                      ) : (
+                        <Link
+                          to="/login"
+                          className="flex items-center text-gray-700 hover:text-black hover:bg-gray-50 px-3 py-3 text-sm font-medium transition-colors rounded-md"
+                          onClick={() => setTimeout(() => setMobileMenuOpen(false), 200)}
+                        >
+                          <div className="flex items-center gap-3">
+                            <FaUserCircle className="w-6 h-6 text-gray-600" />
+                            <span>Sign In</span>
+                          </div>
+                        </Link>
+                      )}
+                      
+                      {/* Wishlist - Mobile (only when logged in) */}
+                      {user?.name && (
+                        <Link
+                          to="/dashboard/wishlist"
+                          className="flex items-center text-gray-700 hover:text-black hover:bg-gray-50 px-3 py-3 text-sm font-medium transition-colors rounded-md"
+                          onClick={() => setTimeout(() => setMobileMenuOpen(false), 200)}
+                        >
+                          <div className="flex items-center gap-3">
+                            <FaRegHeart className="w-6 h-6 text-gray-600" />
+                            <span>My Wishlist</span>
+                          </div>
+                        </Link>
+                      )}
+                    </div>
+
+                    <div className="border-b border-gray-100 my-2"></div>
                     
                     {/* Prime Deals Section - Mobile */}
                     <div className="flex flex-col">
@@ -458,7 +490,6 @@ function Header() {
                         <div className="flex items-center">
                           <span className="w-1.5 h-1.5 bg-amber-500 rounded-full mr-3"></span>
                           <div className="flex items-center">
-                            <FaGem className="mr-1.5 text-black" size={16} />
                             Prime Deals
                           </div>
                         </div>
@@ -486,7 +517,6 @@ function Header() {
                           className="flex items-center text-gray-600 hover:text-black hover:bg-gray-50 pl-10 pr-5 py-2.5 text-sm transition-colors"
                           onClick={() => setTimeout(() => setMobileMenuOpen(false), 200)}
                         >
-                          <FaGift className="mr-2 text-black" size={14} />
                           Bundle Offers
                         </Link>
                         <Link
@@ -494,7 +524,6 @@ function Header() {
                           className="flex items-center text-gray-600 hover:text-black hover:bg-gray-50 pl-10 pr-5 py-2.5 text-sm transition-colors"
                           onClick={() => setTimeout(() => setMobileMenuOpen(false), 200)}
                         >
-                          <FaLeaf className="mr-2 text-black" size={14} />
                           Seasonal Sale
                         </Link>
                       </div>
@@ -652,7 +681,17 @@ function Header() {
                   </button>
                 )}
 
-                {/* Cart Button - Desktop with Icon Only (like Mobile Version) */}
+                {/* Wishlist Icon - Only when user is logged in */}
+                {user?.name && (
+                  <Link
+                    to="/dashboard/wishlist"
+                    className="relative p-2.5 flex items-center justify-center border border-gray-200 hover:border-gray-300 transition-all duration-200 rounded-full"
+                    aria-label="Wishlist"
+                  >
+                    <FaRegHeart className="w-5 h-5 text-gray-700" />
+                  </Link>
+                )}
+
                 <button
                   className="relative p-2.5 flex items-center justify-center border border-gray-200 hover:border-gray-300 transition-all duration-200 rounded-full"
                   onClick={() => setOpenCartSection(true)}
@@ -838,6 +877,7 @@ function Header() {
           animation: slideInDown 0.25s ease-out forwards;
         }
       `}</style>
+
     </>
   );
 }

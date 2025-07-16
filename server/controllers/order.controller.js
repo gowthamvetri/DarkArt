@@ -14,7 +14,7 @@ export const cashOnDeliveryOrderController = async (req, res) => {
   
   try {
     const userId = req.userId;
-    const { list_items, totalAmount, addressId, subTotalAmt, quantity } = req.body;
+    const { list_items, totalAmount, addressId, subTotalAmt, quantity, paymentMethod } = req.body;
 
     console.log("=== ORDER DEBUG START ===");
     console.log("User ID:", userId);
@@ -202,7 +202,8 @@ export const cashOnDeliveryOrderController = async (req, res) => {
       paymentId: "",
       totalQuantity: quantity, // Total quantity of all items
       orderDate: new Date(),
-      paymentStatus: "CASH ON DELIVERY",
+      paymentStatus: paymentMethod === 'Cash on Delivery' ? "CASH ON DELIVERY" : "PENDING",
+      paymentMethod: paymentMethod || 'Cash on Delivery',
       deliveryAddress: addressId,
       subTotalAmt: subTotalAmt,
       totalAmt: totalAmount,
