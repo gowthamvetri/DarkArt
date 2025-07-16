@@ -21,12 +21,42 @@ import orderCancellationRouter from './route/orderCancellation.route.js' // Impo
 import emailRouter from './route/email.route.js' // Import email routes
 
 
+
 dotenv.config()
 const app = express()
-app.use(cors({
-    credentials:true,
-    origin:process.env.FRONT_URL
-}))
+
+// CORS configuration
+const corsOptions = {
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        
+        const allowedOrigins = [
+            process.env.FRONT_URL,
+            "http://localhost:5173",
+            "http://localhost:5174",
+            "http://localhost:3000",
+            "http://127.0.0.1:3000"
+        ];
+        
+        if (allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            console.log(`CORS blocked for origin: ${origin}`);
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
+    optionsSuccessStatus: 200 // Some legacy browsers choke on 204
+};
+
+app.use(cors(corsOptions));
+
+// Handle preflight requests
+app.options('*', cors(corsOptions));
+
 app.use(express.json())
 app.use(cookieParser())
 app.use(morgan())
@@ -35,6 +65,15 @@ app.use(helmet({
 }))
 
 const PORT = 8080 || process.env.PORT
+
+// Add a test endpoint to verify CORS
+app.get('/api/test-cors', (req, res) => {
+    res.json({
+        message: "CORS is working properly",
+        origin: req.headers.origin,
+        timestamp: new Date().toISOString()
+    });
+});
 
 app.get('/',(req,res)=>{
     res.json({
@@ -56,6 +95,7 @@ app.use('/api/user-management', userManagementRouter) // Use user management rou
 app.use('/api/payment', paymentRouter) // Use payment routes
 app.use('/api/order-cancellation', orderCancellationRouter) // Use order cancellation routes
 app.use('/api/email', emailRouter) // Use email routes
+ // Use analytics routes
 
 
 connectDB().then(

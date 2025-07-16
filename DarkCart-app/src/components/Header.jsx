@@ -10,6 +10,7 @@ import UserMenue from "./UserMenue";
 import { DisplayPriceInRupees } from "../utils/DisplayPriceInRupees";
 import { useGlobalContext } from "../provider/GlobalProvider";
 import DisplayCartItem from "./DisplayCartItem";
+import isAdmin from "../utils/isAdmin";
 import "../App.css";
 import logo from "../assets/logo.png";
 
@@ -473,6 +474,25 @@ function Header() {
                           <div className="flex items-center gap-3">
                             <FaRegHeart className="w-6 h-6 text-gray-600" />
                             <span>My Wishlist</span>
+                          </div>
+                        </Link>
+                      )}
+
+                      {/* Admin Dashboard - Mobile (only for admin users) */}
+                      {user?.name && isAdmin(user.role) && (
+                        <Link
+                          to="/dashboard/admin"
+                          className="flex items-center text-gray-700 hover:text-black hover:bg-gray-50 px-3 py-3 text-sm font-medium transition-colors rounded-md"
+                          onClick={() => setTimeout(() => setMobileMenuOpen(false), 200)}
+                        >
+                          <div className="flex items-center gap-3">
+                            <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                            </svg>
+                            <div className="flex flex-col">
+                              <span className="font-medium">Admin Dashboard</span>
+                              <span className="text-xs text-gray-500">Manage your store</span>
+                            </div>
                           </div>
                         </Link>
                       )}
