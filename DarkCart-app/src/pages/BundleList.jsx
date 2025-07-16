@@ -143,9 +143,19 @@ const BundleList = () => {
       return;
     }
 
-    const result = await addBundleToCart(bundleId);
-    if (result.success) {
-      // Optional: You can add any additional success handling here
+    console.log('Adding bundle to cart:', bundleId);
+    
+    try {
+      const result = await addBundleToCart(bundleId);
+      console.log('Add to cart result:', result);
+      
+      if (result.success) {
+        // Optional: You can add any additional success handling here
+      } else {
+        console.error('Failed to add bundle to cart:', result.error);
+      }
+    } catch (error) {
+      console.error('Error adding bundle to cart:', error);
     }
   };
 

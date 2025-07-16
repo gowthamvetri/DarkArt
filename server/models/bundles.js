@@ -77,6 +77,18 @@ const bundleSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    // Timer functionality for time-limited bundle offers
+    startDate: {
+        type: Date,
+        default: Date.now
+    },
+    endDate: {
+        type: Date
+    },
+    isTimeLimited: {
+        type: Boolean,
+        default: false
+    },
     images: [{
         type: String
     }],

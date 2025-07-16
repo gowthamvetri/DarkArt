@@ -102,6 +102,27 @@ export const cashOnDeliveryOrderController = async (req, res) => {
             message: `Bundle ${bundle.title} is currently not available`
           });
         }
+        
+        // Check if bundle has enough stock
+        if (bundle.stock < item.quantity) {
+          return res.status(400).json({
+            success: false,
+            error: true,
+            message: `Insufficient stock for bundle ${bundle.title}. Available: ${bundle.stock}, Requested: ${item.quantity}`
+          });
+        }
+        
+        // Check if bundle is time-limited and within valid time period
+        if (bundle.isTimeLimited) {
+          const now = new Date();
+          if (now < bundle.startDate || now > bundle.endDate) {
+            return res.status(400).json({
+              success: false,
+              error: true,
+              message: `Bundle ${bundle.title} is no longer available (time-limited offer expired)`
+            });
+          }
+        }
       } else if (isProduct) {
         // Validate product exists and has sufficient stock
         let productId;
@@ -220,11 +241,16 @@ export const cashOnDeliveryOrderController = async (req, res) => {
       // Create single order
       const generatedOrder = await orderModel.create([payload], { session });
 
-      // Update stock for each product (bundles don't have stock management)
+      // Update stock for each product and bundle
       for (const item of list_items) {
         const isProduct = !!(item.productId && (
           (typeof item.productId === 'object' && item.productId._id) || 
           (typeof item.productId === 'string')
+        ));
+        
+        const isBundle = !!(item.bundleId && (
+          (typeof item.bundleId === 'object' && item.bundleId._id) || 
+          (typeof item.bundleId === 'string')
         ));
         
         if (isProduct) {
@@ -236,8 +262,17 @@ export const cashOnDeliveryOrderController = async (req, res) => {
             },
             { session, new: true }
           );
+        } else if (isBundle) {
+          // Update bundle stock
+          const bundleId = (typeof item.bundleId === 'object' && item.bundleId._id) ? item.bundleId._id : item.bundleId;
+          await BundleModel.findByIdAndUpdate(
+            bundleId,
+            { 
+              $inc: { stock: -item.quantity } // Decrease bundle stock by ordered quantity
+            },
+            { session, new: true }
+          );
         }
-        // Skip stock update for bundles as they don't have stock management
       }
 
       // Clear only the ordered items from user's cart

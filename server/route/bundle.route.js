@@ -9,7 +9,8 @@ import {
     deleteBundleController,
     toggleBundleStatusController,
     getFeaturedBundlesController,
-    getBundleStatsController
+    getBundleStatsController,
+    decrementBundleStockController
 } from "../controllers/bundle.controller.js";
 
 const bundleRouter = Router();
@@ -18,6 +19,9 @@ const bundleRouter = Router();
 bundleRouter.get("/", getBundlesController);
 bundleRouter.get("/featured", getFeaturedBundlesController);
 bundleRouter.get("/:bundleId", getBundleByIdController);
+
+// Protected routes
+bundleRouter.post("/decrement-stock", auth, decrementBundleStockController);
 
 // Admin routes
 bundleRouter.post("/create", auth, admin, createBundleController);

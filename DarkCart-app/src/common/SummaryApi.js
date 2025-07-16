@@ -262,6 +262,10 @@ const SummaryApi = {
         url: '/api/bundle/admin/stats',
         method: 'get'
     },
+    validateCartItems: {
+        url: '/api/cart/validate',
+        method: 'post'
+    },
     // Wishlist API endpoints
     addToWishlist: {
         url: '/api/wishlist/add',

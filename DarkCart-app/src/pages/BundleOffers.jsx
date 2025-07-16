@@ -7,17 +7,13 @@ import SummaryApi from "../common/SummaryApi";
 import toast from "react-hot-toast";
 import useCart from "../hooks/useCart";
 import { useSelector } from "react-redux";
+import CountdownTimer from "../components/CountdownTimer";
+import NoHeaderLayout from "../layout/NoHeaderLayout";
 
 const BundleOffers = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [bundles, setBundles] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [timeLeft, setTimeLeft] = useState({
-    days: 2,
-    hours: 15,
-    minutes: 30,
-    seconds: 45
-  });
 
   // Cart hook and user state
   const { addBundleToCart, loading: cartLoading } = useCart();
@@ -27,12 +23,14 @@ const BundleOffers = () => {
   const fetchBundles = async () => {
     try {
       setLoading(true);
-      const response = await Axios.get(SummaryApi.getBundles.url);
+      const response = await Axios.get(`${SummaryApi.getBundles.url}?clientView=true`);
       
       if (response.data.success) {
         const bundleData = Array.isArray(response.data.data) ? response.data.data : [];
+        // Only show active bundles
+        const activeBundles = bundleData.filter(bundle => bundle.isActive);
         // Show only first 6 bundles for featured section
-        setBundles(bundleData.filter(bundle => bundle.isActive).slice(0, 6));
+        setBundles(activeBundles.slice(0, 6));
       }
     } catch (error) {
       console.error("Error fetching bundles:", error);
@@ -45,26 +43,6 @@ const BundleOffers = () => {
   // Load bundles on component mount
   useEffect(() => {
     fetchBundles();
-  }, []);
-
-  // Countdown timer effect
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev.seconds > 0) {
-          return { ...prev, seconds: prev.seconds - 1 };
-        } else if (prev.minutes > 0) {
-          return { ...prev, minutes: prev.minutes - 1, seconds: 59 };
-        } else if (prev.hours > 0) {
-          return { ...prev, hours: prev.hours - 1, minutes: 59, seconds: 59 };
-        } else if (prev.days > 0) {
-          return { ...prev, days: prev.days - 1, hours: 23, minutes: 59, seconds: 59 };
-        }
-        return prev;
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
   }, []);
 
   const categories = [
@@ -116,12 +94,13 @@ const BundleOffers = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Hero Section */}
-      <div className="relative bg-black text-white">
-        <div className="absolute inset-0 bg-gradient-to-br from-black via-gray-900 to-black opacity-90"></div>
-        <div className="relative container mx-auto px-4 py-16 md:py-24">
-          <motion.div
+    <NoHeaderLayout>
+      <div className="min-h-screen bg-white">
+        {/* Hero Section */}
+        <div className="relative bg-black text-white">
+          <div className="absolute inset-0 bg-gradient-to-br from-black via-gray-900 to-black opacity-90"></div>
+          <div className="relative container mx-auto px-4 py-16 md:py-24">
+            <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
@@ -139,29 +118,15 @@ const BundleOffers = () => {
             
             {/* Countdown Timer */}
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 max-w-md mx-auto border border-gray-700">
-              <p className="text-sm mb-4 font-medium text-gray-200">⚡ Limited Time Offer Ends In:</p>
-              <div className="grid grid-cols-4 gap-2 text-center">
-                <div className="bg-gray-800 border border-gray-600 rounded-lg p-3">
-                  <div className="text-2xl font-bold text-white">{timeLeft.days}</div>
-                  <div className="text-xs text-gray-300">Days</div>
-                </div>
-                <div className="bg-gray-800 border border-gray-600 rounded-lg p-3">
-                  <div className="text-2xl font-bold text-white">{timeLeft.hours}</div>
-                  <div className="text-xs text-gray-300">Hours</div>
-                </div>
-                <div className="bg-gray-800 border border-gray-600 rounded-lg p-3">
-                  <div className="text-2xl font-bold text-white">{timeLeft.minutes}</div>
-                  <div className="text-xs text-gray-300">Minutes</div>
-                </div>
-                <div className="bg-gray-800 border border-gray-600 rounded-lg p-3">
-                  <div className="text-2xl font-bold text-white">{timeLeft.seconds}</div>
-                  <div className="text-xs text-gray-300">Seconds</div>
-                </div>
-              </div>
+              <p className="text-sm mb-4 font-medium text-gray-200">⚡ Limited Time Offer:</p>
+              <CountdownTimer 
+                endDate={new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()}
+                startDate={new Date().toISOString()}
+              />
             </div>
           </motion.div>
         </div>
-      </div>
+        </div>
 
       {/* Category Filter */}
       <div className="container mx-auto px-4 py-8 bg-white">
@@ -321,7 +286,7 @@ const BundleOffers = () => {
                       </div>
 
                       {/* Price */}
-                      <div className="flex items-center justify-between mb-6">
+                      <div className="flex items-center justify-between mb-3">
                         <div>
                           <span className="text-2xl font-bold text-black">
                             ₹{bundle.bundlePrice?.toLocaleString()}
@@ -334,6 +299,28 @@ const BundleOffers = () => {
                           Save ₹{((bundle.originalPrice || 0) - (bundle.bundlePrice || 0)).toLocaleString()}
                         </div>
                       </div>
+                      
+                      {/* Stock Status */}
+                      <div className="flex items-center gap-2 mb-3 text-sm">
+                        {bundle.stock > 0 ? (
+                          <span className={`font-medium ${bundle.stock < 10 ? 'text-amber-600' : 'text-green-600'}`}>
+                            {bundle.stock < 10 ? `Only ${bundle.stock} left in stock!` : 'In Stock'}
+                          </span>
+                        ) : (
+                          <span className="text-red-500 font-medium">Out of Stock</span>
+                        )}
+                      </div>
+                      
+                      {/* Time-Limited Offer Countdown */}
+                      {bundle.isTimeLimited && (
+                        <div className="mb-4">
+                          <CountdownTimer 
+                            endDate={bundle.endDate}
+                            startDate={bundle.startDate}
+                            onExpire={() => fetchBundles()} // Refresh when expired
+                          />
+                        </div>
+                      )}
 
                       {/* Items List - Always visible for better UX */}
                       {bundle.items && bundle.items.length > 0 && (
@@ -413,6 +400,7 @@ const BundleOffers = () => {
         </div>
       </div>
     </div>
+    </NoHeaderLayout>
   );
 };
 

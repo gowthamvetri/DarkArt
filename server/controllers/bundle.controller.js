@@ -17,7 +17,11 @@ export const createBundleController = async (request, response) => {
             stock,
             images,
             metaTitle,
-            metaDescription
+            metaDescription,
+            // Add timer-related fields
+            startDate,
+            endDate,
+            isTimeLimited
         } = request.body;
 
         // Validate required fields
@@ -70,7 +74,11 @@ export const createBundleController = async (request, response) => {
             images: images || [],
             metaTitle,
             metaDescription,
-            slug
+            slug,
+            // Add timer-related fields
+            startDate: isTimeLimited ? startDate : null,
+            endDate: isTimeLimited ? endDate : null,
+            isTimeLimited: isTimeLimited || false
         });
 
         const savedBundle = await bundle.save();
@@ -94,7 +102,33 @@ export const createBundleController = async (request, response) => {
 // Get all bundles
 export const getBundlesController = async (request, response) => {
     try {
-        const bundles = await BundleModel.find({})
+        const { includeInactive, clientView } = request.query;
+        
+        // Base query - include all for admin, only active for client by default
+        let query = includeInactive === 'true' ? {} : { isActive: true };
+        
+        // If client view is true, filter by additional conditions
+        if (clientView === 'true') {
+            // For client view, also check stock and time limits
+            const now = new Date();
+            
+            // Only show bundles that have stock > 0
+            query.stock = { $gt: 0 };
+            
+            // For time-limited bundles, only show if within date range
+            query.$or = [
+                // Not time limited
+                { isTimeLimited: false },
+                // Time limited but within range
+                { 
+                    isTimeLimited: true,
+                    startDate: { $lte: now },
+                    endDate: { $gte: now }
+                }
+            ];
+        }
+
+        const bundles = await BundleModel.find(query)
             .populate('items.productId')
             .sort({ createdAt: -1 });
 
@@ -118,6 +152,7 @@ export const getBundlesController = async (request, response) => {
 export const getBundleByIdController = async (request, response) => {
     try {
         const { bundleId } = request.params;
+        const { clientView } = request.query;
         
         const bundle = await BundleModel.findById(bundleId)
             .populate('items.productId');
@@ -128,6 +163,39 @@ export const getBundleByIdController = async (request, response) => {
                 error: true,
                 success: false
             });
+        }
+
+        // If it's a client view, perform additional validations
+        if (clientView === 'true') {
+            // Check if bundle is active
+            if (!bundle.isActive) {
+                return response.status(404).json({
+                    message: "This bundle is currently unavailable",
+                    error: true,
+                    success: false
+                });
+            }
+
+            // Check if bundle is in stock
+            if (bundle.stock <= 0) {
+                return response.status(404).json({
+                    message: "This bundle is out of stock",
+                    error: true,
+                    success: false
+                });
+            }
+
+            // Check if bundle is within time limits if time-limited
+            if (bundle.isTimeLimited) {
+                const now = new Date();
+                if (now < bundle.startDate || now > bundle.endDate) {
+                    return response.status(404).json({
+                        message: "This time-limited bundle is no longer available",
+                        error: true,
+                        success: false
+                    });
+                }
+            }
         }
 
         response.status(200).json({
@@ -288,7 +356,26 @@ export const toggleBundleStatusController = async (request, response) => {
 // Get featured bundles
 export const getFeaturedBundlesController = async (request, response) => {
     try {
-        const bundles = await BundleModel.find({ featured: true, isActive: true })
+        const now = new Date();
+        
+        // Query for featured bundles that are active, have stock, and are within time limits if applicable
+        const query = {
+            featured: true,
+            isActive: true,
+            stock: { $gt: 0 },
+            $or: [
+                // Not time limited
+                { isTimeLimited: false },
+                // Time limited but within range
+                { 
+                    isTimeLimited: true,
+                    startDate: { $lte: now },
+                    endDate: { $gte: now }
+                }
+            ]
+        };
+
+        const bundles = await BundleModel.find(query)
             .populate('items.productId')
             .sort({ createdAt: -1 });
 
@@ -329,6 +416,82 @@ export const getBundleStatsController = async (request, response) => {
                 activeBundles,
                 averageDiscount: Math.round(averageDiscount),
                 averageRating: parseFloat(averageRating.toFixed(1))
+            },
+            error: false,
+            success: true
+        });
+
+    } catch (error) {
+        response.status(500).json({
+            message: error.message || "Internal server error",
+            error: true,
+            success: false
+        });
+    }
+};
+// Decrement bundle stock when purchased
+export const decrementBundleStockController = async (request, response) => {
+    try {
+        const { bundleId, quantity = 1 } = request.body;
+        
+        if (!bundleId) {
+            return response.status(400).json({
+                message: "Bundle ID is required",
+                error: true,
+                success: false
+            });
+        }
+
+        // Find the bundle
+        const bundle = await BundleModel.findById(bundleId);
+        
+        if (!bundle) {
+            return response.status(404).json({
+                message: "Bundle not found",
+                error: true,
+                success: false
+            });
+        }
+
+        // Check if bundle is active
+        if (!bundle.isActive) {
+            return response.status(400).json({
+                message: "This bundle is not active",
+                error: true,
+                success: false
+            });
+        }
+
+        // Check if bundle is time-limited and within time window
+        if (bundle.isTimeLimited) {
+            const now = new Date();
+            if (now < bundle.startDate || now > bundle.endDate) {
+                return response.status(400).json({
+                    message: "This time-limited bundle is no longer available",
+                    error: true,
+                    success: false
+                });
+            }
+        }
+
+        // Check if enough stock is available
+        if (bundle.stock < quantity) {
+            return response.status(400).json({
+                message: `Only ${bundle.stock} units available in stock`,
+                error: true,
+                success: false
+            });
+        }
+
+        // Decrement stock
+        bundle.stock -= quantity;
+        await bundle.save();
+
+        response.status(200).json({
+            message: "Bundle stock updated successfully",
+            data: {
+                bundleId: bundle._id,
+                remainingStock: bundle.stock
             },
             error: false,
             success: true

@@ -149,10 +149,55 @@ const BagPage = () => {
     };
   }, { totalQty: 0, totalPrice: 0, totalOriginalPrice: 0 });
 
-  // Auto-select all items when cart loads initially
+  // Function to check if an item is available for purchase
+  const isItemAvailable = (item) => {
+    if (!item) return false;
+    
+    // Check if it's a bundle
+    if (item.itemType === 'bundle' && item.bundleId) {
+      // Check bundle stock
+      if (item.bundleId.stock !== undefined && item.bundleId.stock <= 0) {
+        return false;
+      }
+      
+      // Check if time-limited bundle is available
+      if (item.bundleId.isTimeLimited) {
+        const now = new Date();
+        const startDate = new Date(item.bundleId.startDate);
+        const endDate = new Date(item.bundleId.endDate);
+        
+        if (now < startDate || now > endDate) {
+          return false;
+        }
+      }
+      
+      return true;
+    }
+    
+    // Check if it's a product
+    if (item.itemType === 'product' && item.productId) {
+      // Check product stock
+      if (item.productId.stock !== undefined && item.productId.stock <= 0) {
+        return false;
+      }
+      
+      return true;
+    }
+    
+    return true; // Default to available if we can't determine
+  };
+
+  // Auto-select all available items when cart loads initially
   useEffect(() => {
     if (cartItemsList.length > 0 && selectedItems.length === 0) {
-      dispatch(selectAllItems());
+      // Filter out unavailable items
+      const availableItems = cartItemsList
+        .filter(item => isItemAvailable(item))
+        .map(item => item._id);
+      
+      if (availableItems.length > 0) {
+        dispatch(setSelectedItems(availableItems));
+      }
     }
   }, [cartItemsList, selectedItems.length, dispatch]);
 
@@ -172,6 +217,74 @@ const BagPage = () => {
       });
     }
   }, [cartItemsList, selectedItems]);
+  
+  // Function to validate cart items and alert user of any issues
+  const validateCartItemsStatus = () => {
+    if (!cartItemsList || cartItemsList.length === 0) return;
+    
+    let hasExpiredTimeLimitedBundles = false;
+    let hasOutOfStockItems = false;
+    let hasFutureStartDate = false;
+    
+    cartItemsList.forEach(item => {
+      // Check bundles
+      if (item.bundleId && item.bundleId._id) {
+        // Check time-limited bundles
+        if (item.bundleId.isTimeLimited) {
+          const now = new Date();
+          const startDate = new Date(item.bundleId.startDate);
+          const endDate = new Date(item.bundleId.endDate);
+          
+          if (now < startDate) {
+            hasFutureStartDate = true;
+          } else if (now > endDate) {
+            hasExpiredTimeLimitedBundles = true;
+          }
+        }
+        
+        // Check stock
+        if (item.bundleId.stock !== undefined && item.bundleId.stock === 0) {
+          hasOutOfStockItems = true;
+        }
+      }
+      
+      // Check products
+      if (item.productId && item.productId._id) {
+        if (item.productId.stock !== undefined && item.productId.stock === 0) {
+          hasOutOfStockItems = true;
+        }
+      }
+    });
+    
+    // Display alerts to user
+    if (hasExpiredTimeLimitedBundles) {
+      toast.error("Some time-limited bundles in your cart have expired. Please remove them before checkout.", {
+        duration: 6000,
+        id: "expired-bundles-warning"
+      });
+    }
+    
+    if (hasOutOfStockItems) {
+      toast.error("Some items in your cart are out of stock. Please remove them before checkout.", {
+        duration: 6000,
+        id: "out-of-stock-warning"
+      });
+    }
+    
+    if (hasFutureStartDate) {
+      toast.info("Some bundles in your cart are not yet available for purchase. Please check the start dates.", {
+        duration: 6000,
+        id: "future-bundles-info"
+      });
+    }
+  };
+  
+  // Validate cart items on component mount
+  React.useEffect(() => {
+    if (cartItemsList.length > 0) {
+      validateCartItemsStatus();
+    }
+  }, [cartItemsList]);
   
   const updateCartItem = async (itemId, quantity) => {
     try {
@@ -260,26 +373,77 @@ const BagPage = () => {
     }
   };
 
-  const handleProceedToCheckout = () => {
+  const handleProceedToCheckout = async () => {
     if (selectedItems.length === 0) {
       toast.error("Please select at least one item to checkout");
       return;
     }
     
-    // Store selected items in sessionStorage for checkout process
-    sessionStorage.setItem('selectedCartItems', JSON.stringify(selectedItems));
-    navigate('/checkout/address');
+    try {
+      // Validate if all selected cart items are still available for purchase
+      const response = await Axios({
+        ...SummaryApi.validateCartItems,
+        data: {
+          cartItemIds: selectedItems
+        }
+      });
+      
+      if (response.data.success) {
+        // If validation passes, proceed to checkout
+        sessionStorage.setItem('selectedCartItems', JSON.stringify(selectedItems));
+        navigate('/checkout/address');
+      } else {
+        // If validation fails, show error message
+        toast.error(response.data.message || "Some items in your cart are unavailable for purchase");
+        
+        // Refresh cart to update availability
+        fetchCartItems();
+      }
+    } catch (error) {
+      console.error("Error validating cart items:", error);
+      
+      // Extract and display the error message from the response if available
+      const errorMessage = error.response?.data?.message || 
+        "Failed to validate cart items. Please try again.";
+      
+      toast.error(errorMessage);
+      
+      // If there are specific items that caused the error, log them
+      if (error.response?.data?.invalidItems) {
+        console.log("Invalid items:", error.response.data.invalidItems);
+      }
+      
+      // Refresh cart to update availability
+      fetchCartItems();
+    }
   };
 
   const handleSelectAll = () => {
     if (selectedItems.length === cartItemsList.length) {
       dispatch(deselectAllItems());
     } else {
-      dispatch(selectAllItems());
+      // Only select available items
+      const availableItems = cartItemsList
+        .filter(item => isItemAvailable(item))
+        .map(item => item._id);
+      
+      dispatch(setSelectedItems(availableItems));
+      
+      if (availableItems.length < cartItemsList.length) {
+        toast.info(`${cartItemsList.length - availableItems.length} item(s) cannot be selected because they are unavailable for purchase.`);
+      }
     }
   };
 
   const handleItemSelection = (itemId) => {
+    const item = cartItemsList.find(item => item._id === itemId);
+    
+    // If item is not available, don't allow selection
+    if (item && !isItemAvailable(item)) {
+      toast.error("This item is not available for purchase.");
+      return;
+    }
+    
     dispatch(toggleItemSelection(itemId));
   };
 
@@ -413,17 +577,21 @@ const BagPage = () => {
                     const brand = getProductProperty(item, 'brand', '');
                     
                     return (
-                      <div key={`bag-item-${itemId}-${index}`} className={`flex border-b last:border-b-0 py-4 ${isSelected ? 'bg-blue-50' : ''}`}>
+                      <div key={`bag-item-${itemId}-${index}`} className={`flex border-b last:border-b-0 py-4 ${isSelected ? 'bg-blue-50' : ''} ${!isItemAvailable(item) ? 'opacity-75' : ''}`}>
                         <div className="flex flex-col sm:flex-row items-start w-full">
                           {/* Checkbox and Product Image */}
                           <div className="flex items-start">
-                            <div className="mr-3">
+                            <div className="mr-3 relative">
                               <input 
                                 type="checkbox" 
                                 checked={isSelected}
                                 onChange={() => handleItemSelection(item._id)}
-                                className="h-5 w-5 text-red-500 border-gray-300 rounded focus:ring-red-500"
+                                disabled={!isItemAvailable(item)}
+                                className={`h-5 w-5 border-gray-300 rounded ${isItemAvailable(item) ? 'text-red-500 focus:ring-red-500' : 'text-gray-300 cursor-not-allowed'}`}
                               />
+                              {!isItemAvailable(item) && (
+                                <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></div>
+                              )}
                             </div>
                             <div className="w-20 h-24 flex-shrink-0">
                               <img 
@@ -451,6 +619,58 @@ const BagPage = () => {
                                 </span>
                               )}
                             </h3>
+                            
+                            {/* Time-limited bundle warning */}
+                            {item.bundleId && item.bundleId.isTimeLimited && (
+                              <div className="mt-1">
+                                {(() => {
+                                  const now = new Date();
+                                  const startDate = new Date(item.bundleId.startDate);
+                                  const endDate = new Date(item.bundleId.endDate);
+                                  
+                                  if (now < startDate) {
+                                    return (
+                                      <div className="text-xs font-medium text-blue-600 flex items-center">
+                                        <span className="inline-block w-2 h-2 rounded-full bg-blue-600 mr-1"></span>
+                                        Offer starts on {startDate.toLocaleDateString()}
+                                      </div>
+                                    );
+                                  } else if (now > endDate) {
+                                    return (
+                                      <div className="text-xs font-medium text-red-600 flex items-center">
+                                        <span className="inline-block w-2 h-2 rounded-full bg-red-600 mr-1"></span>
+                                        Offer expired on {endDate.toLocaleDateString()}
+                                      </div>
+                                    );
+                                  } else {
+                                    // Calculate days remaining
+                                    const daysRemaining = Math.ceil((endDate - now) / (1000 * 60 * 60 * 24));
+                                    return (
+                                      <div className="text-xs font-medium text-orange-600 flex items-center">
+                                        <span className="inline-block w-2 h-2 rounded-full bg-orange-600 mr-1"></span>
+                                        Limited offer ends in {daysRemaining} day{daysRemaining !== 1 ? 's' : ''}
+                                      </div>
+                                    );
+                                  }
+                                })()}
+                              </div>
+                            )}
+                            
+                            {/* Stock warning for bundles */}
+                            {item.bundleId && item.bundleId.stock !== undefined && item.bundleId.stock < 10 && item.bundleId.stock > 0 && (
+                              <div className="text-xs font-medium text-orange-600 flex items-center mt-1">
+                                <span className="inline-block w-2 h-2 rounded-full bg-orange-600 mr-1"></span>
+                                Only {item.bundleId.stock} left in stock!
+                              </div>
+                            )}
+                            
+                            {/* Out of stock warning */}
+                            {((item.bundleId && item.bundleId.stock === 0) || (item.productId && item.productId.stock === 0)) && (
+                              <div className="text-xs font-medium text-red-600 flex items-center mt-1">
+                                <span className="inline-block w-2 h-2 rounded-full bg-red-600 mr-1"></span>
+                                Out of stock
+                              </div>
+                            )}
                             
                             <div className="text-sm text-gray-600 mt-1">
                               Size: {size}

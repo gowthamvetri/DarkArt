@@ -7,6 +7,7 @@ import SummaryApi from "../common/SummaryApi";
 import toast from "react-hot-toast";
 import useCart from "../hooks/useCart";
 import { useSelector } from "react-redux";
+import CountdownTimer from "../components/CountdownTimer";
 
 const BundleDetail = () => {
   const { bundleId } = useParams();
@@ -246,6 +247,29 @@ const BundleDetail = () => {
               <div className="text-green-600 font-bold text-lg">
                 You Save ₹{((bundle.originalPrice || 0) - (bundle.bundlePrice || 0)).toLocaleString()} ({bundle.discount || 0}% off)
               </div>
+            </div>
+            
+            {/* Timer countdown for limited-time bundles */}
+            {bundle.isTimeLimited && (
+              <CountdownTimer 
+                endDate={bundle.endDate}
+                startDate={bundle.startDate}
+                onExpire={() => toast.error("This bundle offer has expired!")}
+              />
+            )}
+            
+            {/* Stock Status */}
+            <div className="flex items-center gap-2">
+              {bundle.stock > 0 ? (
+                <>
+                  <FaCheck className="text-green-500" />
+                  <span className={`font-medium ${bundle.stock < 10 ? 'text-amber-600' : 'text-green-600'}`}>
+                    {bundle.stock < 10 ? `Only ${bundle.stock} left in stock!` : 'In Stock'}
+                  </span>
+                </>
+              ) : (
+                <span className="text-red-500 font-medium">Out of Stock</span>
+              )}
             </div>
 
             {/* Description */}

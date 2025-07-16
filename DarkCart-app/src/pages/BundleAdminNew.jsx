@@ -4,13 +4,27 @@ import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import toast from "react-hot-toast";
 import SummaryApi from "../common/SummaryApi";
+import ImageDropzone from "../components/ImageDropzone";
+
+// Add axios interceptor for debugging
+axios.interceptors.response.use(
+  response => response,
+  error => {
+    console.error('Axios Error:', error);
+    console.error('Request URL:', error.config.url);
+    console.error('Request Method:', error.config.method);
+    console.error('Response Status:', error.response?.status);
+    console.error('Response Data:', error.response?.data);
+    return Promise.reject(error);
+  }
+);
 
 const BundleAdmin = () => {
   const [bundles, setBundles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState({
     totalBundles: 0,
-    activeBundles: 0,
+    // Removed activeBundles property
     averageDiscount: 0,
     averageRating: 0
   });
@@ -23,8 +37,7 @@ const BundleAdmin = () => {
     bundlePrice: "",
     originalPrice: "",
     image: "",
-    items: [],
-    isActive: true
+    items: []
   });
 
   // Initialize form data
@@ -83,7 +96,7 @@ const BundleAdmin = () => {
   // Calculate stats from bundles data
   const calculateStats = (bundleData) => {
     const totalBundles = bundleData.length;
-    const activeBundles = bundleData.filter(b => b.isActive).length;
+    // Removed active bundles count
     const averageDiscount = totalBundles > 0 
       ? bundleData.reduce((acc, b) => acc + (b.discount || 0), 0) / totalBundles 
       : 0;
@@ -93,7 +106,7 @@ const BundleAdmin = () => {
 
     setStats({
       totalBundles,
-      activeBundles,
+      // Removed activeBundles property
       averageDiscount,
       averageRating
     });
@@ -231,28 +244,38 @@ const BundleAdmin = () => {
       bundlePrice: bundle.bundlePrice.toString(),
       originalPrice: bundle.originalPrice.toString(),
       image: bundle.image,
-      items: bundle.items || [],
-      isActive: bundle.isActive
+      items: bundle.items || []
+      // Removed isActive property
     });
     setShowUploadForm(true);
   };
 
   // Toggle bundle status
-  const toggleBundleStatus = async (id) => {
+  const toggleBundleStatus = async (id, event) => {
+    // Prevent event bubbling
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    
     try {
-      const response = await axios.patch(`${SummaryApi.updateBundle.url}/${id}/status`, {}, {
+      console.log(`Toggling bundle status for ID: ${id}`);
+      console.log(`Using URL: ${SummaryApi.toggleBundleStatus.url}/${id}`);
+      
+      // Use the correct endpoint path with the bundle ID
+      const response = await axios.patch(`/api/bundle/toggle-status/${id}`, {}, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
       });
 
       if (response.data.success) {
-        toast.success("Bundle status updated!");
+        toast.success("Bundle visibility updated!");
         fetchBundles();
       }
     } catch (error) {
-      toast.error("Failed to update bundle status");
-      console.error("Error updating bundle status:", error);
+      toast.error("Failed to update bundle visibility");
+      console.error("Error updating bundle visibility:", error);
     }
   };
 
@@ -274,17 +297,6 @@ const BundleAdmin = () => {
             </div>
             <div className="bg-blue-100 p-3 rounded-lg">
               <FaGift className="text-blue-600 w-6 h-6" />
-            </div>
-          </div>
-        </div>
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-600 text-sm">Active Bundles</p>
-              <p className="text-2xl font-bold text-green-600">{stats.activeBundles}</p>
-            </div>
-            <div className="bg-green-100 p-3 rounded-lg">
-              <FaEye className="text-green-600 w-6 h-6" />
             </div>
           </div>
         </div>
@@ -439,19 +451,21 @@ const BundleAdmin = () => {
                     />
                   </div>
 
-                  {/* Image URL */}
+                  {/* Image Upload */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Image URL
-                    </label>
-                    <input
-                      type="url"
-                      name="image"
-                      value={formData.image}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="https://example.com/image.jpg"
+                    <ImageDropzone
+                      label="Bundle Image"
+                      initialImage={formData.image}
+                      onImageUpload={(imageUrl) => setFormData(prev => ({
+                        ...prev,
+                        image: imageUrl
+                      }))}
+                      height="h-64"
+                      className="mb-4"
                     />
+                    <p className="text-xs text-gray-500 mt-1">
+                      This will be the main image shown for your bundle
+                    </p>
                   </div>
                 </div>
 
@@ -515,19 +529,20 @@ const BundleAdmin = () => {
                           min="0"
                           step="0.01"
                         />
-                        <input
-                          type="url"
-                          placeholder="Image URL"
-                          value={item.image}
-                          onChange={(e) => handleItemChange(index, 'image', e.target.value)}
-                          className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
+                        <div>
+                          <ImageDropzone
+                            label=""
+                            initialImage={item.image}
+                            onImageUpload={(imageUrl) => handleItemChange(index, 'image', imageUrl)}
+                            height="h-24"
+                          />
+                        </div>
                       </div>
                     </div>
                   ))}
                 </div>
 
-                {/* Active Status */}
+                {/* Visibility Control */}
                 <div className="flex items-center">
                   <input
                     type="checkbox"
@@ -537,7 +552,7 @@ const BundleAdmin = () => {
                     className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   />
                   <label className="ml-2 text-sm text-gray-700">
-                    Active (Bundle will be visible to customers)
+                    Visible to customers (When unchecked, bundle will be hidden from customers)
                   </label>
                 </div>
 
@@ -601,7 +616,7 @@ const BundleAdmin = () => {
                     Pricing
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
+                    Visibility
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Actions
@@ -648,14 +663,14 @@ const BundleAdmin = () => {
                     </td>
                     <td className="px-6 py-4">
                       <button
-                        onClick={() => toggleBundleStatus(bundle._id)}
+                        onClick={(e) => toggleBundleStatus(bundle._id, e)}
                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                           bundle.isActive
                             ? "bg-green-100 text-green-800"
                             : "bg-red-100 text-red-800"
                         }`}
                       >
-                        {bundle.isActive ? "Active" : "Inactive"}
+                        {bundle.isActive ? "Visible" : "Hidden"}
                       </button>
                     </td>
                     <td className="px-6 py-4">

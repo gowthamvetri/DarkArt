@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Axios from "../utils/Axios";
 import toast from "react-hot-toast";
 import SummaryApi from "../common/SummaryApi";
+import ImageDropzone from "../components/ImageDropzone";
 
 const BundleAdmin = () => {
   const [bundles, setBundles] = useState([]);
@@ -25,7 +26,10 @@ const BundleAdmin = () => {
     images: [""],
     items: [],
     isActive: true,
-    stock: 100
+    stock: 100,
+    isTimeLimited: false,
+    startDate: new Date().toISOString().slice(0, 16),
+    endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 16)
   });
 
   // Initialize form data
@@ -39,7 +43,10 @@ const BundleAdmin = () => {
       images: [""],
       items: [],
       isActive: true,
-      stock: 100
+      stock: 100,
+      isTimeLimited: false,
+      startDate: new Date().toISOString().slice(0, 16),
+      endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 16)
     });
   };
 
@@ -117,11 +124,10 @@ const BundleAdmin = () => {
   }, []);
 
   // Handle form input changes
-  const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
+  const handleInputChange = (name, value) => {
     setFormData(prev => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: value
     }));
   };
 
@@ -173,7 +179,10 @@ const BundleAdmin = () => {
         ...formData,
         bundlePrice: parseFloat(formData.bundlePrice),
         originalPrice: parseFloat(formData.originalPrice),
-        stock: parseInt(formData.stock) || 100
+        stock: parseInt(formData.stock) || 100,
+        isTimeLimited: formData.isTimeLimited,
+        startDate: formData.isTimeLimited ? formData.startDate : null,
+        endDate: formData.isTimeLimited ? formData.endDate : null
       };
 
       console.log("Sending bundle data:", bundleData);
@@ -244,6 +253,12 @@ const BundleAdmin = () => {
   // Handle bundle editing
   const handleEdit = (bundle) => {
     setEditingBundle(bundle);
+    
+    // Check if bundle has time limit data
+    const hasTimeLimit = bundle.isTimeLimited;
+    const startDate = bundle.startDate ? new Date(bundle.startDate).toISOString().slice(0, 16) : new Date().toISOString().slice(0, 16);
+    const endDate = bundle.endDate ? new Date(bundle.endDate).toISOString().slice(0, 16) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 16);
+    
     setFormData({
       title: bundle.title,
       description: bundle.description,
@@ -253,7 +268,10 @@ const BundleAdmin = () => {
       images: bundle.images || [""],
       items: bundle.items || [],
       isActive: bundle.isActive,
-      stock: bundle.stock || 100
+      stock: bundle.stock || 100,
+      isTimeLimited: hasTimeLimit || false,
+      startDate: startDate,
+      endDate: endDate
     });
     setShowUploadForm(true);
   };
@@ -396,7 +414,7 @@ const BundleAdmin = () => {
                       type="text"
                       name="title"
                       value={formData.title}
-                      onChange={handleInputChange}
+                      onChange={(e) => handleInputChange(e.target.name, e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="Enter bundle title"
                       required
@@ -411,7 +429,7 @@ const BundleAdmin = () => {
                     <select
                       name="category"
                       value={formData.category}
-                      onChange={handleInputChange}
+                      onChange={(e) => handleInputChange(e.target.name, e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       required
                     >
@@ -434,7 +452,7 @@ const BundleAdmin = () => {
                       type="number"
                       name="bundlePrice"
                       value={formData.bundlePrice}
-                      onChange={handleInputChange}
+                      onChange={(e) => handleInputChange(e.target.name, e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="0"
                       min="0"
@@ -452,7 +470,7 @@ const BundleAdmin = () => {
                       type="number"
                       name="originalPrice"
                       value={formData.originalPrice}
-                      onChange={handleInputChange}
+                      onChange={(e) => handleInputChange(e.target.name, e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="0"
                       min="0"
@@ -460,22 +478,21 @@ const BundleAdmin = () => {
                     />
                   </div>
 
-                  {/* Image URL */}
+                  {/* Multiple Images Upload */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Main Image URL
-                    </label>
-                    <input
-                      type="url"
-                      name="images"
-                      value={formData.images[0] || ""}
-                      onChange={(e) => setFormData(prev => ({
+                    <ImageDropzone
+                      label="Bundle Images"
+                      initialImages={formData.images}
+                      multiple={true}
+                      onImageUpload={(imageUrls) => setFormData(prev => ({
                         ...prev,
-                        images: [e.target.value, ...prev.images.slice(1)]
+                        images: imageUrls
                       }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="https://example.com/image.jpg"
+                      className="mb-4"
                     />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Upload multiple images for your bundle. The first image will be shown as the main image.
+                    </p>
                   </div>
 
                   {/* Stock */}
@@ -487,11 +504,53 @@ const BundleAdmin = () => {
                       type="number"
                       name="stock"
                       value={formData.stock}
-                      onChange={handleInputChange}
+                      onChange={(e) => handleInputChange(e.target.name, e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="100"
                       min="0"
                     />
+                  </div>
+
+                  {/* Time-Limited Offer */}
+                  <div className="mt-4">
+                    <div className="flex items-center mb-3">
+                      <input
+                        type="checkbox"
+                        id="isTimeLimited"
+                        name="isTimeLimited"
+                        checked={formData.isTimeLimited}
+                        onChange={(e) => handleInputChange(e.target.name, e.target.checked)}
+                        className="mr-2 h-4 w-4"
+                      />
+                      <label htmlFor="isTimeLimited" className="block text-sm font-medium text-gray-700">
+                        Time-Limited Offer
+                      </label>
+                    </div>
+                    
+                    {formData.isTimeLimited && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-50 rounded-md">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+                          <input
+                            type="datetime-local"
+                            name="startDate"
+                            value={formData.startDate}
+                            onChange={(e) => handleInputChange(e.target.name, e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">End Date</label>
+                          <input
+                            type="datetime-local"
+                            name="endDate"
+                            value={formData.endDate}
+                            onChange={(e) => handleInputChange(e.target.name, e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -503,7 +562,7 @@ const BundleAdmin = () => {
                   <textarea
                     name="description"
                     value={formData.description}
-                    onChange={handleInputChange}
+                    onChange={(e) => handleInputChange(e.target.name, e.target.value)}
                     rows={3}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="Enter bundle description"
@@ -555,13 +614,14 @@ const BundleAdmin = () => {
                           min="0"
                           step="0.01"
                         />
-                        <input
-                          type="url"
-                          placeholder="Image URL"
-                          value={item.image}
-                          onChange={(e) => handleItemChange(index, 'image', e.target.value)}
-                          className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
+                        <div>
+                          <ImageDropzone
+                            label=""
+                            initialImage={item.image}
+                            onImageUpload={(imageUrl) => handleItemChange(index, 'image', imageUrl)}
+                            height="h-24"
+                          />
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -573,7 +633,7 @@ const BundleAdmin = () => {
                     type="checkbox"
                     name="isActive"
                     checked={formData.isActive}
-                    onChange={handleInputChange}
+                    onChange={(e) => handleInputChange(e.target.name, e.target.checked)}
                     className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   />
                   <label className="ml-2 text-sm text-gray-700">
